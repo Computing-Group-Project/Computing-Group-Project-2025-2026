@@ -1,4 +1,4 @@
-package com.demeter.backend.model;
+package com.demeter.backend.orders.model;
 
 import com.demeter.backend.shared.enums.OrderStatus;
 import jakarta.persistence.*;
