@@ -1,4 +1,4 @@
-package com.demeter.backend.shared.dto;
+package com.demeter.backend.shared.dto.response;
 
 public class ApiResponse<T> {
     private boolean success;

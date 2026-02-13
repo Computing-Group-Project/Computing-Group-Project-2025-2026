@@ -2,7 +2,7 @@ package com.demeter.backend.orders.controller;
 
 import com.demeter.backend.orders.model.Order;
 import com.demeter.backend.orders.service.OrderService;
-import com.demeter.backend.shared.dto.ApiResponse;
+import com.demeter.backend.shared.dto.response.ApiResponse;
 import com.demeter.backend.shared.enums.OrderStatus;
 import com.demeter.backend.shared.constants.ApiResponseMessages;
 import org.springframework.web.bind.annotation.*;
