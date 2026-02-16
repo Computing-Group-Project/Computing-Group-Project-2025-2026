@@ -1,4 +1,3 @@
-// com/demeter/backend/wallet/dto/response/WalletBalanceResponse.java
 package com.demeter.backend.wallet.dto.response;
 
 import com.demeter.backend.wallet.enums.WalletStatus;

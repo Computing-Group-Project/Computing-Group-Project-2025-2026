@@ -1,4 +1,4 @@
-package com.demeter.backend.wallet.entity;
+package com.demeter.backend.wallet.model;
 
 import com.demeter.backend.wallet.enums.WalletStatus;
 import jakarta.persistence.*;

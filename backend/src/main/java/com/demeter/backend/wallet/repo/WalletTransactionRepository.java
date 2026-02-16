@@ -1,7 +1,6 @@
-// com/demeter/backend/wallet/repository/WalletTransactionRepository.java
 package com.demeter.backend.wallet.repo;
 
-import com.demeter.backend.wallet.entity.WalletTransaction;
+import com.demeter.backend.wallet.model.WalletTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

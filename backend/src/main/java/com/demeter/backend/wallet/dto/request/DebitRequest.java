@@ -1,4 +1,3 @@
-// com/demeter/backend/wallet/dto/request/DebitRequest.java
 package com.demeter.backend.wallet.dto.request;
 
 import lombok.*;

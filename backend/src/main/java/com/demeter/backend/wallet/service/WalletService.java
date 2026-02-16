@@ -1,4 +1,3 @@
-// com/demeter/backend/wallet/service/WalletService.java
 package com.demeter.backend.wallet.service;
 
 import com.demeter.backend.wallet.dto.request.*;

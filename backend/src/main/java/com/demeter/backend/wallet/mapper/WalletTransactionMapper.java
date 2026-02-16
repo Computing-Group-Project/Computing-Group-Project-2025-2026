@@ -1,7 +1,7 @@
 package com.demeter.backend.wallet.mapper;
 
 import com.demeter.backend.wallet.dto.response.WalletTransactionResponse;
-import com.demeter.backend.wallet.entity.WalletTransaction;
+import com.demeter.backend.wallet.model.WalletTransaction;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;

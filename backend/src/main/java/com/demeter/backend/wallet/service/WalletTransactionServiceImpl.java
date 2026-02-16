@@ -1,10 +1,9 @@
-// com/demeter/backend/wallet/service/impl/WalletTransactionServiceImpl.java
-package com.demeter.backend.wallet.service.impl;
+package com.demeter.backend.wallet.service;
 
-import com.demeter.backend.wallet.entity.WalletTransaction;
+import com.demeter.backend.wallet.model.WalletTransaction;
 import com.demeter.backend.wallet.enums.TransactionStatus;
 import com.demeter.backend.wallet.enums.TransactionType;
-import com.demeter.backend.wallet.service.WalletTransactionService;
+import com.demeter.backend.wallet.repo.WalletTransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
