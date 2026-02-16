@@ -101,7 +101,7 @@ public class DiscountRuleService {
         Double totalDiscount = 0.0;
 
         for (DiscountRule rule : applicableRules) {
-            if (rule.getStackable()) {
+            if ((boolean) rule.getStackable()) {
                 totalDiscount += rule.calculateDiscount(orderAmount - totalDiscount);
             }
         }

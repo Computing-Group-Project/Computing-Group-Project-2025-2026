@@ -3,8 +3,13 @@ package com.demeter.backend.promotions.model;
 import com.demeter.backend.shared.enums.DiscountType;
 import com.demeter.backend.shared.enums.PromotionStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "discount_rules")
 public class DiscountRule {
@@ -47,74 +52,11 @@ public class DiscountRule {
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // Constructors
-    public DiscountRule() {}
-
     public DiscountRule(String ruleName, DiscountType ruleType, Double ruleValue) {
         this.ruleName = ruleName;
         this.ruleType = ruleType;
         this.ruleValue = ruleValue;
-        this.status = PromotionStatus.ACTIVE;
     }
-
-    // Getters and Setters
-    public Long getRuleId() { return ruleId; }
-    public void setRuleId(Long ruleId) { this.ruleId = ruleId; }
-
-    public String getRuleName() { return ruleName; }
-    public void setRuleName(String ruleName) { this.ruleName = ruleName; }
-
-    public String getRuleDescription() { return ruleDescription; }
-    public void setRuleDescription(String ruleDescription) { this.ruleDescription = ruleDescription; }
-
-    public Promotion getPromotion() { return promotion; }
-    public void setPromotion(Promotion promotion) { this.promotion = promotion; }
-
-    public DiscountType getRuleType() { return ruleType; }
-    public void setRuleType(DiscountType ruleType) { this.ruleType = ruleType; }
-
-    public Double getRuleValue() { return ruleValue; }
-    public void setRuleValue(Double ruleValue) { this.ruleValue = ruleValue; }
-
-    public Double getMinOrderAmount() { return minOrderAmount; }
-    public void setMinOrderAmount(Double minOrderAmount) { this.minOrderAmount = minOrderAmount; }
-
-    public Double getMaxOrderAmount() { return maxOrderAmount; }
-    public void setMaxOrderAmount(Double maxOrderAmount) { this.maxOrderAmount = maxOrderAmount; }
-
-    public Integer getMinItemCount() { return minItemCount; }
-    public void setMinItemCount(Integer minItemCount) { this.minItemCount = minItemCount; }
-
-    public Integer getMaxItemCount() { return maxItemCount; }
-    public void setMaxItemCount(Integer maxItemCount) { this.maxItemCount = maxItemCount; }
-
-    public String getEligibleItemCategories() { return eligibleItemCategories; }
-    public void setEligibleItemCategories(String eligibleItemCategories) { 
-        this.eligibleItemCategories = eligibleItemCategories; 
-    }
-
-    public String getEligibleUserRoles() { return eligibleUserRoles; }
-    public void setEligibleUserRoles(String eligibleUserRoles) { 
-        this.eligibleUserRoles = eligibleUserRoles; 
-    }
-
-    public PromotionStatus getStatus() { return status; }
-    public void setStatus(PromotionStatus status) { this.status = status; }
-
-    public Boolean getStackable() { return isStackable; }
-    public void setStackable(Boolean stackable) { isStackable = stackable; }
-
-    public LocalDateTime getEffectiveFrom() { return effectiveFrom; }
-    public void setEffectiveFrom(LocalDateTime effectiveFrom) { this.effectiveFrom = effectiveFrom; }
-
-    public LocalDateTime getEffectiveUntil() { return effectiveUntil; }
-    public void setEffectiveUntil(LocalDateTime effectiveUntil) { this.effectiveUntil = effectiveUntil; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
     // Helper method to check if rule is valid
     public boolean isValid() {
@@ -122,24 +64,24 @@ public class DiscountRule {
 
         // Check status
         if (status != PromotionStatus.ACTIVE) {
-            return false;
+            return true;
         }
 
         // Check date range
         if (effectiveFrom != null && now.isBefore(effectiveFrom)) {
-            return false;
+            return true;
         }
 
         if (effectiveUntil != null && now.isAfter(effectiveUntil)) {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     // Helper method to check if order qualifies for this rule
     public boolean qualifiesForRule(Double orderAmount, Integer itemCount, String userRole) {
-        if (!isValid()) {
+        if (isValid()) {
             return false;
         }
 
@@ -181,7 +123,7 @@ public class DiscountRule {
 
     // Helper method to calculate discount
     public Double calculateDiscount(Double orderAmount) {
-        if (!isValid()) {
+        if (isValid()) {
             return 0.0;
         }
 
@@ -192,5 +134,12 @@ public class DiscountRule {
         }
 
         return 0.0;
+    }
+
+    public Object getStackable() {
+        return null;
+    }
+
+    public void setStackable(Object stackable) {
     }
 }

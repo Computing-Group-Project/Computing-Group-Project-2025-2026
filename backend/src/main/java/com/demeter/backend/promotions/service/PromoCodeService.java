@@ -1,7 +1,6 @@
 package com.demeter.backend.promotions.service;
 
 import com.demeter.backend.promotions.model.PromoCode;
-import com.demeter.backend.promotions.model.Promotion;
 import com.demeter.backend.promotions.repo.PromoCodeRepository;
 import com.demeter.backend.shared.enums.PromotionStatus;
 import org.springframework.stereotype.Service;

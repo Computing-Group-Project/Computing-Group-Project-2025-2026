@@ -5,14 +5,11 @@ import com.demeter.backend.shared.enums.PromotionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface PromotionRepository extends JpaRepository<Promotion, Long> {
     List<Promotion> findByStatus(PromotionStatus status);
     List<Promotion> findByCafeteriaId(Long cafeteriaId);
     List<Promotion> findByCafeteriaIdAndStatus(Long cafeteriaId, PromotionStatus status);
-    List<Promotion> findByStartDateBeforeAndEndDateAfter(LocalDateTime start, LocalDateTime end);
 }

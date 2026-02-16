@@ -6,14 +6,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class PromotionEngineService {
     private final PromoCodeService promoCodeService;
-    private final PromotionService promotionService;
     private final DiscountRuleService discountRuleService;
 
     public PromotionEngineService(PromoCodeService promoCodeService, 
                                   PromotionService promotionService,
                                   DiscountRuleService discountRuleService) {
         this.promoCodeService = promoCodeService;
-        this.promotionService = promotionService;
         this.discountRuleService = discountRuleService;
     }
 

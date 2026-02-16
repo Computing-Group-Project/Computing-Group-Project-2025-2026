@@ -2,11 +2,17 @@ package com.demeter.backend.promotions.model;
 
 import com.demeter.backend.shared.enums.PromotionStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "promo_codes")
 public class PromoCode {
+    // Getters and Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long promoCodeId;
@@ -32,48 +38,11 @@ public class PromoCode {
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // Constructors
-    public PromoCode() {}
 
     public PromoCode(String code, Promotion promotion) {
         this.code = code;
         this.promotion = promotion;
-        this.status = PromotionStatus.ACTIVE;
     }
-
-    // Getters and Setters
-    public Long getPromoCodeId() { return promoCodeId; }
-    public void setPromoCodeId(Long promoCodeId) { this.promoCodeId = promoCodeId; }
-
-    public String getCode() { return code; }
-    public void setCode(String code) { this.code = code; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public Promotion getPromotion() { return promotion; }
-    public void setPromotion(Promotion promotion) { this.promotion = promotion; }
-
-    public PromotionStatus getStatus() { return status; }
-    public void setStatus(PromotionStatus status) { this.status = status; }
-
-    public Integer getMaxUsageCount() { return maxUsageCount; }
-    public void setMaxUsageCount(Integer maxUsageCount) { this.maxUsageCount = maxUsageCount; }
-
-    public Integer getCurrentUsageCount() { return currentUsageCount; }
-    public void setCurrentUsageCount(Integer currentUsageCount) { this.currentUsageCount = currentUsageCount; }
-
-    public LocalDateTime getValidFrom() { return validFrom; }
-    public void setValidFrom(LocalDateTime validFrom) { this.validFrom = validFrom; }
-
-    public LocalDateTime getValidUntil() { return validUntil; }
-    public void setValidUntil(LocalDateTime validUntil) { this.validUntil = validUntil; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
     // Helper method to check if promo code is valid
     public boolean isValid() {
@@ -99,11 +68,7 @@ public class PromoCode {
         }
 
         // Check if underlying promotion is valid
-        if (promotion != null && !promotion.isValid()) {
-            return false;
-        }
-
-        return true;
+        return promotion == null || !promotion.isValid();
     }
 
     // Helper method to get discount from associated promotion

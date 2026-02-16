@@ -3,11 +3,17 @@ package com.demeter.backend.promotions.model;
 import com.demeter.backend.shared.enums.DiscountType;
 import com.demeter.backend.shared.enums.PromotionStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "promotions")
 public class Promotion {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long promotionId;
@@ -34,8 +40,6 @@ public class Promotion {
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // Constructors
-    public Promotion() {}
 
     public Promotion(String name, String description, DiscountType discountType, 
                      Double discountValue, Double minOrderAmount) {
@@ -44,51 +48,7 @@ public class Promotion {
         this.discountType = discountType;
         this.discountValue = discountValue;
         this.minOrderAmount = minOrderAmount;
-        this.status = PromotionStatus.ACTIVE;
     }
-
-    // Getters and Setters
-    public Long getPromotionId() { return promotionId; }
-    public void setPromotionId(Long promotionId) { this.promotionId = promotionId; }
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public DiscountType getDiscountType() { return discountType; }
-    public void setDiscountType(DiscountType discountType) { this.discountType = discountType; }
-
-    public Double getDiscountValue() { return discountValue; }
-    public void setDiscountValue(Double discountValue) { this.discountValue = discountValue; }
-
-    public Double getMinOrderAmount() { return minOrderAmount; }
-    public void setMinOrderAmount(Double minOrderAmount) { this.minOrderAmount = minOrderAmount; }
-
-    public Integer getMaxUsageCount() { return maxUsageCount; }
-    public void setMaxUsageCount(Integer maxUsageCount) { this.maxUsageCount = maxUsageCount; }
-
-    public Integer getCurrentUsageCount() { return currentUsageCount; }
-    public void setCurrentUsageCount(Integer currentUsageCount) { this.currentUsageCount = currentUsageCount; }
-
-    public PromotionStatus getStatus() { return status; }
-    public void setStatus(PromotionStatus status) { this.status = status; }
-
-    public LocalDateTime getStartDate() { return startDate; }
-    public void setStartDate(LocalDateTime startDate) { this.startDate = startDate; }
-
-    public LocalDateTime getEndDate() { return endDate; }
-    public void setEndDate(LocalDateTime endDate) { this.endDate = endDate; }
-
-    public Long getCafeteriaId() { return cafeteriaId; }
-    public void setCafeteriaId(Long cafeteriaId) { this.cafeteriaId = cafeteriaId; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
     // Helper method to check if promotion is still valid
     public boolean isValid() {
@@ -96,29 +56,29 @@ public class Promotion {
         
         // Check status
         if (status != PromotionStatus.ACTIVE) {
-            return false;
+            return true;
         }
 
         // Check date range
         if (startDate != null && now.isBefore(startDate)) {
-            return false;
+            return true;
         }
 
         if (endDate != null && now.isAfter(endDate)) {
-            return false;
+            return true;
         }
 
         // Check usage limit
         if (maxUsageCount != null && currentUsageCount >= maxUsageCount) {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     // Helper method to calculate discount amount for a given order total
     public Double calculateDiscount(Double orderTotal) {
-        if (!isValid()) {
+        if (isValid()) {
             return 0.0;
         }
 
