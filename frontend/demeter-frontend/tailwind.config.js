@@ -6,6 +6,29 @@ export default {
   ],
   darkMode: 'class',
   theme: {
+    extend: {
+      colors: {
+        // Dark Mode Colors
+        dark: {
+          bg: '#1a1d23',        // Dark gray with subtle blue tint
+          card: '#252930',      // Slightly lighter with blue tint for cards
+          border: '#363c47',    // Gray-blue border
+          text: '#FFFFFF',      // White text
+          textMuted: '#9CA3AF', // Gray for muted text
+          accent: '#14B8A6',    // Teal/Green for dark mode
+        },
+        // Light Mode Colors
+        light: {
+          bg: '#FFFFFF',        // White background
+          card: '#FFFFFF',
+          border: '#E5E7EB',
+          text: '#111827',
+          textMuted: '#6B7280', // Gray for subtitles
+          accent: '#F4C2C2',    // Baby pink for light mode
+          success: '#10B981',
+        }
+      }
+    },
     extend: {},
   },
   plugins: [],
