@@ -1,6 +1,7 @@
-package com.demeter.backend.auth.serive;
+package com.demeter.backend.auth.service;
 
 import com.demeter.backend.config.security.JwtUtil;
+import com.demeter.backend.shared.util.LogActivity; // Imported your new annotation
 import com.demeter.backend.users.model.User;
 import com.demeter.backend.users.repo.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +20,13 @@ public class AuthService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @LogActivity(action = "USER_REGISTER", targetTable = "USER")
     public User register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
+    @LogActivity(action = "USER_LOGIN", targetTable = "USER")
     public String login(String email, String password) {
 
         User user = userRepository.findByEmail(email)

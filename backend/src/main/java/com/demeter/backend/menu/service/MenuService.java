@@ -4,6 +4,7 @@ import com.demeter.backend.menu.model.*;
 import com.demeter.backend.menu.repo.*;
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.exception.AppException;
+import com.demeter.backend.shared.util.LogActivity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class MenuService {
         this.categoryRepo = categoryRepo;
     }
 
+    @LogActivity(action = "CREATE_MENU_ITEM", targetTable = "MENU_ITEM")
     public Menu createMenu(Menu menu, Long categoryId) {
         Category category = categoryRepo.findById(categoryId)
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
@@ -36,6 +38,7 @@ public class MenuService {
                 .orElseThrow(() -> new AppException(ErrorCode.MENU_NOT_FOUND));
     }
 
+    @LogActivity(action = "DELETE_MENU_ITEM", targetTable = "MENU_ITEM")
     public void deleteMenu(Long id) {
         Menu menu = getMenuById(id);
         menuRepo.delete(menu);
