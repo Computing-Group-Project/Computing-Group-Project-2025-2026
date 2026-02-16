@@ -1,0 +1,37 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: demeter-backend
+
+  datasource:
+    url: JDBC:mysql://localhost:3306/demeter_db
+    username: root
+    password: your_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+jwt:
+  secret: "CHANGE_ME_TO_A_LONG_RANDOM_SECRET_KEY_32+_CHARS"
+  expiration-ms: 3600000
+
+# Custom Application Properties
+app:
+  base-url: http://localhost:8080
+  uploads-dir: uploads
+  max-file-bytes: 5242880
+
