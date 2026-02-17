@@ -29,6 +29,10 @@ jwt:
   secret: "CHANGE_ME_TO_A_LONG_RANDOM_SECRET_KEY_32+_CHARS"
   expiration-ms: 3600000
 
+wallet:
+  micro:
+    max-amount: 500
+
 # Custom Application Properties
 app:
   base-url: http://localhost:8080

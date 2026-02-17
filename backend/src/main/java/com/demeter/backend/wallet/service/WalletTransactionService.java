@@ -18,7 +18,7 @@ public interface WalletTransactionService {
     );
 
     WalletTransaction markSuccess(Long transactionId);
-    WalletTransaction markFailed(Long transactionId, String failureReason);
+    void markFailed(Long transactionId, String failureReason);
 
     WalletTransaction getById(Long transactionId);
     List<WalletTransaction> listByWalletId(Long walletId);

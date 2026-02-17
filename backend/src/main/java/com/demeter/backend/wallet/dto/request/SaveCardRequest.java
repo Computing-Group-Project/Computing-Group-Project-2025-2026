@@ -12,12 +12,10 @@ public class SaveCardRequest {
     @NotBlank
     private String providerPaymentMethodId;
 
-    // optional display fields
     private String brand;
     private String last4;
     private Integer expMonth;
     private Integer expYear;
 
-    // optional: if true, set as default
     private boolean setDefault;
 }
