@@ -4,13 +4,13 @@ import com.demeter.backend.wallet.dto.request.*;
 import com.demeter.backend.wallet.dto.response.WalletBalanceResponse;
 import com.demeter.backend.wallet.dto.response.WalletResponse;
 import com.demeter.backend.wallet.dto.response.WalletTransactionResponse;
-import com.demeter.backend.wallet.model.Wallet;
-import com.demeter.backend.wallet.model.WalletTransaction;
 import com.demeter.backend.wallet.enums.TransactionStatus;
 import com.demeter.backend.wallet.enums.TransactionType;
 import com.demeter.backend.wallet.enums.WalletStatus;
-import com.demeter.backend.wallet.repo.WalletTransactionRepository;
+import com.demeter.backend.wallet.model.Wallet;
+import com.demeter.backend.wallet.model.WalletTransaction;
 import com.demeter.backend.wallet.repo.WalletRepository;
+import com.demeter.backend.wallet.repo.WalletTransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -29,6 +29,8 @@ public class WalletServiceImpl implements WalletService {
     private final WalletTransactionService walletTransactionService;
     private final ModelMapper modelMapper;
 
+
+
     @Override
     @Transactional
     public WalletResponse createWallet(CreateWalletRequest request) {
@@ -42,6 +44,7 @@ public class WalletServiceImpl implements WalletService {
                 .balance(request.getInitialBalance() == null ? 0L : request.getInitialBalance())
                 .status(WalletStatus.ACTIVE)
                 .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
 
         Wallet saved = walletRepository.save(wallet);
@@ -66,6 +69,7 @@ public class WalletServiceImpl implements WalletService {
     public WalletBalanceResponse getWalletBalance(Long walletId) {
         Wallet wallet = walletRepository.findById(walletId)
                 .orElseThrow(() -> new IllegalArgumentException("Wallet not found: " + walletId));
+
         WalletBalanceResponse res = new WalletBalanceResponse();
         res.setWalletId(wallet.getId());
         res.setUserId(wallet.getUserId());
@@ -77,11 +81,8 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional
     public WalletTransactionResponse credit(CreditRequest request) {
-        if (request.getAmount() == null || request.getAmount() <= 0) {
-            throw new IllegalArgumentException("Amount must be > 0");
-        }
+        validatePositiveAmount(request.getAmount());
 
-        // Pessimistic lock (FOR UPDATE) - implement this repo method later
         Wallet wallet = walletRepository.findByIdForUpdate(request.getWalletId())
                 .orElseThrow(() -> new IllegalArgumentException("Wallet not found: " + request.getWalletId()));
 
@@ -107,11 +108,8 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional
     public WalletTransactionResponse debit(DebitRequest request) {
-        if (request.getAmount() == null || request.getAmount() <= 0) {
-            throw new IllegalArgumentException("Amount must be > 0");
-        }
+        validatePositiveAmount(request.getAmount());
 
-        // Pessimistic lock (FOR UPDATE) - implement this repo method later
         Wallet wallet = walletRepository.findByIdForUpdate(request.getWalletId())
                 .orElseThrow(() -> new IllegalArgumentException("Wallet not found: " + request.getWalletId()));
 
@@ -142,11 +140,8 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional
     public WalletTransactionResponse charge(ChargeRequest request) {
-        if (request.getAmount() == null || request.getAmount() <= 0) {
-            throw new IllegalArgumentException("Amount must be > 0");
-        }
+        validatePositiveAmount(request.getAmount());
 
-        // Charge by userId (common for orders)
         Wallet wallet = walletRepository.findByUserIdForUpdate(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("Wallet not found for userId: " + request.getUserId()));
 
@@ -177,9 +172,7 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional
     public WalletTransactionResponse refund(RefundRequest request) {
-        if (request.getAmount() == null || request.getAmount() <= 0) {
-            throw new IllegalArgumentException("Amount must be > 0");
-        }
+        validatePositiveAmount(request.getAmount());
 
         Wallet wallet = walletRepository.findByUserIdForUpdate(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("Wallet not found for userId: " + request.getUserId()));
@@ -208,6 +201,7 @@ public class WalletServiceImpl implements WalletService {
     public WalletResponse freezeWallet(Long walletId) {
         Wallet wallet = walletRepository.findByIdForUpdate(walletId)
                 .orElseThrow(() -> new IllegalArgumentException("Wallet not found: " + walletId));
+
         wallet.setStatus(WalletStatus.FROZEN);
         wallet.setUpdatedAt(Instant.now());
         return modelMapper.map(walletRepository.save(wallet), WalletResponse.class);
@@ -218,6 +212,7 @@ public class WalletServiceImpl implements WalletService {
     public WalletResponse unfreezeWallet(Long walletId) {
         Wallet wallet = walletRepository.findByIdForUpdate(walletId)
                 .orElseThrow(() -> new IllegalArgumentException("Wallet not found: " + walletId));
+
         wallet.setStatus(WalletStatus.ACTIVE);
         wallet.setUpdatedAt(Instant.now());
         return modelMapper.map(walletRepository.save(wallet), WalletResponse.class);
@@ -237,6 +232,12 @@ public class WalletServiceImpl implements WalletService {
         return modelMapper.map(tx, WalletTransactionResponse.class);
     }
 
+    private void validatePositiveAmount(Long amount) {
+        if (amount == null || amount <= 0) {
+            throw new IllegalArgumentException("Amount must be > 0");
+        }
+    }
+
     private void ensureWalletActive(Wallet wallet) {
         if (wallet.getStatus() == WalletStatus.FROZEN) {
             throw new IllegalStateException("Wallet is frozen");
@@ -245,4 +246,5 @@ public class WalletServiceImpl implements WalletService {
             throw new IllegalStateException("Wallet is suspended");
         }
     }
+
 }

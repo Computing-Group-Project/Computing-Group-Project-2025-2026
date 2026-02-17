@@ -38,7 +38,6 @@ public class WalletPaymentService {
                 ? req.getCategory()
                 : TransactionCategory.TOPUP;
 
-        // For card->wallet, this is a CREDIT once payment succeeds.
         WalletTransaction tx = WalletTransaction.builder()
                 .walletId(wallet.getId())
                 .amount(req.getAmount())
@@ -81,7 +80,6 @@ public class WalletPaymentService {
             return card;
         }
 
-        // try default ACTIVE card
         var defaultCard = savedCardRepository.findFirstByUserIdAndIsDefaultTrueAndStatus(
                 userId, true, SavedCardStatus.ACTIVE
         );
@@ -89,7 +87,6 @@ public class WalletPaymentService {
             return defaultCard.get();
         }
 
-        // fallback to newest ACTIVE card
         var newestActive = savedCardRepository.findFirstByUserIdAndStatusOrderByIdDesc(
                 userId, SavedCardStatus.ACTIVE
         );

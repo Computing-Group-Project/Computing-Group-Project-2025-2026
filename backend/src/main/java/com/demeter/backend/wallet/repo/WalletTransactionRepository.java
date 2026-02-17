@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface WalletTransactionRepository extends JpaRepository<WalletTransaction, Long> {
@@ -18,6 +19,8 @@ public interface WalletTransactionRepository extends JpaRepository<WalletTransac
             String referenceId,
             TransactionCategory category
     );
+
+    List<WalletTransaction> findByWalletIdOrderByCreatedAtDesc(Long walletId);
 
     Page<WalletTransaction> findByWallet_IdOrderByCreatedAtDesc(Long walletId, Pageable pageable);
 

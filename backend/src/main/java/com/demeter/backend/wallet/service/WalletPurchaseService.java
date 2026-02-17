@@ -22,7 +22,6 @@ public class WalletPurchaseService {
     @Transactional
     public WalletTransaction purchase(Long userId, PurchaseRequest req) {
 
-        // idempotency guard (prevents double-debit for same orderId)
         var existing = txRepository.findByReferenceIdAndCategory(req.getReferenceId(), TransactionCategory.PURCHASE);
         if (existing.isPresent()) {
             return existing.get();
@@ -55,7 +54,6 @@ public class WalletPurchaseService {
             return txRepository.save(failedTx);
         }
 
-        // create PENDING transaction first
         WalletTransaction tx = WalletTransaction.builder()
                 .walletId(wallet.getId())
                 .amount(amount)

@@ -66,6 +66,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     @Override
     public List<WalletTransaction> listByWalletId(Long walletId) {
-        return walletTransactionRepository.findByWalletIdOrderByCreatedAtDesc(walletId);
+        return walletTransactionRepository
+                .findByWalletIdOrderByCreatedAtDesc(walletId);
     }
 }

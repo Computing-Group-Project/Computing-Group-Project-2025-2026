@@ -47,7 +47,6 @@ public class SavedCardService {
         SavedCard card = savedCardRepository.findByIdAndUserId(cardId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("Card not found"));
 
-        // unset old default(s)
         List<SavedCard> defaults = savedCardRepository.findByUserIdAndIsDefaultTrue(userId);
         for (SavedCard c : defaults) {
             if (!c.getId().equals(cardId)) {
