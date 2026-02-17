@@ -16,6 +16,11 @@ public class Order {
     private Long cafeteriaId;
     private Double totalAmount;
 
+    // Discount and promotion fields
+    private String appliedPromoCode;
+    private Double discountAmount = 0.0;
+    private Double finalAmount;
+
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
@@ -47,6 +52,15 @@ public class Order {
 
     public Double getTotalAmount() { return totalAmount; }
     public void setTotalAmount(Double totalAmount) { this.totalAmount = totalAmount; }
+
+    public String getAppliedPromoCode() { return appliedPromoCode; }
+    public void setAppliedPromoCode(String appliedPromoCode) { this.appliedPromoCode = appliedPromoCode; }
+
+    public Double getDiscountAmount() { return discountAmount; }
+    public void setDiscountAmount(Double discountAmount) { this.discountAmount = discountAmount; }
+
+    public Double getFinalAmount() { return finalAmount; }
+    public void setFinalAmount(Double finalAmount) { this.finalAmount = finalAmount; }
 
     public OrderStatus getStatus() { return status; }
     public void setStatus(OrderStatus status) { this.status = status; }
