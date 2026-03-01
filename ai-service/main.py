@@ -67,8 +67,23 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"Warning: Could not load Recommendation models: {e}")
 
-    # --LOAD DISCOUNT MODELS (Reserved for Teammate)--
-    # Teammate will add their try/except block here!
+    # --LOADING DISCOUNT MODELS--
+
+    try:
+            print("-> Loading Discount models...")
+            with open('combo_rules.json', 'r') as f:
+                ml_resources["combo_rules"] = json.load(f)
+            with open('failing_items.json', 'r') as f:
+                ml_resources["failing_items"] = json.load(f)
+            with open('bogo_rules.json', 'r') as f:
+                ml_resources["bogo_rules"] = json.load(f)
+            print("Discount Models successfully loaded!")
+    except Exception as e:
+            print(f"Warning: Could not load Discount models: {e}")
+            # Initialize with empty dicts if files are missing to prevent crashes
+            ml_resources["combo_rules"] = {}
+            ml_resources["failing_items"] = {}
+            ml_resources["bogo_rules"] = {}
 
     print("AI Service is fully booted and ready!")
     
@@ -115,9 +130,9 @@ class RecommendationType(str, Enum):
 
 class DiscountType(str, Enum):
     PERCENTAGE = "PERCENTAGE"
-    FIXED_AMOUNT = "FIXED_AMOUNT"
-    BUY_X_GET_Y = "BUY_X_GET_Y"
     COMBO = "COMBO"
+    BOGO = "BOGO"
+    FIXED_AMOUNT = "FIXED_AMOUNT"
 
 
 class SentimentType(str, Enum):
@@ -137,24 +152,9 @@ class RecommendationRequest(BaseModel):
     limit: int = Field(default=3, ge=1, le=10)
 
 
-class SalesDataItem(BaseModel):
-    item_id: int
-    item_name: str
-    category_id: int
-    base_price: float
-    total_sales: int
-    revenue: float
-    last_30_days_sales: int
-    average_rating: Optional[float] = None
-
-
 class DiscountRequest(BaseModel):
     cafeteria_id: int
-    sales_data: List[SalesDataItem]
-    current_discounts: List[int]  # List of item_ids currently on discount
-    target_profit_margin: float = Field(default=0.3, ge=0.1, le=0.5)
-    max_discount_percentage: float = Field(default=30.0, ge=5.0, le=50.0)
-
+    limit: int = Field(default=5, ge=1, le=10)
 
 class ReviewAnalysisRequest(BaseModel):
     review_id: int
@@ -178,20 +178,17 @@ class RecommendationResponse(BaseModel):
     model_version: str = "v1.0-basic"
 
 
-class DiscountSuggestion(BaseModel):
+class ProposedDiscount(BaseModel):
     discount_type: DiscountType
-    discount_value: float
-    applicable_items: List[int]
-    requirements: Dict[str, Any]
-    expected_impact: Dict[str, float]
-    reasoning: str
-
+    target_item_id: int
+    associated_item_id: Optional[int] = None  # ONLY for COMBO or BOGO
+    suggested_value: float 
+    reason: str
 
 class DiscountResponse(BaseModel):
     cafeteria_id: int
-    suggestions: List[DiscountSuggestion]
+    proposed_discounts: List[ProposedDiscount]
     generated_at: datetime
-    analysis_summary: Dict[str, Any]
 
 
 class ReviewAnalysisResponse(BaseModel):
@@ -355,71 +352,75 @@ async def generate_recommendations(
         raise HTTPException(status_code=500, detail=f"Recommendation pipeline failed: {str(e)}")
 
 # ==================== DISCOUNT GENERATION ENDPOINT ====================
-@app.post("/api/v1/discounts/generate", response_model=DiscountResponse)
+@app.post("/api/v1/discounts", response_model=DiscountResponse)
 async def generate_discounts(
-        request: DiscountRequest,
-        api_key: str = Depends(verify_api_key)
+    request: DiscountRequest,
+    api_key: str = Depends(verify_api_key)
 ):
-    """Generate AI-powered discount suggestions"""
-
     try:
-        suggestions = []
+        # --- NEW VALIDATION BLOCK ---
+        # Check if ID is null
+        if request.cafeteria_id is None:
+            raise HTTPException(status_code=400, detail="Cafeteria ID cannot be null.")
+        
+        # Check if ID is within the valid range (1-3)
+        if not (1 <= request.cafeteria_id <= 3):
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid Cafeteria ID: {request.cafeteria_id}. Must be between 1 and 3."
+            )
+        
+        # 1. Setup
+        cid = str(request.cafeteria_id)
+        canteen_map = ml_resources.get("item_canteen_map", {})
+        combo_rules = ml_resources.get("combo_rules", {})
+        failing_items = ml_resources.get("failing_items", {})
+        
+        proposed_discounts = []
+        used_items = set()
 
-        if request.sales_data:
-            avg_sales = sum(item.total_sales for item in request.sales_data) / len(request.sales_data)
-            low_performers = [item for item in request.sales_data if item.total_sales < avg_sales * 0.5]
+        # 2. Process Combos
+        current_cafeteria_combos = combo_rules.get(cid, [])
+        for combo in current_cafeteria_combos:
+            item_a, item_b = combo["item_a"], combo["item_b"]
+            if canteen_map.get(str(item_a)) == request.cafeteria_id and canteen_map.get(str(item_b)) == request.cafeteria_id:
+                if item_a not in used_items and item_b not in used_items:
+                    proposed_discounts.append(ProposedDiscount(
+                        discount_type=DiscountType.COMBO,
+                        target_item_id=item_a,
+                        associated_item_id=item_b,
+                        suggested_value=10.0,
+                        reason=f"Frequently bought with item {item_b}."
+                    ))
+                    used_items.update([item_a, item_b])
 
-            # Strategy 1: Percentage discount on low performers
-            if low_performers:
-                target_item = low_performers[0]
-                discount_value = min(20.0, request.max_discount_percentage)
+        # 3. Process Percentage
+        current_failing_items = failing_items.get(cid, [])
+        if isinstance(current_failing_items, dict):
+            current_failing_items = current_failing_items.get("items", [])
 
-                suggestions.append(DiscountSuggestion(
-                    discount_type=DiscountType.PERCENTAGE,
-                    discount_value=discount_value,
-                    applicable_items=[target_item.item_id],
-                    requirements={"min_quantity": 1},
-                    expected_impact={
-                        "sales_increase_percent": 35.0,
-                        "revenue_impact_percent": 15.0,
-                        "margin_percent": request.target_profit_margin * 100
-                    },
-                    reasoning=f"Boost sales of underperforming item (current sales: {target_item.total_sales})"
-                ))
+        for item in current_failing_items:
+            if canteen_map.get(str(item)) == request.cafeteria_id:
+                if item not in used_items:
+                    proposed_discounts.append(ProposedDiscount(
+                        discount_type=DiscountType.PERCENTAGE,
+                        target_item_id=item,
+                        suggested_value=15.0,
+                        reason="Low sales volume detected."
+                    ))
+                    used_items.add(item)
 
-            # Strategy 2: Buy 2 Get 1 Free
-            popular_items = sorted(request.sales_data, key=lambda x: x.total_sales, reverse=True)[:3]
-            if len(popular_items) >= 3:
-                suggestions.append(DiscountSuggestion(
-                    discount_type=DiscountType.BUY_X_GET_Y,
-                    discount_value=33.33,
-                    applicable_items=[item.item_id for item in popular_items],
-                    requirements={"buy_quantity": 2, "get_quantity": 1},
-                    expected_impact={
-                        "sales_increase_percent": 45.0,
-                        "revenue_impact_percent": 25.0,
-                        "margin_percent": request.target_profit_margin * 100
-                    },
-                    reasoning="Increase purchase quantity of top sellers"
-                ))
-
-        analysis_summary = {
-            "total_items_analyzed": len(request.sales_data),
-            "average_sales": avg_sales if request.sales_data else 0,
-            "low_performers_count": len(low_performers) if request.sales_data else 0,
-            "suggestions_count": len(suggestions)
-        }
-
+        # 4. Final Response
         return DiscountResponse(
             cafeteria_id=request.cafeteria_id,
-            suggestions=suggestions,
-            generated_at=datetime.now(),
-            analysis_summary=analysis_summary
+            proposed_discounts=proposed_discounts,
+            generated_at=datetime.now()
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Discount generation failed: {str(e)}")
-
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Discount pipeline failed: {str(e)}")
 
 # ==================== REVIEW ANALYSIS ENDPOINT ====================
 @app.post("/api/v1/reviews/analyze", response_model=ReviewAnalysisResponse)
