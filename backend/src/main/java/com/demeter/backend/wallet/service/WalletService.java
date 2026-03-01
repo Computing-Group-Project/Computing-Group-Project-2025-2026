@@ -17,7 +17,6 @@ public interface WalletService {
     WalletTransactionResponse credit(CreditRequest request);
     WalletTransactionResponse debit(DebitRequest request);
 
-    // Usually "charge" & "refund" are user/order oriented operations
     WalletTransactionResponse charge(ChargeRequest request);
     WalletTransactionResponse refund(RefundRequest request);
 

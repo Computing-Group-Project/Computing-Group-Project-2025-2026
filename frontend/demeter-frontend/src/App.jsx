@@ -1,21 +1,10 @@
-import { ThemeProvider } from './contexts/ThemeContext';
-import AdminConsole from './admin/AdminConsole';
+import StudentLayout from "./layouts/StudentLayout";
+import StudentHome from "./student/StudentHome";
 
-function App() {
+export default function App() {
   return (
-    <ThemeProvider>
-      <AdminConsole />
-    </ThemeProvider>
-import React from 'react';
-import StaffDashboard from './staff/StaffDashboard';
-import StaffLayout from './layouts/StaffLayout';
-
-function App() {
-  return (
-    <StaffLayout>
-      <StaffDashboard/>
-    </StaffLayout>
+    <StudentLayout>
+      <StudentHome />
+    </StudentLayout>
   );
 }
-
-export default App;
