@@ -16,33 +16,76 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from collections import Counter
 from nltk.corpus import words as nltk_words
+import joblib
+import pandas as pd
+import json
+import numpy as np
+from contextlib import asynccontextmanager
+
+# Global dictionary to safely hold all AI models in memory
+ml_resources = {}
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # startup logic
+    print("Starting up: Loading AI models into memory...")
+    
+    # --LOADING NLTK MODELS--
+    try:
+        print("-> Checking NLTK resources...")
+        try:
+            nltk.data.find('sentiment/vader_lexicon.zip')
+            nltk.data.find('tokenizers/punkt')
+            nltk.data.find('corpora/stopwords')
+            nltk.data.find('corpora/words')
+        except LookupError:
+            print("-> Downloading missing NLTK resources...")
+            nltk.download('vader_lexicon', quiet=True)
+            nltk.download('punkt', quiet=True)
+            nltk.download('stopwords', quiet=True)
+            nltk.download('words', quiet=True)
+            
+        # Store the initialized NLP tools in the global dictionary
+        ml_resources["english_vocab"] = set(w.lower() for w in nltk_words.words())
+        ml_resources["sia"] = SentimentIntensityAnalyzer()
+        print("NLTK Models successfully loaded!")
+    except Exception as e:
+        print(f"Warning: Could not load NLTK models: {e}")
+
+    # --LOADING RECOMMENDATION MODELS--
+    try:
+        print("-> Loading Recommendation models...")
+        ml_resources["knn_model"] = joblib.load('knn_model.pkl')
+        ml_resources["user_item_matrix"] = pd.read_pickle('user_item_matrix.pkl')
+        
+        with open('item_canteen_map.json', 'r') as f:
+            ml_resources["item_canteen_map"] = json.load(f)
+        with open('time_rules.json', 'r') as f:
+            ml_resources["time_rules"] = json.load(f)
+            
+        print("Recommendation Models successfully loaded!")
+    except Exception as e:
+        print(f"Warning: Could not load Recommendation models: {e}")
+
+    # --LOAD DISCOUNT MODELS (Reserved for Teammate)--
+    # Teammate will add their try/except block here!
+
+    print("AI Service is fully booted and ready!")
+    
+    # serve the app
+    yield 
+
+    # shutdown logic
+    print("Shutting down: Clearing ALL models from memory...")
+    ml_resources.clear()
 
 # Initialize FastAPI
 app = FastAPI(
     title="Demeter AI Service",
     description="AI-powered recommendations, discounts, and review analysis",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
-
-# This ensures the AI (lexicons) is downloaded when the app starts
-try:
-    nltk.data.find('sentiment/vader_lexicon.zip')
-    nltk.data.find('tokenizers/punkt')
-    nltk.data.find('corpora/stopwords')
-    nltk.data.find('corpora/words')
-except LookupError:
-    print("Downloading NLTK resources...")
-    nltk.download('vader_lexicon')
-    nltk.download('punkt')
-    nltk.download('stopwords')
-    nltk.download('punkt_tab')
-    nltk.download('words')
-
-# Load the dictionary once (Standard English words)
-english_vocab = set(w.lower() for w in nltk_words.words())
-# Initialize the VADER analyzer once 
-sia = SentimentIntensityAnalyzer()
-
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
@@ -84,22 +127,13 @@ class SentimentType(str, Enum):
 
 
 # ==================== REQUEST MODELS ====================
-class PurchaseHistoryItem(BaseModel):
-    item_id: int
-    item_name: str
-    category_id: int
-    purchase_count: int
-    last_purchased: datetime
-    total_spent: float
-
 
 class RecommendationRequest(BaseModel):
     user_id: int
-    purchase_history: List[PurchaseHistoryItem]
     current_time: datetime
     dietary_preferences: Optional[List[str]] = None
-    cafeteria_id: int
-    context: str = Field(default="homepage", description="homepage, cart, or checkout")
+    cafeteria_id: Optional[int] = None
+    context: str = Field(default="homepage", description="homepage or cart")
     limit: int = Field(default=3, ge=1, le=10)
 
 
@@ -199,65 +233,126 @@ async def generate_recommendations(
         request: RecommendationRequest,
         api_key: str = Depends(verify_api_key)
 ):
-    """Generate personalized food recommendations"""
-
+    """Generate personalized and contextual food recommendations"""
     try:
         recommendations = []
-        current_hour = request.current_time.hour
+        raw_item_suggestions = []
+        
+        # Safely extract models from the lifespan dictionary
+        user_matrix = ml_resources.get("user_item_matrix")
+        knn = ml_resources.get("knn_model")
+        time_rules = ml_resources.get("time_rules")
+        canteen_map = ml_resources.get("item_canteen_map")
 
-        # Recommendation 1: Based on purchase history
-        if request.purchase_history:
-            most_purchased = max(request.purchase_history, key=lambda x: x.purchase_count)
-            recommendations.append(RecommendationItem(
-                item_id=most_purchased.item_id,
-                recommendation_type=RecommendationType.PERSONALIZED,
-                confidence_score=0.85,
-                reason=f"You've ordered this {most_purchased.purchase_count} times",
-                context_data={
-                    "category_id": most_purchased.category_id,
-                    "purchase_frequency": most_purchased.purchase_count
-                }
-            ))
+        # Failsafe: If models aren't loaded, return a clean error
+        if user_matrix is None or knn is None:
+            raise HTTPException(status_code=503, detail="AI models are currently unavailable.")
+        
+        if request.context.lower() == "cart":
+            if request.cafeteria_id is None:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="You must provide a cafeteria_id when the context is 'cart'."
+                )
+            if request.cafeteria_id not in [1, 2, 3]:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="Invalid cafeteria_id. Must be 1, 2, or 3."
+                )
 
-        # Recommendation 2: Time-based contextual
-        if 6 <= current_hour < 11:
-            context_item_id = 101
-            reason = "Perfect for breakfast!"
-        elif 11 <= current_hour < 15:
-            context_item_id = 201
-            reason = "Lunch time favorite"
+        # Determine Time Bucket for Contextual Fallback
+        hour = request.current_time.hour
+        if 6 <= hour < 11:
+            time_bucket = 'Morning'
+        elif 11 <= hour < 16:
+            time_bucket = 'Lunch'
         else:
-            context_item_id = 301
-            reason = "Popular evening choice"
+            time_bucket = 'Evening'
 
-        recommendations.append(RecommendationItem(
-            item_id=context_item_id,
-            recommendation_type=RecommendationType.CONTEXTUAL,
-            confidence_score=0.75,
-            reason=reason,
-            context_data={"time_of_day": current_hour, "context": request.context}
-        ))
+        # Check if User is Known 
+        user_known = request.user_id in user_matrix.index
+        
+        if user_known:
+            # Extract user's taste vector
+            user_vector = user_matrix.loc[request.user_id].values.reshape(1, -1)
+            
+            # Find the 6 nearest neighbors (1 is the user + 5 actual neighbors)
+            distances, indices = knn.kneighbors(user_vector)
+            neighbor_indices = indices[0][1:] 
+            
+            # Get the IDs of the neighbors and their purchase history
+            neighbor_user_ids = user_matrix.index[neighbor_indices]
+            neighbor_purchases = user_matrix.loc[neighbor_user_ids].sum(axis=0)
+            
+            # Remove items the user has already bought
+            user_purchases = user_matrix.loc[request.user_id]
+            items_already_bought = user_purchases[user_purchases > 0].index.tolist()
+            new_suggestions = neighbor_purchases.drop(labels=items_already_bought)
+            
+            # Sort by highest purchase count among neighbors
+            top_new_items = new_suggestions.sort_values(ascending=False)
+            
+            # Get the items that neighbors actually bought (count > 0)
+            valid_knn_items = top_new_items[top_new_items > 0].index.tolist()
+            
+            for item in valid_knn_items:
+                raw_item_suggestions.append({
+                    "item_id": item,
+                    "type": RecommendationType.PERSONALIZED,
+                    "reason": "People with similar tastes loved this!"
+                })
 
-        # Recommendation 3: Complementary item
-        recommendations.append(RecommendationItem(
-            item_id=150,
-            recommendation_type=RecommendationType.COMPLEMENTARY,
-            confidence_score=0.70,
-            reason="Pairs well with your order",
-            context_data={"complement_type": "beverage"}
-        ))
+        # Time-Based Fallback & Backfill
+        # If k-NN returns nothing or need more items to fill the limit
+        for item in time_rules[time_bucket]:
+            # prevent suggesting duplicates
+            if not any(d['item_id'] == item for d in raw_item_suggestions):
+                raw_item_suggestions.append({
+                    "item_id": item,
+                    "type": RecommendationType.CONTEXTUAL,
+                    "reason": f"Popular choice for {time_bucket}!"
+                })
 
-        recommendations = recommendations[:request.limit]
+        # Context Filter (Cart vs Homepage)
+        final_suggestions = []
+        for suggestion in raw_item_suggestions:
+            if len(final_suggestions) >= request.limit:
+                break
+                
+            item_id_str = str(suggestion["item_id"]) # JSON keys are strings
+            item_cafeteria = canteen_map.get(item_id_str)
+            
+            # If request is from the cart page, return items from the current cafeteria
+            if request.context.lower() == "cart":
+                if item_cafeteria == request.cafeteria_id:
+                    final_suggestions.append(suggestion)
+            # If from the homepage, return anything
+            else:
+                final_suggestions.append(suggestion)
+
+        # Format the Response
+        recommendations = [
+            RecommendationItem(
+                item_id=item["item_id"],
+                recommendation_type=item["type"],
+                confidence_score=round(0.95 - (idx * 0.05), 2),
+                reason=item["reason"],
+                context_data={"filtered_for_canteen": request.context.lower() == "cart"}
+            ) for idx, item in enumerate(final_suggestions)
+        ]
+
 
         return RecommendationResponse(
             user_id=request.user_id,
             recommendations=recommendations,
-            generated_at=datetime.now()
+            generated_at=datetime.now(),
+            model_version="v2.0-knn-production"
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Recommendation generation failed: {str(e)}")
-
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Recommendation pipeline failed: {str(e)}")
 
 # ==================== DISCOUNT GENERATION ENDPOINT ====================
 @app.post("/api/v1/discounts/generate", response_model=DiscountResponse)
@@ -345,7 +440,7 @@ async def analyze_review(
         if not meaningful_words:
             valid_word_ratio = 0
         else:
-            valid_count = sum(1 for w in meaningful_words if w in english_vocab)
+            valid_count = sum(1 for w in meaningful_words if w in ml_resources['english_vocab'])
             valid_word_ratio = valid_count / len(meaningful_words)
 
         # Rejection Logic: If ratio is too low, return Low Confidence / Unapproved
@@ -361,7 +456,7 @@ async def analyze_review(
             )
 
         # sentiment analysis using VADER
-        scores = sia.polarity_scores(request.review_text)
+        scores = ml_resources['sia'].polarity_scores(request.review_text)
         compound_score = scores['compound']
 
         # Determine label
