@@ -1,25 +1,78 @@
 {
-    "1": {
-        "items": [
-            3,
-            13
-        ],
-        "count": 2
-    },
-    "3": {
-        "items": [
-            38,
-            40,
-            43,
-            45
-        ],
-        "count": 4
-    },
-    "2": {
-        "items": [
-            30,
-            31
-        ],
-        "count": 2
-    }
+    "1": [
+        {
+            "bogo_type": "clearance",
+            "buy_item": 3,
+            "get_item": 3
+        },
+        {
+            "bogo_type": "clearance",
+            "buy_item": 13,
+            "get_item": 13
+        },
+        {
+            "bogo_type": "cross_sell",
+            "buy_item": 17,
+            "get_item": 3
+        },
+        {
+            "bogo_type": "cross_sell",
+            "buy_item": 16,
+            "get_item": 13
+        }
+    ],
+    "3": [
+        {
+            "bogo_type": "clearance",
+            "buy_item": 45,
+            "get_item": 45
+        },
+        {
+            "bogo_type": "clearance",
+            "buy_item": 38,
+            "get_item": 38
+        },
+        {
+            "bogo_type": "clearance",
+            "buy_item": 43,
+            "get_item": 43
+        },
+        {
+            "bogo_type": "cross_sell",
+            "buy_item": 54,
+            "get_item": 45
+        },
+        {
+            "bogo_type": "cross_sell",
+            "buy_item": 53,
+            "get_item": 38
+        },
+        {
+            "bogo_type": "cross_sell",
+            "buy_item": 52,
+            "get_item": 43
+        }
+    ],
+    "2": [
+        {
+            "bogo_type": "clearance",
+            "buy_item": 30,
+            "get_item": 30
+        },
+        {
+            "bogo_type": "clearance",
+            "buy_item": 31,
+            "get_item": 31
+        },
+        {
+            "bogo_type": "cross_sell",
+            "buy_item": 35,
+            "get_item": 30
+        },
+        {
+            "bogo_type": "cross_sell",
+            "buy_item": 34,
+            "get_item": 31
+        }
+    ]
 }
