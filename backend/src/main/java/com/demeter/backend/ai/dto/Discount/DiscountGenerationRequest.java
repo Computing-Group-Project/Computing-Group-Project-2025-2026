@@ -1,4 +1,4 @@
-package com.demeter.ai.dto.Discount;
+package com.demeter.backend.ai.dto.Discount;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

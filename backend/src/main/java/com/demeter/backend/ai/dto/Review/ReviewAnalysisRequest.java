@@ -1,4 +1,4 @@
-package com.demeter.ai.dto.Review;
+package com.demeter.backend.ai.dto.Review;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.demeter.ai.dto.Recommendation;
+package com.demeter.backend.ai.dto.Recommendation;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

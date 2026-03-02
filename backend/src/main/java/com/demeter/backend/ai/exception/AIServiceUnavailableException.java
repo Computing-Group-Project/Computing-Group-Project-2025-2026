@@ -1,5 +1,5 @@
 // AIServiceUnavailableException.java
-package com.demeter.ai.exception;
+package com.demeter.backend.ai.exception;
 
 public class AIServiceUnavailableException extends AIServiceException {
     public AIServiceUnavailableException(String message, Throwable cause, String serviceName) {

@@ -1,6 +1,6 @@
-package com.demeter.ai.dto.Recommendation;
+package com.demeter.backend.ai.dto.Recommendation;
 
-import com.demeter.ai.enums.RecommendationType;
+import com.demeter.backend.ai.enums.RecommendationType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

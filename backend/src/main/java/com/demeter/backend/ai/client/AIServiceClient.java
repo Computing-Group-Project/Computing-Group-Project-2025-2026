@@ -1,8 +1,10 @@
 package com.demeter.backend.ai.client;
 
-import com.demeter.ai.config.AIServiceConfig;
-import com.demeter.ai.dto.recommendation.*;
-import com.demeter.ai.exception.*;
+import com.demeter.backend.ai.config.AIServiceConfig;
+import com.demeter.backend.ai.dto.Recommendation.RecommendationRequest;
+import com.demeter.backend.ai.dto.Recommendation.RecommendationResponse;
+import com.demeter.backend.ai.exception.AIServiceException;
+import com.demeter.backend.ai.exception.AIServiceUnavailableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
@@ -22,17 +24,24 @@ public class AIServiceClient {
         this.config = config;
     }
 
-    public RecommendationResponseDTO getRecommendations(RecommendationRequestDTO request) {
+    private HttpHeaders buildHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-API-Key", config.getApiKey());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
+
+    public RecommendationResponse getRecommendations(RecommendationRequest request) {
         return executeWithRetry(() -> {
             try {
                 log.info("Calling AI Service for recommendations - User: {}", request.getUserId());
 
-                HttpEntity<RecommendationRequestDTO> entity = new HttpEntity<>(request);
-                ResponseEntity<RecommendationResponseDTO> response = restTemplate.exchange(
-                        config.getRecommendationsEndpoint(),
+                HttpEntity<RecommendationRequest> entity = new HttpEntity<>(request, buildHeaders());
+                ResponseEntity<RecommendationResponse> response = restTemplate.exchange(
+                        config.getBaseUrl() + config.getRecommendationsEndpoint(),
                         HttpMethod.POST,
                         entity,
-                        RecommendationResponseDTO.class
+                        RecommendationResponse.class
                 );
 
                 return response.getBody();
@@ -61,7 +70,7 @@ public class AIServiceClient {
         while (attempts < config.getMaxRetries()) {
             try {
                 return operation.get();
-            } catch (AIServiceUnavailableException e) {
+            } catch (Exception e) {
                 lastException = e;
                 attempts++;
 
