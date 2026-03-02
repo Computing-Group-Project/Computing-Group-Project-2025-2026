@@ -16,7 +16,7 @@ public class AIServiceConfig {
     private long retryDelayMs = 1000;
 
     private String recommendationsEndpoint = "/api/v1/recommendations";
-    private String discountsEndpoint = "/api/v1/discounts/generate";
+    private String discountsEndpoint = "/api/v1/discounts";
     private String reviewAnalysisEndpoint = "/api/v1/reviews/analyze";
 
     private boolean enableFallback = true;

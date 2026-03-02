@@ -1,5 +1,5 @@
 // AIServiceException.java
-package com.demeter.ai.exception;
+package com.demeter.backend.ai.exception;
 
 public class AIServiceException extends RuntimeException {
     private final String serviceName;
