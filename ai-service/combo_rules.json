@@ -1,0 +1,128 @@
+{
+    "1": [
+        {
+            "item_a": 17,
+            "item_b": 16
+        },
+        {
+            "item_a": 16,
+            "item_b": 17
+        },
+        {
+            "item_a": 10,
+            "item_b": 17
+        },
+        {
+            "item_a": 10,
+            "item_b": 16
+        },
+        {
+            "item_a": 7,
+            "item_b": 17
+        },
+        {
+            "item_a": 7,
+            "item_b": 16
+        },
+        {
+            "item_a": 9,
+            "item_b": 16
+        },
+        {
+            "item_a": 9,
+            "item_b": 17
+        },
+        {
+            "item_a": 8,
+            "item_b": 16
+        },
+        {
+            "item_a": 8,
+            "item_b": 17
+        }
+    ],
+    "3": [
+        {
+            "item_a": 52,
+            "item_b": 53
+        },
+        {
+            "item_a": 53,
+            "item_b": 52
+        },
+        {
+            "item_a": 48,
+            "item_b": 52
+        },
+        {
+            "item_a": 48,
+            "item_b": 53
+        },
+        {
+            "item_a": 47,
+            "item_b": 53
+        },
+        {
+            "item_a": 47,
+            "item_b": 52
+        },
+        {
+            "item_a": 50,
+            "item_b": 52
+        },
+        {
+            "item_a": 50,
+            "item_b": 53
+        },
+        {
+            "item_a": 51,
+            "item_b": 53
+        },
+        {
+            "item_a": 51,
+            "item_b": 52
+        }
+    ],
+    "2": [
+        {
+            "item_a": 34,
+            "item_b": 35
+        },
+        {
+            "item_a": 35,
+            "item_b": 34
+        },
+        {
+            "item_a": 27,
+            "item_b": 35
+        },
+        {
+            "item_a": 27,
+            "item_b": 34
+        },
+        {
+            "item_a": 25,
+            "item_b": 34
+        },
+        {
+            "item_a": 25,
+            "item_b": 35
+        },
+        {
+            "item_a": 24,
+            "item_b": 34
+        },
+        {
+            "item_a": 24,
+            "item_b": 35
+        },
+        {
+            "item_a": 28,
+            "item_b": 35
+        },
+        {
+            "item_a": 28,
+            "item_b": 34
+        }
+    ]
+}
