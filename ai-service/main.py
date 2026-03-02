@@ -1,9 +1,9 @@
 """
 Demeter AI Service - Python FastAPI
-Temporary AI service for recommendations, discounts, and review analysis
+AI service for recommendations, discounts, and review analysis
 """
 
-from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi import FastAPI, HTTPException, Header, Depends,Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
@@ -21,16 +21,20 @@ import pandas as pd
 import json
 import numpy as np
 from contextlib import asynccontextmanager
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+import os
 
-# Global dictionary to safely hold all AI models in memory
+#global dictionary to safely hold all AI models in memory
 ml_resources = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # startup logic
+    #startup logic
     print("Starting up: Loading AI models into memory...")
     
-    # --LOADING NLTK MODELS--
+    # --loading NLTK models--
     try:
         print("-> Checking NLTK resources...")
         try:
@@ -45,14 +49,14 @@ async def lifespan(app: FastAPI):
             nltk.download('stopwords', quiet=True)
             nltk.download('words', quiet=True)
             
-        # Store the initialized NLP tools in the global dictionary
+        #store the initialized NLP tools in the global dictionary
         ml_resources["english_vocab"] = set(w.lower() for w in nltk_words.words())
         ml_resources["sia"] = SentimentIntensityAnalyzer()
         print("NLTK Models successfully loaded!")
     except Exception as e:
         print(f"Warning: Could not load NLTK models: {e}")
 
-    # --LOADING RECOMMENDATION MODELS--
+    # --loading recommendation models--
     try:
         print("-> Loading Recommendation models...")
         ml_resources["knn_model"] = joblib.load('knn_model.pkl')
@@ -67,7 +71,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"Warning: Could not load Recommendation models: {e}")
 
-    # --LOADING DISCOUNT MODELS--
+    # --loading discount models--
 
     try:
             print("-> Loading Discount models...")
@@ -80,47 +84,53 @@ async def lifespan(app: FastAPI):
             print("Discount Models successfully loaded!")
     except Exception as e:
             print(f"Warning: Could not load Discount models: {e}")
-            # Initialize with empty dicts if files are missing to prevent crashes
             ml_resources["combo_rules"] = {}
             ml_resources["failing_items"] = {}
             ml_resources["bogo_rules"] = {}
 
     print("AI Service is fully booted and ready!")
     
-    # serve the app
+    #serve the app
     yield 
 
-    # shutdown logic
+    #shutdown logic
     print("Shutting down: Clearing ALL models from memory...")
     ml_resources.clear()
 
-# Initialize FastAPI
+limiter = Limiter(key_func=get_remote_address)
+
+#initialize FastAPI
 app = FastAPI(
     title="Demeter AI Service",
     description="AI-powered recommendations, discounts, and review analysis",
     version="1.0.0",
     lifespan=lifespan
 )
-# CORS configuration
+
+#CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure this properly in production
+    allow_origins=["http://localhost:8080"],  #spring boot backend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# API Key configuration (in production, use environment variables)
-API_KEY = "demeter-ai-service-key-2024"
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Security dependency
+#API Key configuration using Environment Variables
+#it falls back to the string if the environment variable is not set
+API_KEY = os.getenv("DEMETER_AI_API_KEY", "demeter-ai-service-key-2024")
+
+#security dependency
 async def verify_api_key(x_api_key: str = Header(...)):
     if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API Key")
     return x_api_key
 
 
-# ==================== ENUMS ====================
+# ENUMS
 class RecommendationType(str, Enum):
     PERSONALIZED = "PERSONALIZED"
     CONTEXTUAL = "CONTEXTUAL"
@@ -141,7 +151,7 @@ class SentimentType(str, Enum):
     NEGATIVE = "NEGATIVE"
 
 
-# ==================== REQUEST MODELS ====================
+#request models
 
 class RecommendationRequest(BaseModel):
     user_id: int
@@ -162,7 +172,7 @@ class ReviewAnalysisRequest(BaseModel):
     star_rating: int = Field(ge=1, le=5)
 
 
-# ==================== RESPONSE MODELS ====================
+#response models
 class RecommendationItem(BaseModel):
     item_id: int
     recommendation_type: RecommendationType
@@ -181,7 +191,7 @@ class RecommendationResponse(BaseModel):
 class ProposedDiscount(BaseModel):
     discount_type: DiscountType
     target_item_id: int
-    associated_item_id: Optional[int] = None  # ONLY for COMBO or BOGO
+    associated_item_id: Optional[int] = None 
     suggested_value: float 
     reason: str
 
@@ -201,7 +211,7 @@ class ReviewAnalysisResponse(BaseModel):
     analysis_notes: str
 
 
-# ==================== HEALTH CHECK ====================
+#health check 
 @app.get("/")
 async def root():
     return {
@@ -224,10 +234,12 @@ async def health_check():
     }
 
 
-# ==================== RECOMMENDATION ENDPOINT ====================
+#----------------recommendation endpoint------------------------------------- 
 @app.post("/api/v1/recommendations", response_model=RecommendationResponse)
+@limiter.limit("10/minute")  #10 requests per minute per IP
 async def generate_recommendations(
-        request: RecommendationRequest,
+        request: Request,
+        payload: RecommendationRequest,
         api_key: str = Depends(verify_api_key)
 ):
     """Generate personalized and contextual food recommendations"""
@@ -235,30 +247,30 @@ async def generate_recommendations(
         recommendations = []
         raw_item_suggestions = []
         
-        # Safely extract models from the lifespan dictionary
+        #extract models from the lifespan dictionary
         user_matrix = ml_resources.get("user_item_matrix")
         knn = ml_resources.get("knn_model")
         time_rules = ml_resources.get("time_rules")
         canteen_map = ml_resources.get("item_canteen_map")
 
-        # Failsafe: If models aren't loaded, return a clean error
+        #failsafe
         if user_matrix is None or knn is None:
             raise HTTPException(status_code=503, detail="AI models are currently unavailable.")
         
-        if request.context.lower() == "cart":
-            if request.cafeteria_id is None:
+        if payload.context.lower() == "cart":
+            if payload.cafeteria_id is None:
                 raise HTTPException(
                     status_code=400, 
                     detail="You must provide a cafeteria_id when the context is 'cart'."
                 )
-            if request.cafeteria_id not in [1, 2, 3]:
+            if payload.cafeteria_id not in [1, 2, 3]:
                 raise HTTPException(
                     status_code=400, 
                     detail="Invalid cafeteria_id. Must be 1, 2, or 3."
                 )
 
-        # Determine Time Bucket for Contextual Fallback
-        hour = request.current_time.hour
+        #determine time bucket for contextual fallback
+        hour = payload.current_time.hour
         if 6 <= hour < 11:
             time_bucket = 'Morning'
         elif 11 <= hour < 16:
@@ -266,30 +278,30 @@ async def generate_recommendations(
         else:
             time_bucket = 'Evening'
 
-        # Check if User is Known 
-        user_known = request.user_id in user_matrix.index
+        #check if user is known 
+        user_known = payload.user_id in user_matrix.index
         
         if user_known:
-            # Extract user's taste vector
-            user_vector = user_matrix.loc[request.user_id].values.reshape(1, -1)
+            #extract user's taste vector
+            user_vector = user_matrix.loc[payload.user_id].values.reshape(1, -1)
             
-            # Find the 6 nearest neighbors (1 is the user + 5 actual neighbors)
+            #find the 6 nearest neighbors 
             distances, indices = knn.kneighbors(user_vector)
             neighbor_indices = indices[0][1:] 
             
-            # Get the IDs of the neighbors and their purchase history
+            #get the IDs of the neighbors and their purchase history
             neighbor_user_ids = user_matrix.index[neighbor_indices]
             neighbor_purchases = user_matrix.loc[neighbor_user_ids].sum(axis=0)
             
-            # Remove items the user has already bought
-            user_purchases = user_matrix.loc[request.user_id]
+            #remove items the user has already bought
+            user_purchases = user_matrix.loc[payload.user_id]
             items_already_bought = user_purchases[user_purchases > 0].index.tolist()
             new_suggestions = neighbor_purchases.drop(labels=items_already_bought)
             
-            # Sort by highest purchase count among neighbors
+            #sort by highest purchase count among neighbors
             top_new_items = new_suggestions.sort_values(ascending=False)
             
-            # Get the items that neighbors actually bought (count > 0)
+            #get the items that neighbors actually bought (count > 0)
             valid_knn_items = top_new_items[top_new_items > 0].index.tolist()
             
             for item in valid_knn_items:
@@ -299,8 +311,7 @@ async def generate_recommendations(
                     "reason": "People with similar tastes loved this!"
                 })
 
-        # Time-Based Fallback & Backfill
-        # If k-NN returns nothing or need more items to fill the limit
+        #time-based fallback and backfill
         for item in time_rules[time_bucket]:
             # prevent suggesting duplicates
             if not any(d['item_id'] == item for d in raw_item_suggestions):
@@ -310,37 +321,37 @@ async def generate_recommendations(
                     "reason": f"Popular choice for {time_bucket}!"
                 })
 
-        # Context Filter (Cart vs Homepage)
+        #context filter (cart vs homepage)
         final_suggestions = []
         for suggestion in raw_item_suggestions:
-            if len(final_suggestions) >= request.limit:
+            if len(final_suggestions) >= payload.limit:
                 break
                 
             item_id_str = str(suggestion["item_id"]) # JSON keys are strings
             item_cafeteria = canteen_map.get(item_id_str)
             
-            # If request is from the cart page, return items from the current cafeteria
-            if request.context.lower() == "cart":
-                if item_cafeteria == request.cafeteria_id:
+            #if request is from the cart page, return items from the current cafeteria
+            if payload.context.lower() == "cart":
+                if item_cafeteria == payload.cafeteria_id:
                     final_suggestions.append(suggestion)
-            # If from the homepage, return anything
+            #if from the homepage, return anything
             else:
                 final_suggestions.append(suggestion)
 
-        # Format the Response
+        #format the response
         recommendations = [
             RecommendationItem(
                 item_id=item["item_id"],
                 recommendation_type=item["type"],
                 confidence_score=round(0.95 - (idx * 0.05), 2),
                 reason=item["reason"],
-                context_data={"filtered_for_canteen": request.context.lower() == "cart"}
+                context_data={"filtered_for_canteen": payload.context.lower() == "cart"}
             ) for idx, item in enumerate(final_suggestions)
         ]
 
 
         return RecommendationResponse(
-            user_id=request.user_id,
+            user_id=payload.user_id,
             recommendations=recommendations,
             generated_at=datetime.now(),
             model_version="v2.0-knn-production"
@@ -351,68 +362,97 @@ async def generate_recommendations(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Recommendation pipeline failed: {str(e)}")
 
-# ==================== DISCOUNT GENERATION ENDPOINT ====================
+#---------------------discount generation endpoint----------------------------------
 @app.post("/api/v1/discounts", response_model=DiscountResponse)
+@limiter.limit("5/minute") #stricter limit bcz this is for the admin side
 async def generate_discounts(
-    request: DiscountRequest,
+    request: Request,
+    payload: DiscountRequest,
     api_key: str = Depends(verify_api_key)
 ):
     try:
-        # --- NEW VALIDATION BLOCK ---
-        # Check if ID is null
-        if request.cafeteria_id is None:
-            raise HTTPException(status_code=400, detail="Cafeteria ID cannot be null.")
+        if payload.cafeteria_id is None or not (1 <= payload.cafeteria_id <= 3):
+            raise HTTPException(status_code=400, detail="Invalid Cafeteria ID. Must be between 1 and 3.")
         
-        # Check if ID is within the valid range (1-3)
-        if not (1 <= request.cafeteria_id <= 3):
-            raise HTTPException(
-                status_code=400, 
-                detail=f"Invalid Cafeteria ID: {request.cafeteria_id}. Must be between 1 and 3."
-            )
-        
-        # 1. Setup
-        cid = str(request.cafeteria_id)
-        canteen_map = ml_resources.get("item_canteen_map", {})
+        cid = str(payload.cafeteria_id)
         combo_rules = ml_resources.get("combo_rules", {})
         failing_items = ml_resources.get("failing_items", {})
+        bogo_rules = ml_resources.get("bogo_rules", {})
         
         proposed_discounts = []
         used_items = set()
 
-        # 2. Process Combos
+        #process bogo (highest priority to clear stock)
+        current_bogos = bogo_rules.get(cid, [])
+        for bogo in current_bogos:
+            if len(proposed_discounts) >= payload.limit: break
+            buy_item = bogo["buy_item"]
+            get_item = bogo["get_item"]
+            bogo_type = bogo.get("bogo_type", "clearance")
+            
+            if buy_item not in used_items and get_item not in used_items:
+                reason = "Buy one get one free to clear stock!" if bogo_type == "clearance" else "Buy a favorite, try something new for free!"
+                
+                proposed_discounts.append(ProposedDiscount(
+                    discount_type=DiscountType.BOGO,
+                    target_item_id=buy_item,
+                    associated_item_id=get_item,
+                    suggested_value=100.0, # 100% off the second item
+                    reason=reason
+                ))
+                used_items.update([buy_item, get_item])
+
+        #process combos
         current_cafeteria_combos = combo_rules.get(cid, [])
         for combo in current_cafeteria_combos:
+            if len(proposed_discounts) >= payload.limit: break
             item_a, item_b = combo["item_a"], combo["item_b"]
-            if canteen_map.get(str(item_a)) == request.cafeteria_id and canteen_map.get(str(item_b)) == request.cafeteria_id:
-                if item_a not in used_items and item_b not in used_items:
-                    proposed_discounts.append(ProposedDiscount(
-                        discount_type=DiscountType.COMBO,
-                        target_item_id=item_a,
-                        associated_item_id=item_b,
-                        suggested_value=10.0,
-                        reason=f"Frequently bought with item {item_b}."
-                    ))
-                    used_items.update([item_a, item_b])
+            confidence = combo.get("confidence", 0.5)
+            
+            if item_a not in used_items and item_b not in used_items:
+                #business logic: lower confidence - higher discount to encourage the pair 
+                #formula: base 5% + up to 10% extra based on how weak the natural pairing is
+                dynamic_discount = round(5.0 + ((1.0 - confidence) * 10.0), 1)
+                
+                proposed_discounts.append(ProposedDiscount(
+                    discount_type=DiscountType.COMBO,
+                    target_item_id=item_a,
+                    associated_item_id=item_b,
+                    suggested_value=dynamic_discount,
+                    reason=f"Frequently bought together. Get {dynamic_discount}% off the bundle!"
+                ))
+                used_items.update([item_a, item_b])
 
-        # 3. Process Percentage
-        current_failing_items = failing_items.get(cid, [])
-        if isinstance(current_failing_items, dict):
-            current_failing_items = current_failing_items.get("items", [])
+        #process percentage (failing items)
+        current_failing = failing_items.get(cid, [])
+        
+        for item_data in current_failing:
+            if len(proposed_discounts) >= payload.limit: break
+            
+            #backward compatibility check just in case
+            if isinstance(item_data, dict):
+                item_id = item_data["item_id"]
+                severity = item_data.get("severity", 0.5)
+            else:
+                item_id = item_data
+                severity = 0.5
 
-        for item in current_failing_items:
-            if canteen_map.get(str(item)) == request.cafeteria_id:
-                if item not in used_items:
-                    proposed_discounts.append(ProposedDiscount(
-                        discount_type=DiscountType.PERCENTAGE,
-                        target_item_id=item,
-                        suggested_value=15.0,
-                        reason="Low sales volume detected."
-                    ))
-                    used_items.add(item)
+            if item_id not in used_items:
+                #business logic: higher severity (worse sales) = higher discount
+                #formula: base 10% + up to 25% extra based on severity score
+                dynamic_discount = round(10.0 + (severity * 25.0), 1)
+                
+                proposed_discounts.append(ProposedDiscount(
+                    discount_type=DiscountType.PERCENTAGE,
+                    target_item_id=item_id,
+                    associated_item_id=None,
+                    suggested_value=dynamic_discount,
+                    reason=f"Low sales volume. Recommended {dynamic_discount}% off to boost traction."
+                ))
+                used_items.add(item_id)
 
-        # 4. Final Response
         return DiscountResponse(
-            cafeteria_id=request.cafeteria_id,
+            cafeteria_id=payload.cafeteria_id,
             proposed_discounts=proposed_discounts,
             generated_at=datetime.now()
         )
@@ -422,20 +462,22 @@ async def generate_discounts(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Discount pipeline failed: {str(e)}")
 
-# ==================== REVIEW ANALYSIS ENDPOINT ====================
+#-------------------------review analysis endpoint----------------------------------
 @app.post("/api/v1/reviews/analyze", response_model=ReviewAnalysisResponse)
+@limiter.limit("10/minute")
 async def analyze_review(
-        request: ReviewAnalysisRequest,
+        request: Request,
+        payload: ReviewAnalysisRequest,
         api_key: str = Depends(verify_api_key)
 ):
     """Analyze review sentiment with Nonsense Filtering & Dynamic Confidence"""
 
     try:
-        text_lower = request.review_text.lower()
+        text_lower = payload.review_text.lower()
         tokens = word_tokenize(text_lower)
         
-        # nonsense check 
-        # Logic: If < 50% of the words are real English words, it's probably nonsense.
+        #nonsense check 
+        #logic: If < 50% of the words are real english words, its probably nonsense.
         meaningful_words = [w for w in tokens if w.isalpha() and len(w) > 2]
         
         if not meaningful_words:
@@ -444,10 +486,10 @@ async def analyze_review(
             valid_count = sum(1 for w in meaningful_words if w in ml_resources['english_vocab'])
             valid_word_ratio = valid_count / len(meaningful_words)
 
-        # Rejection Logic: If ratio is too low, return Low Confidence / Unapproved
+        #rejection logic: if ratio is too low, return low confidence / unapproved
         if len(meaningful_words) > 0 and valid_word_ratio < 0.4:
             return ReviewAnalysisResponse(
-                review_id=request.review_id,
+                review_id=payload.review_id,
                 sentiment_score=0.0,
                 sentiment_type=SentimentType.NEUTRAL,
                 keywords=[],
@@ -456,11 +498,11 @@ async def analyze_review(
                 analysis_notes="Flagged as potential gibberish/nonsense text."
             )
 
-        # sentiment analysis using VADER
-        scores = ml_resources['sia'].polarity_scores(request.review_text)
+        #sentiment analysis using VADER
+        scores = ml_resources['sia'].polarity_scores(payload.review_text)
         compound_score = scores['compound']
 
-        # Determine label
+        #determine label
         if compound_score >= 0.05:
             sentiment_type = SentimentType.POSITIVE
         elif compound_score <= -0.05:
@@ -468,31 +510,31 @@ async def analyze_review(
         else:
             sentiment_type = SentimentType.NEUTRAL
 
-        # dynamic confidence calculation
-        # Logic: The more intense the sentiment (closer to 1 or -1), the higher the confidence. 
-        # Neutral scores (around 0) are less confident.
+        #dynamic confidence calculation
+        #logic: the more intense the sentiment (closer to 1 or -1), the higher the confidence. 
+        #neutral scores (around 0) are less confident.
         confidence = 0.5 + (abs(compound_score) * 0.4)
         
-        # Boost confidence if the Star Rating matches the Sentiment
+        #boost confidence if the star rating matches the sentiment
         star_consistent = False
-        if (request.star_rating >= 4 and sentiment_type == SentimentType.POSITIVE):
+        if (payload.star_rating >= 4 and sentiment_type == SentimentType.POSITIVE):
             star_consistent = True
-        elif (request.star_rating <= 2 and sentiment_type == SentimentType.NEGATIVE):
+        elif (payload.star_rating <= 2 and sentiment_type == SentimentType.NEGATIVE):
             star_consistent = True
             
         if star_consistent:
             confidence = min(0.99, confidence + 0.1) 
             
-        # keyword extraction (frequency-based)
+        #keyword extraction (frequency-based)
         stop_words = set(stopwords.words('english'))
         filtered_words = [w for w in meaningful_words if w not in stop_words]
         keywords = [word for word, count in Counter(filtered_words).most_common(5)]
 
-        # approval logic
-        is_approved = (confidence > 0.6) and (not (sentiment_type == SentimentType.NEGATIVE and request.star_rating >= 4))
+        #approval logic
+        is_approved = (confidence > 0.6) and (not (sentiment_type == SentimentType.NEGATIVE and payload.star_rating >= 4))
 
         return ReviewAnalysisResponse(
-            review_id=request.review_id,
+            review_id=payload.review_id,
             sentiment_score=round(compound_score, 3),
             sentiment_type=sentiment_type,
             keywords=keywords,
