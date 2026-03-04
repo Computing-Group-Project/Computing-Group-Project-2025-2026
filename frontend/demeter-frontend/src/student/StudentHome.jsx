@@ -1,6 +1,6 @@
 import React from "react";
-import FoodCard from "../components/common/FoodCard";
-import CafeteriaCard from "../components/common/CafeteriaCard.jsx";
+import FoodCard from "../components/commen/FoodCard";
+import CafeteriaCard from "../components/commen/CafeteriaCard";
 
 // First row (Recommended)
 const recommendedItems = [
