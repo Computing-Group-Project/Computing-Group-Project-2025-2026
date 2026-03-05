@@ -2,9 +2,10 @@ package com.demeter.backend.orders.controller;
 
 import com.demeter.backend.orders.model.Order;
 import com.demeter.backend.orders.service.OrderService;
-import com.demeter.backend.shared.dto.ApiResponse;
+import com.demeter.backend.shared.dto.response.ApiResponse;
 import com.demeter.backend.shared.enums.OrderStatus;
 import com.demeter.backend.shared.constants.ApiResponseMessages;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class OrderController {
         return new ApiResponse<>(true, ApiResponseMessages.ORDER_PLACED, service.placeOrder(order));
     }
 
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     @PutMapping("/{id}/status")
     public ApiResponse<Order> updateStatus(@PathVariable Long id, @RequestParam OrderStatus status) {
         return new ApiResponse<>(true, ApiResponseMessages.ORDER_UPDATED, service.updateStatus(id, status));
@@ -33,6 +35,7 @@ public class OrderController {
         return new ApiResponse<>(true, ApiResponseMessages.ORDERS_FETCHED, service.getOrdersByUser(userId));
     }
 
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     @GetMapping
     public ApiResponse<List<Order>> getAllOrders() {
         return new ApiResponse<>(true, ApiResponseMessages.ALL_ORDERS_FETCHED, service.getAllOrders());

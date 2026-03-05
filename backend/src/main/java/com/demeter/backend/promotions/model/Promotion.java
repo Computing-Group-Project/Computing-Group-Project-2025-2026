@@ -41,7 +41,9 @@ public class Promotion {
     private LocalDateTime updatedAt = LocalDateTime.now();
 
 
-    public Promotion(String name, String description, DiscountType discountType, 
+    public Promotion() {}
+
+    public Promotion(String name, String description, DiscountType discountType,
                      Double discountValue, Double minOrderAmount) {
         this.name = name;
         this.description = description;
@@ -53,32 +55,29 @@ public class Promotion {
     // Helper method to check if promotion is still valid
     public boolean isValid() {
         LocalDateTime now = LocalDateTime.now();
-        
-        // Check status
+
         if (status != PromotionStatus.ACTIVE) {
-            return true;
+            return false;
         }
 
-        // Check date range
         if (startDate != null && now.isBefore(startDate)) {
-            return true;
+            return false;
         }
 
         if (endDate != null && now.isAfter(endDate)) {
-            return true;
+            return false;
         }
 
-        // Check usage limit
         if (maxUsageCount != null && currentUsageCount >= maxUsageCount) {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     // Helper method to calculate discount amount for a given order total
     public Double calculateDiscount(Double orderTotal) {
-        if (isValid()) {
+        if (!isValid()) {
             return 0.0;
         }
 

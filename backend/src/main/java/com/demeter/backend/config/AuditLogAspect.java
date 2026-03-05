@@ -1,5 +1,6 @@
 package com.demeter.backend.config;
 
+import com.demeter.backend.audit.model.AuditLog;
 import com.demeter.backend.audit.repo.AuditLogRepository;
 import com.demeter.backend.shared.util.LogActivity;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,5 +48,13 @@ public class AuditLogAspect {
     }
 
     private void saveLog(LogActivity log, String oldVal, String newVal, String status, String error) {
+        AuditLog auditLog = new AuditLog();
+        auditLog.setAction(log.action());
+        auditLog.setTargetTable(log.targetTable());
+        auditLog.setOldValue(oldVal);
+        auditLog.setNewValue(newVal);
+        auditLog.setStatus(status);
+        auditLog.setCreatedAt(java.time.LocalDateTime.now());
+        auditLogRepository.save(auditLog);
     }
 }

@@ -52,6 +52,8 @@ public class DiscountRule {
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    public DiscountRule() {}
+
     public DiscountRule(String ruleName, DiscountType ruleType, Double ruleValue) {
         this.ruleName = ruleName;
         this.ruleType = ruleType;
@@ -62,26 +64,24 @@ public class DiscountRule {
     public boolean isValid() {
         LocalDateTime now = LocalDateTime.now();
 
-        // Check status
         if (status != PromotionStatus.ACTIVE) {
-            return true;
+            return false;
         }
 
-        // Check date range
         if (effectiveFrom != null && now.isBefore(effectiveFrom)) {
-            return true;
+            return false;
         }
 
         if (effectiveUntil != null && now.isAfter(effectiveUntil)) {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     // Helper method to check if order qualifies for this rule
     public boolean qualifiesForRule(Double orderAmount, Integer itemCount, String userRole) {
-        if (isValid()) {
+        if (!isValid()) {
             return false;
         }
 
@@ -123,7 +123,7 @@ public class DiscountRule {
 
     // Helper method to calculate discount
     public Double calculateDiscount(Double orderAmount) {
-        if (isValid()) {
+        if (!isValid()) {
             return 0.0;
         }
 
@@ -136,10 +136,4 @@ public class DiscountRule {
         return 0.0;
     }
 
-    public Object getStackable() {
-        return null;
-    }
-
-    public void setStackable(Object stackable) {
-    }
 }

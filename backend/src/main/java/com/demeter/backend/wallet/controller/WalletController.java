@@ -8,6 +8,7 @@ import com.demeter.backend.wallet.dto.response.WalletTransactionResponse;
 import com.demeter.backend.wallet.service.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class WalletController {
 
     private final WalletService walletService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<WalletResponse>> createWallet(@RequestBody CreateWalletRequest request) {
         WalletResponse data = walletService.createWallet(request);
@@ -43,6 +45,7 @@ public class WalletController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Wallet balance fetched successfully", data));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/credit")
     public ResponseEntity<ApiResponse<WalletTransactionResponse>> credit(@RequestBody CreditRequest request) {
         WalletTransactionResponse data = walletService.credit(request);
@@ -67,12 +70,14 @@ public class WalletController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Wallet refunded successfully", data));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{walletId}/freeze")
     public ResponseEntity<ApiResponse<WalletResponse>> freeze(@PathVariable Long walletId) {
         WalletResponse data = walletService.freezeWallet(walletId);
         return ResponseEntity.ok(new ApiResponse<>(true, "Wallet frozen successfully", data));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{walletId}/unfreeze")
     public ResponseEntity<ApiResponse<WalletResponse>> unfreeze(@PathVariable Long walletId) {
         WalletResponse data = walletService.unfreezeWallet(walletId);

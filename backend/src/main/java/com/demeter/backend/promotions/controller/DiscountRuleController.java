@@ -5,6 +5,7 @@ import com.demeter.backend.promotions.model.DiscountRule;
 import com.demeter.backend.promotions.service.DiscountRuleService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class DiscountRuleController {
     }
 
     // Create a new discount rule
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<DiscountRuleDTO> createDiscountRule(@RequestBody DiscountRuleDTO ruleDTO) {
         DiscountRule rule = modelMapper.map(ruleDTO, DiscountRule.class);
@@ -81,6 +83,7 @@ public class DiscountRuleController {
     }
 
     // Update a discount rule
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<DiscountRuleDTO> updateDiscountRule(@PathVariable Long id, 
                                                               @RequestBody DiscountRuleDTO ruleDTO) {
@@ -90,6 +93,7 @@ public class DiscountRuleController {
     }
 
     // Delete a discount rule
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDiscountRule(@PathVariable Long id) {
         discountRuleService.deleteDiscountRule(id);
@@ -97,6 +101,7 @@ public class DiscountRuleController {
     }
 
     // Deactivate a discount rule
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/deactivate")
     public ResponseEntity<DiscountRuleDTO> deactivateDiscountRule(@PathVariable Long id) {
         DiscountRule deactivated = discountRuleService.deactivateDiscountRule(id);

@@ -5,6 +5,7 @@ import com.demeter.backend.promotions.model.PromoCode;
 import com.demeter.backend.promotions.service.PromoCodeService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class PromoCodeController {
     }
 
     // Create a new promo code
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<PromoCodeDTO> createPromoCode(@RequestBody PromoCodeDTO promoCodeDTO) {
         PromoCode promoCode = modelMapper.map(promoCodeDTO, PromoCode.class);
@@ -83,6 +85,7 @@ public class PromoCodeController {
     }
 
     // Update a promo code
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<PromoCodeDTO> updatePromoCode(@PathVariable Long id, 
                                                         @RequestBody PromoCodeDTO promoCodeDTO) {
@@ -92,6 +95,7 @@ public class PromoCodeController {
     }
 
     // Delete a promo code
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePromoCode(@PathVariable Long id) {
         promoCodeService.deletePromoCode(id);
@@ -99,6 +103,7 @@ public class PromoCodeController {
     }
 
     // Deactivate a promo code
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/deactivate")
     public ResponseEntity<PromoCodeDTO> deactivatePromoCode(@PathVariable Long id) {
         PromoCode deactivated = promoCodeService.deactivatePromoCode(id);

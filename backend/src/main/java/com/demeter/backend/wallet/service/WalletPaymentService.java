@@ -83,7 +83,7 @@ public class WalletPaymentService {
 
         // try default ACTIVE card
         var defaultCard = savedCardRepository.findFirstByUserIdAndIsDefaultTrueAndStatus(
-                userId, true, SavedCardStatus.ACTIVE
+                userId, SavedCardStatus.ACTIVE
         );
         if (defaultCard.isPresent()) {
             return defaultCard.get();

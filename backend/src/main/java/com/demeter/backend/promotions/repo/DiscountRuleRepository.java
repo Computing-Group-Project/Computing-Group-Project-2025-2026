@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface DiscountRuleRepository extends JpaRepository<DiscountRule, Long> {
     List<DiscountRule> findByStatus(PromotionStatus status);
-    List<DiscountRule> findByPromotionId(Long promotionId);
+    List<DiscountRule> findByPromotion_PromotionId(Long promotionId);
     List<DiscountRule> findByStatusAndEffectiveFromBeforeAndEffectiveUntilAfter(
             PromotionStatus status, LocalDateTime from, LocalDateTime until);
 }
