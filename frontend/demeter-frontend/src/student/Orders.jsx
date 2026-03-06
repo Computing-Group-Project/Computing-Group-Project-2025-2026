@@ -1,80 +1,147 @@
-const sampleOrders = [
-	{
-		id: 'OD-1284',
-		placedAt: 'Today, 10:42 AM',
-		status: 'Preparing',
-		total: 27,
-		items: ['Scholar\'s Scone x1', 'Void Latte x1'],
-	},
-	{
-		id: 'OD-1280',
-		placedAt: 'Yesterday, 3:11 PM',
-		status: 'Completed',
-		total: 18,
-		items: ['Nebula Noodles x1', 'Mineral Water x1'],
-	},
-	{
-		id: 'OD-1275',
-		placedAt: 'Mar 04, 9:04 AM',
-		status: 'Cancelled',
-		total: 12,
-		items: ['Scholar\'s Scone x1'],
-	},
-];
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { FaClock, FaCheckCircle, FaUtensils, FaBox, FaCheck } from "react-icons/fa";
 
-function Orders() {
-	const getStatusClasses = (status) => {
-		if (status === 'Preparing') {
-			return 'bg-amber-500/15 text-amber-300 border-amber-400/40';
-		}
+export default function Orders() {
 
-		if (status === 'Completed') {
-			return 'bg-emerald-500/15 text-emerald-300 border-emerald-400/40';
-		}
+  const location = useLocation();
+  const order = location.state;
 
-		return 'bg-rose-500/15 text-rose-300 border-rose-400/40';
-	};
+  const steps = [
+    { label: "Order Placed", icon: <FaClock /> },
+    { label: "Confirmed", icon: <FaCheckCircle /> },
+    { label: "Preparing", icon: <FaUtensils /> },
+    { label: "Ready for Pickup", icon: <FaBox /> },
+    { label: "Completed", icon: <FaCheck /> }
+  ];
 
-	return (
-		<main className="min-h-screen bg-slate-950 px-4 py-8 text-slate-100 md:px-8">
-			<div className="mx-auto max-w-6xl">
-				<header className="mb-7">
-					<h1 className="text-4xl font-bold tracking-tight text-white md:text-5xl">Your Orders</h1>
-					<p className="mt-2 text-lg text-slate-300">Track current and past cafeteria orders.</p>
-				</header>
+  const [currentStep, setCurrentStep] = useState(0);
 
-				<section className="space-y-4">
-					{sampleOrders.map((order) => (
-						<article
-							key={order.id}
-							className="rounded-3xl border border-slate-700 bg-slate-900/80 p-6 shadow-[0_10px_24px_rgba(0,0,0,0.28)]"
-						>
-							<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-								<div>
-									<p className="text-xl font-semibold text-white">Order {order.id}</p>
-									<p className="mt-1 text-sm text-slate-400">Placed: {order.placedAt}</p>
-									<ul className="mt-4 space-y-1 text-slate-200">
-										{order.items.map((item) => (
-											<li key={item}>{item}</li>
-										))}
-									</ul>
-								</div>
+  useEffect(() => {
 
-								<div className="sm:text-right">
-									<span
-										className={`inline-block rounded-full border px-3 py-1 text-sm font-semibold ${getStatusClasses(order.status)}`}
-									>
-										{order.status}
-									</span>
-									<p className="mt-4 text-3xl font-bold text-amber-300">GK {order.total}</p>
-								</div>
-							</div>
-						</article>
-					))}
-				</section>
-			</div>
-		</main>
-	);
+    let step = 0;
+
+    const interval = setInterval(() => {
+
+      step++;
+      setCurrentStep(step);
+
+      if (step === steps.length) {
+        clearInterval(interval);
+      }
+
+    }, 2500);
+
+    return () => clearInterval(interval);
+
+  }, []);
+
+  return (
+
+    <div className="w-full flex justify-center py-10">
+
+      <div className="w-full max-w-4xl px-8">
+
+        {/* Title */}
+        <h1 className="text-2xl font-semibold text-center text-white">
+          Order Tracking
+        </h1>
+
+        <p className="text-center text-sm mt-1 text-gray-400">
+          ID: #{order?.id || "unknown"}
+        </p>
+
+        {/* Progress Card */}
+        <div className="mt-8 bg-gray-800 border border-gray-700 p-8 rounded-xl shadow-lg">
+
+          <div className="flex items-center justify-between">
+
+            {steps.map((step, index) => {
+
+              const completed = index < currentStep;
+              const active = index === currentStep;
+
+              return (
+
+                <div key={index} className="flex flex-col items-center flex-1">
+
+                  {/* Circle */}
+                  <div
+                    className={`w-12 h-12 flex items-center justify-center rounded-full text-lg transition-all duration-500
+                    ${
+                      completed
+                        ? "bg-yellow-400 text-black shadow-md shadow-yellow-400/40"
+                        : active
+                        ? "bg-yellow-400 text-black animate-pulse shadow-md shadow-yellow-400/50"
+                        : "bg-gray-700 text-gray-400"
+                    }`}
+                  >
+                    {step.icon}
+                  </div>
+
+                  {/* Label */}
+                  <p className="mt-2 text-sm text-center text-gray-400">
+                    {step.label}
+                  </p>
+
+                  {/* Status */}
+                  {active && (
+                    <p className="text-yellow-400 text-xs mt-1">
+                      In Progress...
+                    </p>
+                  )}
+
+                  {completed && (
+                    <p className="text-green-500 text-xs mt-1">
+                      Completed
+                    </p>
+                  )}
+
+                </div>
+
+              );
+
+            })}
+
+          </div>
+
+        </div>
+
+        {/* Rate Button */}
+        <button className="mt-8 w-full py-3 rounded-lg bg-yellow-400 hover:opacity-90 transition text-black font-semibold">
+          ⭐ Rate Your Order
+        </button>
+
+        {/* Order Details */}
+        <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-lg">
+
+          <h2 className="text-lg font-semibold mb-4 text-white">
+            Order Details
+          </h2>
+
+          {order?.items?.map((item, index) => (
+
+            <div key={index} className="flex justify-between mb-3 text-gray-200">
+
+              <span>{item.quantity}x {item.name}</span>
+              <span>GK {item.price}</span>
+
+            </div>
+
+          ))}
+
+          <div className="border-t border-gray-700 pt-3 flex justify-between font-semibold text-white">
+
+            <span>Total Paid</span>
+            <span>GK {order?.total}</span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  );
 }
-
-export default Orders;
