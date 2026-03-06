@@ -50,12 +50,12 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     @Override
     @Transactional
-    public WalletTransaction markFailed(Long transactionId, String failureReason) {
+    public void markFailed(Long transactionId, String failureReason) {
         WalletTransaction tx = getById(transactionId);
         tx.setStatus(TransactionStatus.FAILED);
         tx.setFailureReason(failureReason);
         tx.setUpdatedAt(Instant.now());
-        return walletTransactionRepository.save(tx);
+        walletTransactionRepository.save(tx);
     }
 
     @Override
@@ -66,6 +66,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     @Override
     public List<WalletTransaction> listByWalletId(Long walletId) {
-        return walletTransactionRepository.findByWalletIdOrderByCreatedAtDesc(walletId);
+        return walletTransactionRepository
+                .findByWalletIdOrderByCreatedAtDesc(walletId);
     }
 }

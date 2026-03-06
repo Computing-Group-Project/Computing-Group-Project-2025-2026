@@ -1,0 +1,95 @@
+package com.demeter.backend.ai.client;
+
+import com.demeter.backend.ai.config.AIServiceConfig;
+import com.demeter.backend.ai.dto.Recommendation.RecommendationRequest;
+import com.demeter.backend.ai.dto.Recommendation.RecommendationResponse;
+import com.demeter.backend.ai.exception.AIServiceException;
+import com.demeter.backend.ai.exception.AIServiceUnavailableException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.*;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.*;
+
+@Slf4j
+@Component
+public class AIServiceClient {
+
+    private final RestTemplate restTemplate;
+    private final AIServiceConfig config;
+
+    public AIServiceClient(@Qualifier("aiServiceRestTemplate") RestTemplate restTemplate,
+                           AIServiceConfig config) {
+        this.restTemplate = restTemplate;
+        this.config = config;
+    }
+
+    private HttpHeaders buildHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-API-Key", config.getApiKey());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
+
+    public RecommendationResponse getRecommendations(RecommendationRequest request) {
+        return executeWithRetry(() -> {
+            try {
+                log.info("Calling AI Service for recommendations - User: {}", request.getUserId());
+
+                HttpEntity<RecommendationRequest> entity = new HttpEntity<>(request, buildHeaders());
+                ResponseEntity<RecommendationResponse> response = restTemplate.exchange(
+                        config.getBaseUrl() + config.getRecommendationsEndpoint(),
+                        HttpMethod.POST,
+                        entity,
+                        RecommendationResponse.class
+                );
+
+                return response.getBody();
+
+            } catch (HttpClientErrorException | HttpServerErrorException e) {
+                throw new AIServiceException(
+                        "Failed to get recommendations: " + e.getMessage(),
+                        e,
+                        "RecommendationService",
+                        e.getStatusCode().value()
+                );
+            } catch (ResourceAccessException e) {
+                throw new AIServiceUnavailableException(
+                        "Cannot connect to AI Service",
+                        e,
+                        "RecommendationService"
+                );
+            }
+        }, "getRecommendations");
+    }
+
+    private <T> T executeWithRetry(SupplierWithException<T> operation, String opName) {
+        int attempts = 0;
+        Exception lastException = null;
+
+        while (attempts < config.getMaxRetries()) {
+            try {
+                return operation.get();
+            } catch (Exception e) {
+                lastException = e;
+                attempts++;
+
+                if (attempts < config.getMaxRetries()) {
+                    log.warn("Retry attempt {} for {}", attempts, opName);
+                    try {
+                        Thread.sleep(config.getRetryDelayMs() * attempts);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new AIServiceException("Retry interrupted", ie, opName, 500);
+                    }
+                }
+            }
+        }
+        throw (AIServiceUnavailableException) lastException;
+    }
+
+    @FunctionalInterface
+    private interface SupplierWithException<T> {
+        T get() throws Exception;
+    }
+}

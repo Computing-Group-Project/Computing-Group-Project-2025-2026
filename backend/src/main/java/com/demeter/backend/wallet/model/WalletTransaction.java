@@ -1,18 +1,22 @@
 package com.demeter.backend.wallet.model;
 
-import com.demeter.backend.wallet.enums.TransactionStatus;
-import com.demeter.backend.wallet.enums.TransactionType;
+import com.demeter.backend.wallet.enums.*;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
 
 @Entity
-@Table(name = "wallet_transactions",
+@Table(
+        name = "wallet_transactions",
         indexes = {
                 @Index(name = "idx_wallet_id", columnList = "wallet_id"),
-                @Index(name = "idx_reference_id", columnList = "reference_id")
-        })
+                @Index(name = "idx_reference_id", columnList = "reference_id"),
+                @Index(name = "idx_wallet_created", columnList = "wallet_id, created_at"),
+                @Index(name = "idx_category_created", columnList = "category, created_at"),
+                @Index(name = "idx_status_created", columnList = "status, created_at")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -38,6 +42,16 @@ public class WalletTransaction {
     @Column(nullable = false)
     private TransactionStatus status;
 
+    // NEW
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionCategory category;
+
+    // NEW
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionSource source;
+
     @Column(name = "reference_id")
     private String referenceId;
 
@@ -52,4 +66,20 @@ public class WalletTransaction {
 
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = (this.createdAt == null) ? Instant.now() : this.createdAt;
+        this.updatedAt = Instant.now();
+
+        // safe defaults
+        this.category = (this.category == null) ? TransactionCategory.ADJUSTMENT : this.category;
+        this.source = (this.source == null) ? TransactionSource.SYSTEM : this.source;
+        this.status = (this.status == null) ? TransactionStatus.PENDING : this.status;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = Instant.now();
+    }
 }

@@ -1,0 +1,351 @@
+/* =========================================
+   TOP BAR
+========================================= */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+}
+
+.top-bar.dark {
+    background: #0f172a;
+    color: #fff;
+}
+
+.top-bar.light {
+    background: #f9fafb;
+    color: #111827;
+}
+
+.top-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #facc15;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.top-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    font-size: 18px;
+}
+
+.badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: red;
+    color: white;
+    font-size: 10px;
+    border-radius: 50%;
+    padding: 2px 6px;
+}
+
+.balance-box {
+    background: #334155;
+    padding: 6px 12px;
+    border-radius: 8px;
+}
+
+.plus-btn {
+    background: transparent;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    margin-left: 6px;
+}
+
+.profile-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #1e293b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* =========================================
+   SUBTOTAL LINE
+========================================= */
+.summary-row.subtotal {
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+
+.checkout-page {
+    min-height: 100vh;
+    padding: 40px 60px;
+    transition: background 0.3s ease;
+}
+
+.checkout-container {
+    display: flex;
+    gap: 40px;
+}
+
+/* =========================================
+   LEFT SECTION
+========================================= */
+
+.checkout-left {
+    flex: 2;
+}
+
+.checkout-title {
+    font-size: 28px;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.cart-item {
+    display: flex;
+    gap: 20px;
+    border-radius: 18px;
+    padding: 20px;
+    align-items: center;
+    transition: 0.3s ease;
+}
+
+.cart-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 16px;
+    object-fit: cover;
+}
+
+.cart-details {
+    flex: 1;
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cart-footer {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.qty {
+    font-size: 14px;
+}
+
+.remove-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+/* =========================================
+   PAIR BOX
+========================================= */
+
+.pair-box {
+    margin-top: 30px;
+    padding: 20px;
+    border-radius: 18px;
+}
+
+.pair-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.pair-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pair-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pair-info img {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.add-btn {
+    padding: 8px 18px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+/* =========================================
+   RIGHT SECTION
+========================================= */
+
+.checkout-right {
+    flex: 1;
+}
+
+.summary-card {
+    padding: 30px;
+    border-radius: 20px;
+    transition: 0.3s ease;
+}
+
+.summary-card h2 {
+    margin-bottom: 20px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.summary-row.total {
+    font-weight: 600;
+    font-size: 18px;
+}
+.summary-row.subtotal {
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+.balance-box {
+    margin: 20px 0;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.pay-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    transition: 0.3s ease;
+}
+
+.pay-btn img {
+    width: 20px;
+}
+
+/* =========================================
+   DARK MODE
+========================================= */
+
+.checkout-page.dark {
+    background: #0f172a;
+    color: #ffffff;
+}
+
+.checkout-page.dark .cart-item {
+    background: #1e293b;
+}
+
+.checkout-page.dark .pair-box {
+    background: #1e293b;
+    border: 1px solid #2d3b52;
+}
+
+.checkout-page.dark .summary-card {
+    background: #1e293b;
+}
+
+.checkout-page.dark .balance-box {
+    background: #334155;
+}
+
+.checkout-page.dark .add-btn {
+    background: #334155;
+    color: white;
+}
+
+.checkout-page.dark .pay-btn {
+    background: #facc15;
+    color: black;
+}
+
+/* =========================================
+   LIGHT MODE
+========================================= */
+
+.checkout-page.light {
+    background: #f4f6f9;
+    color: #111827;
+}
+
+.checkout-page.light .cart-item {
+    background: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.checkout-page.light .pair-box {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+}
+
+.checkout-page.light .summary-card {
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.checkout-page.light .balance-box {
+    background: #e5e7eb;
+}
+
+.checkout-page.light .add-btn {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+.checkout-page.light .pay-btn {
+    background: #c9a227;
+    color: white;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 992px) {
+    .checkout-container {
+        flex-direction: column;
+    }
+}
