@@ -17,7 +17,7 @@ const Navbar = ({
   onProfileClick,
   onExitClick,
 
-  height = "h-[60px]",
+  height = "h-[70px]",
   className = "",
   walletClassName = "",
   iconClassName = "",
@@ -26,15 +26,20 @@ const Navbar = ({
 }) => {
   return (
     <nav
-      className={`
-        w-full ${height}
-        bg-gradient-to-r from-slate-900 to-slate-800
-        flex justify-between items-center
-        px-6 md:px-10
-        text-white
-        ${className}
-      `}
-    >
+     
+  
+  className={`
+    sticky top-0 z-50
+    w-full ${height}
+    bg-gray-900/60
+    backdrop-blur-md
+    border-b border-white/10
+    flex justify-between items-center
+    px-6 md:px-10
+    text-white
+    ${className}
+  `}
+  >
       {/* LEFT */}
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-lime-400 to-cyan-400 flex items-center justify-center font-bold text-slate-900">
