@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "../components/commen/Navbar";
+import Navbar from "../components/common/Navbar";
 
 export default function StudentLayout({ children }) {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
     const root = window.document.documentElement;
-    if (darkMode) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  }, [darkMode]);
+    root.classList.add("dark");
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-900 text-white transition-colors duration-300">
+
       <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
-      <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8">
+
+      <main className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8">
         {children}
       </main>
+
     </div>
   );
 }
