@@ -13,7 +13,7 @@ public interface SavedCardRepository extends JpaRepository<SavedCard, Long> {
 
     Optional<SavedCard> findByIdAndUserId(Long id, Long userId);
 
-    Optional<SavedCard> findFirstByUserIdAndIsDefaultTrueAndStatus(Long userId, boolean isDefault, SavedCardStatus status);
+    Optional<SavedCard> findFirstByUserIdAndIsDefaultTrueAndStatus(Long userId, SavedCardStatus status);
 
     Optional<SavedCard> findFirstByUserIdAndStatusOrderByIdDesc(Long userId, SavedCardStatus status);
 

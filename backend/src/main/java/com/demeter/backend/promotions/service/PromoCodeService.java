@@ -53,7 +53,7 @@ public class PromoCodeService {
 
     // Get promo codes for a promotion
     public List<PromoCode> getPromoCodesByPromotion(Long promotionId) {
-        return promoCodeRepository.findByPromotionId(promotionId);
+        return promoCodeRepository.findByPromotion_PromotionId(promotionId);
     }
 
     // Update a promo code

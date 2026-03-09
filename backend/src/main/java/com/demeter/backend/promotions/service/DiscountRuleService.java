@@ -49,7 +49,7 @@ public class DiscountRuleService {
 
     // Get discount rules for a promotion
     public List<DiscountRule> getDiscountRulesByPromotion(Long promotionId) {
-        return discountRuleRepository.findByPromotionId(promotionId);
+        return discountRuleRepository.findByPromotion_PromotionId(promotionId);
     }
 
     // Update a discount rule
@@ -66,7 +66,7 @@ public class DiscountRuleService {
             existing.setEligibleItemCategories(rule.getEligibleItemCategories());
             existing.setEligibleUserRoles(rule.getEligibleUserRoles());
             existing.setStatus(rule.getStatus());
-            existing.setStackable(rule.getStackable());
+            existing.setIsStackable(rule.getIsStackable());
             existing.setEffectiveFrom(rule.getEffectiveFrom());
             existing.setEffectiveUntil(rule.getEffectiveUntil());
             existing.setUpdatedAt(LocalDateTime.now());
@@ -101,7 +101,7 @@ public class DiscountRuleService {
         Double totalDiscount = 0.0;
 
         for (DiscountRule rule : applicableRules) {
-            if ((boolean) rule.getStackable()) {
+            if (Boolean.TRUE.equals(rule.getIsStackable())) {
                 totalDiscount += rule.calculateDiscount(orderAmount - totalDiscount);
             }
         }

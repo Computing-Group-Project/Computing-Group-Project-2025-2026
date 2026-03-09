@@ -39,6 +39,8 @@ public class PromoCode {
     private LocalDateTime updatedAt = LocalDateTime.now();
 
 
+    public PromoCode() {}
+
     public PromoCode(String code, Promotion promotion) {
         this.code = code;
         this.promotion = promotion;
@@ -68,7 +70,7 @@ public class PromoCode {
         }
 
         // Check if underlying promotion is valid
-        return promotion == null || !promotion.isValid();
+        return promotion == null || promotion.isValid();
     }
 
     // Helper method to get discount from associated promotion

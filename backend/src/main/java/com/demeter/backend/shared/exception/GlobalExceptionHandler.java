@@ -2,6 +2,7 @@ package com.demeter.backend.shared.exception;
 
 import com.demeter.backend.shared.dto.response.ErrorResponse;
 import com.demeter.backend.shared.enums.ErrorCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +20,26 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(response, code.getStatus());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(IllegalArgumentException ex) {
+        ErrorResponse response = new ErrorResponse(
+                ErrorCode.BAD_REQUEST.name(),
+                ex.getMessage(),
+                HttpStatus.BAD_REQUEST.value()
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleConflict(IllegalStateException ex) {
+        ErrorResponse response = new ErrorResponse(
+                "CONFLICT",
+                ex.getMessage(),
+                HttpStatus.CONFLICT.value()
+        );
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(Exception.class)

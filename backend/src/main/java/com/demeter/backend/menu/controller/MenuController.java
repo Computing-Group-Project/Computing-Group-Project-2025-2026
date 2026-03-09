@@ -2,7 +2,7 @@ package com.demeter.backend.menu.controller;
 
 import com.demeter.backend.menu.model.Menu;
 import com.demeter.backend.menu.service.MenuService;
-import com.demeter.backend.shared.dto.ApiResponse;
+import com.demeter.backend.shared.dto.response.ApiResponse;
 import com.demeter.backend.shared.constants.ApiResponseMessages;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
