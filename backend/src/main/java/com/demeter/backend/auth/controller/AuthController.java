@@ -2,7 +2,7 @@ package com.demeter.backend.auth.controller;
 
 import com.demeter.backend.users.dto.response.UserResponseDTO;
 import com.demeter.backend.users.model.User;
-import com.demeter.backend.auth.serive.AuthService;
+import com.demeter.backend.auth.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

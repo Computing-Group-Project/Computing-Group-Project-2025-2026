@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 
 public enum ErrorCode {
     ORDER_NOT_FOUND("Order not found", HttpStatus.NOT_FOUND),
+    MENU_NOT_FOUND("Menu item not found", HttpStatus.NOT_FOUND),
+    CATEGORY_NOT_FOUND("Category not found", HttpStatus.NOT_FOUND),
     BAD_REQUEST("Invalid request", HttpStatus.BAD_REQUEST),
     INTERNAL_ERROR("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 

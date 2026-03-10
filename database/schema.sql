@@ -21,7 +21,7 @@ CREATE TABLE Cafeteria (
                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE User (
+CREATE TABLE `User` (
                       user_id INT AUTO_INCREMENT PRIMARY KEY,
                       username VARCHAR(100) NOT NULL UNIQUE,
                       role ENUM('STUDENT','STAFF','ADMIN') NOT NULL,
@@ -29,6 +29,20 @@ CREATE TABLE User (
                       krakens_balance DECIMAL(10,2) DEFAULT 0,
                       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                       last_login TIMESTAMP NULL
+);
+
+CREATE TABLE Student (
+                         user_id INT PRIMARY KEY,
+                         dietary_preferences VARCHAR(255),
+                         university_id VARCHAR(50),
+                         FOREIGN KEY (user_id) REFERENCES `User`(user_id)
+);
+
+CREATE TABLE Staff (
+                       user_id INT PRIMARY KEY,
+                       assigned_cafeteria_id INT NOT NULL,
+                       FOREIGN KEY (user_id) REFERENCES `User`(user_id),
+                       FOREIGN KEY (assigned_cafeteria_id) REFERENCES Cafeteria(cafeteria_id)
 );
 
 CREATE TABLE MenuItem (
@@ -58,7 +72,7 @@ CREATE TABLE AuditLog (
                           ip_address VARCHAR(45),
                           status VARCHAR(50),
                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                          FOREIGN KEY (user_id) REFERENCES User(user_id)
+                          FOREIGN KEY (user_id) REFERENCES `User`(user_id)
 );
 
 CREATE TABLE TransactionHistory (
@@ -71,7 +85,7 @@ CREATE TABLE TransactionHistory (
                                     reference_id INT,
                                     description TEXT,
                                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                                    FOREIGN KEY (user_id) REFERENCES User(user_id)
+                                    FOREIGN KEY (user_id) REFERENCES `User`(user_id)
 );
 
 CREATE TABLE `Order` (
@@ -84,7 +98,7 @@ CREATE TABLE `Order` (
                          confirmed_at TIMESTAMP NULL,
                          completed_at TIMESTAMP NULL,
                          special_instructions TEXT,
-                         FOREIGN KEY (user_id) REFERENCES User(user_id),
+                         FOREIGN KEY (user_id) REFERENCES `User`(user_id),
                          FOREIGN KEY (cafeteria_id) REFERENCES Cafeteria(cafeteria_id)
 );
 
@@ -97,7 +111,8 @@ CREATE TABLE Payment (
                          payment_method VARCHAR(50),
                          transaction_status VARCHAR(50),
                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                         FOREIGN KEY (user_id) REFERENCES User(user_id),
+                         UNIQUE KEY (order_id),
+                         FOREIGN KEY (user_id) REFERENCES `User`(user_id),
                          FOREIGN KEY (order_id) REFERENCES `Order`(order_id)
 );
 
@@ -113,7 +128,8 @@ CREATE TABLE Review (
                         keywords TEXT,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         expires_at TIMESTAMP NULL,
-                        FOREIGN KEY (user_id) REFERENCES User(user_id),
+                        UNIQUE KEY (order_id),
+                        FOREIGN KEY (user_id) REFERENCES `User`(user_id),
                         FOREIGN KEY (cafeteria_id) REFERENCES Cafeteria(cafeteria_id),
                         FOREIGN KEY (order_id) REFERENCES `Order`(order_id)
 );
@@ -132,7 +148,7 @@ CREATE TABLE Discount (
                           is_active BOOLEAN DEFAULT TRUE,
                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                           FOREIGN KEY (cafeteria_id) REFERENCES Cafeteria(cafeteria_id),
-                          FOREIGN KEY (approved_by) REFERENCES User(user_id)
+                          FOREIGN KEY (approved_by) REFERENCES `User`(user_id)
 );
 
 CREATE TABLE Recommendation (
@@ -140,12 +156,12 @@ CREATE TABLE Recommendation (
                                 user_id INT NOT NULL,
                                 item_id INT NOT NULL,
                                 recommendation_type VARCHAR(50),
-                                confidence_score DECIMAL(5,2),
+                                confidence_score DECIMAL(3,2),
                                 context_data TEXT,
                                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                                 shown_at TIMESTAMP NULL,
                                 clicked BOOLEAN DEFAULT FALSE,
-                                FOREIGN KEY (user_id) REFERENCES User(user_id),
+                                FOREIGN KEY (user_id) REFERENCES `User`(user_id),
                                 FOREIGN KEY (item_id) REFERENCES MenuItem(item_id)
 );
 

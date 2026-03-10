@@ -8,9 +8,12 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface WalletTransactionRepository extends JpaRepository<WalletTransaction, Long> {
+
+    List<WalletTransaction> findByWalletIdOrderByCreatedAtDesc(Long walletId);
 
     Optional<WalletTransaction> findByReferenceId(String referenceId);
 
@@ -19,11 +22,11 @@ public interface WalletTransactionRepository extends JpaRepository<WalletTransac
             TransactionCategory category
     );
 
-    Page<WalletTransaction> findByWallet_IdOrderByCreatedAtDesc(Long walletId, Pageable pageable);
+    Page<WalletTransaction> findByWalletIdOrderByCreatedAtDesc(Long walletId, Pageable pageable);
 
     @Query("""
         SELECT t FROM WalletTransaction t
-        WHERE t.wallet.id = :walletId
+        WHERE t.walletId = :walletId
           AND (:type IS NULL OR t.type = :type)
           AND (:status IS NULL OR t.status = :status)
           AND (:category IS NULL OR t.category = :category)
@@ -49,7 +52,7 @@ public interface WalletTransactionRepository extends JpaRepository<WalletTransac
 
     @Query("""
         SELECT t FROM WalletTransaction t
-        WHERE t.wallet.id = :walletId
+        WHERE t.walletId = :walletId
           AND (
                 t.category = com.demeter.backend.wallet.enums.TransactionCategory.MICRO
                 OR (
@@ -83,7 +86,7 @@ public interface WalletTransactionRepository extends JpaRepository<WalletTransac
 
     @Query("""
         SELECT t FROM WalletTransaction t
-        WHERE (:walletId IS NULL OR t.wallet.id = :walletId)
+        WHERE (:walletId IS NULL OR t.walletId = :walletId)
           AND (:type IS NULL OR t.type = :type)
           AND (:status IS NULL OR t.status = :status)
           AND (:category IS NULL OR t.category = :category)

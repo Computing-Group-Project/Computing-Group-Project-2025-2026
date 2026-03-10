@@ -1,36 +1,35 @@
 import React, { useState, useEffect } from 'react';
 
-const PromotionForm = ({ promotionId, onSave, onCancel }) => {
+const PromotionForm = ({ discountId, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+    cafeteriaId: 1,
     discountType: 'PERCENTAGE',
     discountValue: 0,
-    minOrderAmount: 0,
-    maxUsageCount: null,
-    status: 'ACTIVE',
+    applicableItems: '',
+    requirements: '',
+    aiGenerated: false,
     startDate: '',
     endDate: '',
-    cafeteriaId: null,
+    isActive: true,
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (promotionId) {
-      fetchPromotion(promotionId);
+    if (discountId) {
+      fetchDiscount(discountId);
     }
-  }, [promotionId]);
+  }, [discountId]);
 
-  const fetchPromotion = async (id) => {
+  const fetchDiscount = async (id) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/promotions/${id}`);
+      const response = await fetch(`http://localhost:8080/api/discounts/${id}`);
       const data = await response.json();
       setFormData(data);
     } catch (err) {
-      setError('Failed to load promotion');
+      setError('Failed to load discount');
       console.error(err);
     } finally {
       setLoading(false);
@@ -38,10 +37,10 @@ const PromotionForm = ({ promotionId, onSave, onCancel }) => {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: value === '' ? null : value,
+      [name]: type === 'checkbox' ? checked : value === '' ? null : value,
     });
   };
 
@@ -51,10 +50,10 @@ const PromotionForm = ({ promotionId, onSave, onCancel }) => {
     setError(null);
 
     try {
-      const method = promotionId ? 'PUT' : 'POST';
-      const url = promotionId
-        ? `http://localhost:8080/api/promotions/${promotionId}`
-        : 'http://localhost:8080/api/promotions';
+      const method = discountId ? 'PUT' : 'POST';
+      const url = discountId
+        ? `http://localhost:8080/api/discounts/${discountId}`
+        : 'http://localhost:8080/api/discounts';
 
       const response = await fetch(url, {
         method,
@@ -65,11 +64,11 @@ const PromotionForm = ({ promotionId, onSave, onCancel }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save promotion');
+        throw new Error('Failed to save discount');
       }
 
-      const savedPromotion = await response.json();
-      onSave?.(savedPromotion);
+      const savedDiscount = await response.json();
+      onSave?.(savedDiscount);
     } catch (err) {
       setError(err.message);
       console.error(err);
@@ -81,7 +80,7 @@ const PromotionForm = ({ promotionId, onSave, onCancel }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h3 className="text-lg font-semibold mb-4">
-        {promotionId ? 'Edit Promotion' : 'Create Promotion'}
+        {discountId ? 'Edit Discount' : 'Create Discount'}
       </h3>
 
       {error && (
@@ -94,16 +93,16 @@ const PromotionForm = ({ promotionId, onSave, onCancel }) => {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Name *
+              Cafeteria ID *
             </label>
             <input
-              type="text"
-              name="name"
-              value={formData.name}
+              type="number"
+              name="cafeteriaId"
+              value={formData.cafeteriaId || ''}
               onChange={handleChange}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Promotion name"
+              placeholder="Cafeteria ID"
             />
           </div>
 
@@ -118,23 +117,11 @@ const PromotionForm = ({ promotionId, onSave, onCancel }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="PERCENTAGE">Percentage (%)</option>
-              <option value="FIXED_AMOUNT">Fixed Amount (Rs.)</option>
+              <option value="FIXED_AMOUNT">Fixed Amount (GK)</option>
+              <option value="BOGO">Buy One Get One Free</option>
+              <option value="COMBO_FIXED_PRICE">Combo Fixed Price</option>
             </select>
           </div>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Promotion description"
-            rows="3"
-          />
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -156,18 +143,31 @@ const PromotionForm = ({ promotionId, onSave, onCancel }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Min Order Amount (Rs.)
+              Applicable Items
             </label>
             <input
-              type="number"
-              name="minOrderAmount"
-              value={formData.minOrderAmount}
+              type="text"
+              name="applicableItems"
+              value={formData.applicableItems || ''}
               onChange={handleChange}
-              step="0.01"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Minimum amount"
+              placeholder="e.g., [1, 2, 3] or ALL"
             />
           </div>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Requirements
+          </label>
+          <textarea
+            name="requirements"
+            value={formData.requirements || ''}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., Min Order Value: 50 GK"
+            rows="2"
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -176,9 +176,9 @@ const PromotionForm = ({ promotionId, onSave, onCancel }) => {
               Start Date
             </label>
             <input
-              type="datetime-local"
+              type="date"
               name="startDate"
-              value={formData.startDate}
+              value={formData.startDate || ''}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -189,45 +189,26 @@ const PromotionForm = ({ promotionId, onSave, onCancel }) => {
               End Date
             </label>
             <input
-              type="datetime-local"
+              type="date"
               name="endDate"
-              value={formData.endDate}
+              value={formData.endDate || ''}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Max Usage Count
-            </label>
+        <div className="mb-4">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
             <input
-              type="number"
-              name="maxUsageCount"
-              value={formData.maxUsageCount || ''}
+              type="checkbox"
+              name="isActive"
+              checked={formData.isActive}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Unlimited if empty"
+              className="rounded"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
-            </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-              <option value="EXPIRED">Expired</option>
-            </select>
-          </div>
+            Active
+          </label>
         </div>
 
         <div className="flex gap-3 justify-end">

@@ -5,6 +5,7 @@ import com.demeter.backend.shared.enums.OrderStatus;
 import com.demeter.backend.orders.repo.OrderRepository;
 import com.demeter.backend.shared.util.LogActivity; // Added import
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class OrderService {
     }
 
     // Task 08: Capture the full order object upon placement
+    @Transactional
     @LogActivity(action = "PLACE_ORDER", targetTable = "ORDER")
     public Order placeOrder(Order order) {
         order.setStatus(OrderStatus.PLACED);
@@ -24,6 +26,7 @@ public class OrderService {
     }
 
     // Task 08: Capture the transition of order statuses
+    @Transactional
     @LogActivity(action = "UPDATE_ORDER_STATUS", targetTable = "ORDER")
     public Order updateStatus(Long id, OrderStatus status) {
         Order order = repo.findById(id)

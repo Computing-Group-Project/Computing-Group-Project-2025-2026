@@ -1,62 +1,43 @@
 import React, { useState } from 'react';
-import { PromotionList, PromoCodeList, DiscountCalculator } from '../promotions';
+import { PromotionList, DiscountCalculator } from '../components/promotions';
 
 const PromotionManagementConsole = () => {
-  const [activeTab, setActiveTab] = useState('promotions');
+  const [activeTab, setActiveTab] = useState('discounts');
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-800 mb-8">Promotion Management</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-8">Discount Management</h1>
 
         <div className="flex gap-4 mb-6">
           <button
-            onClick={() => setActiveTab('promotions')}
+            onClick={() => setActiveTab('discounts')}
             className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-              activeTab === 'promotions'
+              activeTab === 'discounts'
                 ? 'bg-blue-500 text-white'
                 : 'bg-white text-gray-700 hover:bg-gray-50'
             }`}
           >
-            Promotions
+            Discounts
           </button>
           <button
-            onClick={() => setActiveTab('codes')}
+            onClick={() => setActiveTab('active')}
             className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-              activeTab === 'codes'
+              activeTab === 'active'
                 ? 'bg-blue-500 text-white'
                 : 'bg-white text-gray-700 hover:bg-gray-50'
             }`}
           >
-            Promo Codes
-          </button>
-          <button
-            onClick={() => setActiveTab('calculator')}
-            className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-              activeTab === 'calculator'
-                ? 'bg-blue-500 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            Discount Calculator
+            Active Discounts by Cafeteria
           </button>
         </div>
 
-        {activeTab === 'promotions' && <PromotionList />}
-        {activeTab === 'codes' && <PromoCodeList />}
-        {activeTab === 'calculator' && (
-          <div className="grid grid-cols-3 gap-6">
-            <div className="col-span-2">
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold mb-4">Test Discount Calculation</h2>
-                <div className="space-y-4">
-                  <p className="text-gray-600">
-                    Use this tool to preview how discounts will be calculated for different order amounts.
-                  </p>
-                </div>
-              </div>
-            </div>
-            <DiscountCalculator orderAmount={1000} itemCount={5} userRole="STUDENT" />
+        {activeTab === 'discounts' && <PromotionList />}
+        {activeTab === 'active' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <DiscountCalculator cafeteriaId={1} />
+            <DiscountCalculator cafeteriaId={2} />
+            <DiscountCalculator cafeteriaId={3} />
           </div>
         )}
       </div>
