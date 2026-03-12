@@ -1,202 +1,253 @@
-import { useMemo, useState } from 'react';
-
-const initialCartItems = [
-	{
-		id: 1,
-		name: "Scholar's Scone",
-		price: 12,
-		quantity: 1,
-		image:
-			'https://images.unsplash.com/photo-1608198093002-ad4e005484ec?auto=format&fit=crop&w=600&q=80',
-	},
-];
+import { useMemo } from "react";
+import StudentLayout from "../layouts/StudentLayout.jsx";
+import { useCart } from "../context/CartContext.jsx";
+import { useWallet } from "../context/WalletContext.jsx";
+import { Trash2, Sparkles } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
 const suggestionItem = {
-	id: 201,
-	name: 'Void Latte',
-	price: 15,
-	image:
-		'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80',
+  id: 201,
+  title: "Void Latte",
+  price: 15,
+  image:
+    "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80",
 };
 
-function Cart() {
-	const [cartItems, setCartItems] = useState(initialCartItems);
-	const currentBalance = 450;
+export default function Cart() {
 
-	const subtotal = useMemo(
-		() => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
-		[cartItems],
-	);
+  const { cart, addToCart, removeFromCart, clearCart } = useCart();
+  const { balance, deductFunds } = useWallet();
+  const navigate = useNavigate();
 
-	const handleIncrease = (itemId) => {
-		setCartItems((prevItems) =>
-			prevItems.map((item) =>
-				item.id === itemId ? { ...item, quantity: item.quantity + 1 } : item,
-			),
-		);
-	};
+  const subtotal = useMemo(
+    () => cart.reduce((sum, item) => sum + item.total, 0),
+    [cart]
+  );
 
-	const handleDecrease = (itemId) => {
-		setCartItems((prevItems) =>
-			prevItems
-				.map((item) =>
-					item.id === itemId
-						? { ...item, quantity: Math.max(0, item.quantity - 1) }
-						: item,
-				)
-				.filter((item) => item.quantity > 0),
-		);
-	};
+  const addSuggestion = () => {
+    addToCart({
+      ...suggestionItem,
+      qty: 1,
+      total: suggestionItem.price,
+    });
+  };
 
-	const handleRemove = (itemId) => {
-		setCartItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
-	};
+  const handleCheckout = () => {
 
-	const handleAddSuggestion = () => {
-		setCartItems((prevItems) => {
-			const existing = prevItems.find((item) => item.id === suggestionItem.id);
-			if (existing) {
-				return prevItems.map((item) =>
-					item.id === suggestionItem.id
-						? { ...item, quantity: item.quantity + 1 }
-						: item,
-				);
-			}
+    if (cart.length === 0) {
+      alert("Your cart is empty!");
+      return;
+    }
 
-			return [...prevItems, { ...suggestionItem, quantity: 1 }];
-		});
-	};
+    if (balance < subtotal) {
+      alert("Not enough GK in your wallet!");
+      return;
+    }
 
-	return (
-		<main className="min-h-screen bg-slate-950 px-4 py-8 text-slate-100 md:px-8">
-			<div className="mx-auto w-full max-w-7xl">
-				<h1 className="mb-6 text-4xl font-bold tracking-tight text-white md:text-5xl">
-					Shopping Cart
-				</h1>
+    deductFunds(subtotal);
 
-				<div className="grid gap-8 lg:grid-cols-[1.55fr_1fr]">
-					<section className="space-y-6">
-						{cartItems.length === 0 ? (
-							<div className="rounded-3xl border border-slate-700 bg-slate-900/70 p-8 text-center text-slate-300">
-								Your cart is empty. Add something tasty to continue.
-							</div>
-						) : (
-							cartItems.map((item) => (
-								<article
-									key={item.id}
-									className="overflow-hidden rounded-3xl border border-slate-700 bg-slate-900/80 shadow-[0_10px_30px_rgba(0,0,0,0.28)]"
-								>
-									<div className="grid min-h-44 grid-cols-[120px_1fr_auto] gap-4 sm:grid-cols-[160px_1fr_auto]">
-										<img
-											src={item.image}
-											alt={item.name}
-											className="h-full w-full object-cover"
-										/>
+    const order = {
+      id: Math.floor(Math.random() * 100000),
+      items: cart,
+      total: subtotal
+    };
 
-										<div className="flex flex-col justify-between py-5">
-											<div>
-												<h2 className="text-xl font-semibold text-white">{item.name}</h2>
-												<p className="mt-2 text-lg text-slate-300">Qty: {item.quantity}</p>
-											</div>
+    clearCart();
 
-											<div className="mt-4 flex items-center gap-2">
-												<button
-													type="button"
-													onClick={() => handleDecrease(item.id)}
-													className="h-9 w-9 rounded-lg border border-slate-500 bg-slate-800 text-lg font-semibold text-white transition hover:bg-slate-700"
-													aria-label={`Decrease quantity of ${item.name}`}
-												>
-													-
-												</button>
-												<span className="w-8 text-center text-base font-semibold text-slate-100">
-													{item.quantity}
-												</span>
-												<button
-													type="button"
-													onClick={() => handleIncrease(item.id)}
-													className="h-9 w-9 rounded-lg border border-slate-500 bg-slate-800 text-lg font-semibold text-white transition hover:bg-slate-700"
-													aria-label={`Increase quantity of ${item.name}`}
-												>
-													+
-												</button>
-											</div>
-										</div>
+    navigate("/orders", { state: order });
 
-										<div className="flex min-w-28 flex-col items-end justify-between px-5 py-5">
-											<p className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-												GK {item.price * item.quantity}
-											</p>
+  };
 
-											<button
-												type="button"
-												onClick={() => handleRemove(item.id)}
-												className="rounded-lg border border-rose-500/40 px-3 py-1 text-sm font-semibold text-rose-400 transition hover:bg-rose-500/10"
-											>
-												Remove
-											</button>
-										</div>
-									</div>
-								</article>
-							))
-						)}
+  return (
+    <StudentLayout>
 
-						<section className="rounded-3xl border border-cyan-700/35 bg-gradient-to-r from-emerald-950/40 via-cyan-950/30 to-slate-900 p-5">
-							<p className="mb-4 text-2xl font-semibold text-white">Pairs well with your order</p>
+      <div className="w-screen relative left-1/2 -translate-x-1/2 px-6">
 
-							<div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
-								<div className="flex items-center gap-4">
-									<img
-										src={suggestionItem.image}
-										alt={suggestionItem.name}
-										className="h-16 w-16 rounded-2xl object-cover"
-									/>
-									<div>
-										<p className="text-xl font-semibold text-white">{suggestionItem.name}</p>
-										<p className="text-lg text-slate-300">GK {suggestionItem.price}</p>
-									</div>
-								</div>
+        {cart.length === 0 ? (
 
-								<button
-									type="button"
-									onClick={handleAddSuggestion}
-									className="rounded-xl bg-slate-700 px-6 py-3 text-lg font-semibold text-slate-100 transition hover:bg-slate-600"
-								>
-									Add
-								</button>
-							</div>
-						</section>
-					</section>
+          <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
 
-					<aside className="h-fit rounded-3xl border border-slate-700 bg-slate-900/85 p-8 shadow-[0_14px_30px_rgba(0,0,0,0.28)] lg:sticky lg:top-6">
-						<h2 className="text-4xl font-bold text-white">Order Summary</h2>
+            <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mb-6">
+              <Sparkles size={32} className="text-slate-400" />
+            </div>
 
-						<div className="mt-8 border-b border-slate-700 pb-4">
-							<div className="flex items-center justify-between text-2xl">
-								<span className="text-slate-300">Subtotal</span>
-								<span className="font-semibold text-white">GK {subtotal}</span>
-							</div>
-						</div>
+            <h2 className="text-2xl font-semibold text-white mb-2">
+              Your cart is empty
+            </h2>
 
-						<div className="mt-4 flex items-center justify-between text-4xl font-bold">
-							<span className="text-white">Total</span>
-							<span className="text-amber-300">GK {subtotal}</span>
-						</div>
+            <p className="text-slate-400 mb-6">
+              Looks like you haven't added anything yet.
+            </p>
 
-						<div className="mt-7 rounded-2xl bg-slate-700/60 px-5 py-4 text-center text-xl text-slate-200">
-							Current Balance: <span className="font-bold text-white">GK {currentBalance}</span>
-						</div>
+            <Link
+              to="/"
+              className="bg-teal-400 hover:bg-teal-500 text-slate-900 font-semibold px-6 py-3 rounded-xl"
+            >
+              Browse Cafeterias
+            </Link>
 
-						<button
-							type="button"
-							className="mt-7 w-full rounded-2xl bg-yellow-400 px-6 py-4 text-2xl font-bold text-black transition hover:bg-yellow-300"
-						>
-							Pay with Gold Krakens
-						</button>
-					</aside>
-				</div>
-			</div>
-		</main>
-	);
+          </div>
+
+        ) : (
+
+          <>
+            <h1 className="text-2xl font-semibold text-white mb-8 tracking-tight">
+              Shopping Cart
+            </h1>
+
+            <div className="grid lg:grid-cols-[1.65fr_1fr] gap-10">
+
+              {/* LEFT SIDE */}
+              <div className="space-y-6">
+
+                {cart.map((item, index) => (
+
+                  <div
+                    key={index}
+                    className="
+                    flex items-stretch
+                    bg-slate-800/90
+                    border border-slate-700
+                    rounded-2xl
+                    overflow-hidden
+                    shadow-lg
+                    "
+                  >
+
+                    <div className="w-24">
+                      <img
+                        src={item.image}
+                        alt={item.title}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+
+                    <div className="flex flex-1 items-center justify-between px-6 py-5">
+
+                      <div className="space-y-1">
+
+                        <h2 className="text-lg font-semibold text-white">
+                          {item.title}
+                        </h2>
+
+                        {item.extras?.length > 0 && (
+                          <p className="text-sm text-slate-400">
+                            + {item.extras.length} extras
+                          </p>
+                        )}
+
+                        <p className="text-sm text-slate-400">
+                          Qty: {item.qty}
+                        </p>
+
+                      </div>
+
+                      <div className="flex items-center gap-6">
+
+                        <p className="text-lg font-semibold text-white">
+                          GK {item.total}
+                        </p>
+
+                        <Trash2
+                          onClick={() => removeFromCart(index)}
+                          size={18}
+                          className="text-red-400 hover:text-red-500 cursor-pointer"
+                        />
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                ))}
+
+                {/* Suggestion */}
+                <div className="rounded-2xl border border-teal-500/40 bg-gradient-to-r from-emerald-950/40 via-cyan-950/30 to-slate-900 px-6 py-5 space-y-4 shadow-lg">
+
+                  <div className="flex items-center gap-2 text-teal-400">
+                    <Sparkles size={18} />
+                    <p className="font-semibold">
+                      Pairs well with your order
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+
+                    <div className="flex items-center gap-4">
+
+                      <img
+                        src={suggestionItem.image}
+                        alt={suggestionItem.title}
+                        className="w-12 h-12 rounded-lg object-cover"
+                      />
+
+                      <div>
+                        <p className="text-white font-semibold">
+                          {suggestionItem.title}
+                        </p>
+
+                        <p className="text-slate-400 text-sm">
+                          GK {suggestionItem.price}
+                        </p>
+                      </div>
+
+                    </div>
+
+                    <button
+                      onClick={addSuggestion}
+                      className="bg-slate-700 hover:bg-slate-600 px-6 py-2 rounded-xl text-white"
+                    >
+                      Add
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* RIGHT SIDE */}
+              <div className="bg-slate-800/90 border border-slate-700 rounded-2xl p-8 shadow-xl h-fit">
+
+                <h2 className="text-xl font-semibold text-white mb-6">
+                  Order Summary
+                </h2>
+
+                <div className="flex justify-between text-slate-400 mb-4">
+                  <span>Subtotal</span>
+                  <span>GK {subtotal}</span>
+                </div>
+
+                <div className="border-t border-slate-700 my-4"></div>
+
+                <div className="flex justify-between text-xl font-bold text-white mb-6">
+                  <span>Total</span>
+                  <span className="text-yellow-400">
+                    GK {subtotal}
+                  </span>
+                </div>
+
+                <div className="bg-slate-700/60 rounded-xl py-3 text-center text-slate-300 mb-6">
+                  Current Balance: <b className="text-white">GK {balance}</b>
+                </div>
+
+                <button
+                  onClick={handleCheckout}
+                  className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-3 rounded-xl"
+                >
+                  Pay with Gold Krakens
+                </button>
+
+              </div>
+
+            </div>
+
+          </>
+        )}
+
+      </div>
+
+    </StudentLayout>
+  );
 }
-
-export default Cart;
