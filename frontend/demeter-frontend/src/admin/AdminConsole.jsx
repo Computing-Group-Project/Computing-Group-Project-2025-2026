@@ -1,16 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
 import StaffCard from '../components/admin/StaffCard';
 import WalletTable from '../components/admin/WalletTable';
 
 function AdminConsole() {
+  const navigate = useNavigate();
   // We get the current theme and the function to change it from our Context
   const { theme, toggleTheme } = useTheme();
+
+  useEffect(() => {
+    const staff = JSON.parse(localStorage.getItem('staff'));
+    if (!staff || staff.role !== 'Admin') {
+      navigate('/login');
+    }
+  }, []);
   // Tracks if we are looking at 'staff' or 'wallets'
   const [activeTab, setActiveTab] = useState('staff');
   // Controls if the 'Add Staff' form is visible
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [staffName, setStaffName] = useState('');
+  const [newStaffData, setNewStaffData] = useState({ name: '', id: '', status: 'Active' });
   // staffList
   const [staffList, setStaffList] = useState([
     { id: 'u2', name: 'Sarah Staff', status: 'Active', joinedDate: 'Today' },
@@ -20,15 +29,9 @@ function AdminConsole() {
   // Adding a new staff member to the list
   const handleAddStaff = (e) => {
     e.preventDefault();
-    if (staffName.trim()) {
-      const newStaff = {
-        name: staffName,
-        id: `u${staffList.length + 3}`,
-        status: 'Active',
-        joinedDate: 'Today'
-      };
-      setStaffList([...staffList, newStaff]);
-      setStaffName('');
+    if (newStaffData.name.trim() && newStaffData.id.trim()) {
+      setStaffList([...staffList, { ...newStaffData, joinedDate: 'Today' }]);
+      setNewStaffData({ name: '', id: '', status: 'Active' });
       setIsModalOpen(false);
     }
   };
@@ -79,7 +82,13 @@ function AdminConsole() {
               </button>
 
               {/* Logout */}
-              <button className="p-2 text-red-500 hover:text-red-600 transition-colors">
+              <button
+                onClick={() => {
+                  localStorage.removeItem('staff');
+                  navigate('/login');
+                }}
+                className="p-2 text-red-500 hover:text-red-600 transition-colors"
+              >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
@@ -124,6 +133,12 @@ function AdminConsole() {
             >
               Student Wallets
             </button>
+            <button
+              onClick={() => navigate('/admin/promotions')}
+              className="px-6 py-2 rounded-full font-medium transition-all bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text"
+            >
+              Promotions
+            </button>
           </div>
         </div>
 
@@ -153,51 +168,82 @@ function AdminConsole() {
               </button>
             </div>
 
-            {/* Add Staff Form */}
+            {/* Add Staff Modal */}
             {isModalOpen && (
-              <div className="bg-white dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-6 mb-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-4">
-                  Add New Staff Member
-                </h3>
-                <form onSubmit={handleAddStaff}>
-                  <div className="flex items-end gap-3">
-                    <div className="flex-1">
-                      <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        value={staffName}
-                        onChange={(e) => setStaffName(e.target.value)}
-                        placeholder="e.g. John Doe"
-                        className="w-full px-4 py-2.5 border border-light-border dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-light-text dark:text-dark-text placeholder-light-textMuted dark:placeholder-dark-textMuted focus:outline-none focus:ring-0 focus:border-light-border dark:focus:border-dark-border"
-                      />
+              <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setIsModalOpen(false)}>
+                <div
+                  className="bg-white dark:bg-dark-card rounded-2xl max-w-md w-full p-8 border border-light-border dark:border-dark-border shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h2 className="text-2xl font-bold text-light-text dark:text-dark-text mb-6">
+                    Add New Staff Member
+                  </h2>
+
+                  <form onSubmit={handleAddStaff}>
+                    <div className="space-y-5">
+                      <div>
+                        <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newStaffData.name}
+                          onChange={(e) => setNewStaffData({ ...newStaffData, name: e.target.value })}
+                          placeholder="e.g. John Doe"
+                          className="w-full px-4 py-3 border border-light-border dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-light-text dark:text-dark-text placeholder-light-textMuted dark:placeholder-dark-textMuted focus:ring-2 focus:ring-light-accent dark:focus:ring-dark-accent focus:border-transparent transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
+                          Staff ID
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={newStaffData.id}
+                          onChange={(e) => setNewStaffData({ ...newStaffData, id: e.target.value })}
+                          placeholder="e.g. u7"
+                          className="w-full px-4 py-3 border border-light-border dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-light-text dark:text-dark-text placeholder-light-textMuted dark:placeholder-dark-textMuted focus:ring-2 focus:ring-light-accent dark:focus:ring-dark-accent focus:border-transparent transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
+                          Status
+                        </label>
+                        <select
+                          value={newStaffData.status}
+                          onChange={(e) => setNewStaffData({ ...newStaffData, status: e.target.value })}
+                          className="w-full px-4 py-3 border border-light-border dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-light-text dark:text-dark-text focus:ring-2 focus:ring-light-accent dark:focus:ring-dark-accent focus:border-transparent transition-all"
+                        >
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                        </select>
+                      </div>
                     </div>
-                    {/* Create Account Button */}
-                    <button
-                      type="submit"
-                      disabled={!staffName.trim()}
-                      className={
-                        staffName.trim()
-                          ? 'px-6 py-2.5 rounded-lg font-medium transition-colors bg-light-accent dark:bg-dark-accent text-gray-800 dark:text-white hover:opacity-90 cursor-pointer'
-                          : 'px-6 py-2.5 rounded-lg font-medium transition-colors bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                      }
-                    >
-                      Create Account
-                    </button>
-                    {/* Cancel Button*/}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsModalOpen(false);
-                        setStaffName('');
-                      }}
-                      className="px-6 py-2.5 text-light-text dark:text-dark-text rounded-lg font-medium transition-colors hover:bg-gray-50 dark:hover:bg-dark-bg"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
+
+                    <div className="flex gap-3 mt-8">
+                      <button
+                        type="submit"
+                        className="flex-1 px-6 py-3 rounded-lg font-medium transition-colors bg-light-accent dark:bg-dark-accent text-gray-800 dark:text-white hover:opacity-90"
+                      >
+                        Create Account
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsModalOpen(false);
+                          setNewStaffData({ name: '', id: '', status: 'Active' });
+                        }}
+                        className="px-6 py-3 border border-light-border dark:border-dark-border text-light-text dark:text-dark-text rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors font-medium"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
 

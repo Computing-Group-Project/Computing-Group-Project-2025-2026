@@ -1,6 +1,6 @@
 import StudentLayout from "../layouts/StudentLayout.jsx";
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { FaClock, FaCheckCircle, FaUtensils, FaBox, FaCheck, FaStar } from "react-icons/fa";
 
 export default function Orders() {
@@ -47,8 +47,16 @@ export default function Orders() {
   if (!order) {
     return (
       <StudentLayout>
-        <div className="text-white text-center mt-20">
-          No order found. Please place an order first.
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <p className="text-white text-lg mb-4">
+            No order found. Please place an order first.
+          </p>
+          <Link
+            to="/"
+            className="bg-teal-400 hover:bg-teal-500 text-slate-900 font-semibold px-6 py-3 rounded-xl"
+          >
+            Browse Cafeterias
+          </Link>
         </div>
       </StudentLayout>
     );
