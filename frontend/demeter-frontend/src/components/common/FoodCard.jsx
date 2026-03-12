@@ -20,12 +20,12 @@ const FoodCard = ({
       className={`
       group
       w-full
-      bg-slate-800
+      bg-white dark:bg-slate-800
       rounded-2xl
       overflow-hidden
       shadow-md
-      text-white
-      border border-slate-700
+      text-gray-900 dark:text-white
+      border border-gray-200 dark:border-slate-700
       transition-all duration-300
       hover:-translate-y-1
       hover:shadow-xl
@@ -50,7 +50,7 @@ const FoodCard = ({
       </div>
 
       {/* CONTENT */}
-      <div className={`${isMenu ? "p-4" : "p-5"} group-hover:bg-slate-700/40 transition-colors`}>
+      <div className={`${isMenu ? "p-4" : "p-5"} group-hover:bg-gray-50 dark:group-hover:bg-slate-700/40 transition-colors`}>
 
         {/* TITLE + PRICE */}
         <div className={`flex justify-between items-start ${isMenu ? "mb-1" : "mb-2"}`}>
@@ -66,7 +66,7 @@ const FoodCard = ({
         </div>
 
         {/* DESCRIPTION */}
-        <p className={`text-slate-400 ${isMenu ? "text-xs mb-2" : "text-sm mb-3"}`}>
+        <p className={`text-gray-500 dark:text-slate-400 ${isMenu ? "text-xs mb-2" : "text-sm mb-3"}`}>
           {description}
         </p>
 
@@ -76,7 +76,7 @@ const FoodCard = ({
             {(Array.isArray(badge) ? badge : [badge]).map((tag, i) => (
               <span
                 key={i}
-                className="text-[10px] px-2 py-0.5 rounded bg-slate-700/60 text-slate-200"
+                className="text-[10px] px-2 py-0.5 rounded bg-gray-100 dark:bg-slate-700/60 text-gray-600 dark:text-slate-200"
               >
                 {tag.toUpperCase()}
               </span>
@@ -97,7 +97,7 @@ const FoodCard = ({
                   e.stopPropagation();
                   onClick();
                 }}
-                className="text-sm text-white hover:text-cyan-400 flex items-center gap-2"
+                className="text-sm text-gray-700 dark:text-white hover:text-cyan-500 dark:hover:text-cyan-400 flex items-center gap-2"
               >
                 {buttonText}
                 <span className="transition-transform duration-300 group-hover:translate-x-1">
@@ -115,7 +115,7 @@ const FoodCard = ({
               e.stopPropagation();
               onClick();
             }}
-            className="mt-1 w-full py-1.5 rounded-lg bg-slate-700 hover:bg-cyan-500 hover:text-slate-900 transition text-sm font-medium"
+            className="mt-1 w-full py-1.5 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-cyan-500 hover:text-white dark:hover:text-slate-900 transition text-sm font-medium"
           >
             {buttonText}
           </button>

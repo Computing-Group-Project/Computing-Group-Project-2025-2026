@@ -29,12 +29,12 @@ export default function CafeteriaCard({ cafe }) {
       group
       overflow-hidden
       rounded-2xl
-      bg-slate-800
+      bg-white dark:bg-slate-800
       shadow-md
       transition-all duration-300
       hover:-translate-y-1
       hover:shadow-xl
-      border border-slate-700
+      border border-gray-200 dark:border-slate-700
       "
     >
 
@@ -84,20 +84,20 @@ export default function CafeteriaCard({ cafe }) {
 
 
       {/* BODY */}
-      <div className="p-6 transition-colors duration-300 group-hover:bg-slate-700/40">
+      <div className="p-6 transition-colors duration-300 group-hover:bg-gray-50 dark:group-hover:bg-slate-700/40">
 
         {/* rating */}
         <Stars value={cafe.rating} />
 
         {/* description */}
-        <p className="mt-4 text-slate-400">
+        <p className="mt-4 text-gray-500 dark:text-slate-400">
           {cafe.description}
         </p>
 
-        <hr className="my-5 border-slate-700" />
+        <hr className="my-5 border-gray-200 dark:border-slate-700" />
 
         {/* popular items */}
-        <p className="text-xs font-semibold tracking-wider text-slate-400">
+        <p className="text-xs font-semibold tracking-wider text-gray-500 dark:text-slate-400">
           POPULAR ITEMS
         </p>
 
@@ -108,7 +108,7 @@ export default function CafeteriaCard({ cafe }) {
               key={index}
               className="flex items-center justify-between"
             >
-              <span className="text-white">
+              <span className="text-gray-900 dark:text-white">
                 {item.name}
               </span>
 
@@ -128,14 +128,14 @@ export default function CafeteriaCard({ cafe }) {
           mt-6
           w-full
           rounded-xl
-          bg-slate-700
+          bg-gray-100 dark:bg-slate-700
           px-4
           py-3
           font-semibold
-          text-white
+          text-gray-900 dark:text-white
           transition
           hover:bg-cyan-500
-          hover:text-slate-900
+          hover:text-white dark:hover:text-slate-900
           "
         >
           View Menu

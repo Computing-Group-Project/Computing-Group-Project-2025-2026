@@ -5,7 +5,6 @@ import { GraduationCap, Shield, ChefHat } from "lucide-react";
 export default function Login() {
   const navigate = useNavigate();
   const [studentId, setStudentId] = useState("");
-  const [staffId, setStaffId] = useState("");
 
   // Predefined student accounts
   const students = {
@@ -75,8 +74,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#1f2a37] to-[#334155]">
-      <div className="w-[430px] bg-[#1e293b] border border-[#334155] shadow-2xl rounded-2xl p-10 text-white relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gradient-to-br dark:from-[#1f2a37] dark:to-[#334155] transition-colors">
+      <div className="w-[90vw] max-w-[430px] bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] shadow-2xl rounded-2xl p-6 sm:p-10 text-gray-900 dark:text-white relative overflow-hidden">
 
         {/* top glow border */}
         <div className="absolute top-0 left-0 w-full h-[3px] bg-teal-400 rounded-t-2xl"></div>
@@ -89,13 +88,13 @@ export default function Login() {
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl font-semibold text-center">Demeter</h1>
-        <p className="text-center text-sm text-gray-400 mt-1 mb-8">
+        <h1 className="text-3xl font-semibold text-center text-gray-900 dark:text-white">Demeter</h1>
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-1 mb-8">
           Bastion University Smart Cafeteria
         </p>
 
         {/* Label */}
-        <label className="text-sm text-gray-300 mb-2 block">University ID</label>
+        <label className="text-sm text-gray-600 dark:text-gray-300 mb-2 block">University ID</label>
 
         {/* Input */}
         <input
@@ -103,7 +102,7 @@ export default function Login() {
           placeholder="e.g. 2024-STUD-001"
           value={studentId}
           onChange={(e) => setStudentId(e.target.value)}
-          className="w-full p-3 rounded-lg border border-[#334155] bg-[#0f172a] text-sm focus:outline-none focus:border-teal-400 mb-5"
+          className="w-full p-3 rounded-lg border border-gray-300 dark:border-[#334155] bg-gray-50 dark:bg-[#0f172a] text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-teal-400 mb-5"
         />
 
         {/* Login Button */}
@@ -116,23 +115,23 @@ export default function Login() {
 
         {/* Divider */}
         <div className="flex items-center my-8">
-          <div className="flex-1 h-[1px] bg-[#334155]"></div>
-          <span className="px-4 text-xs tracking-widest text-gray-400">STAFF ACCESS</span>
-          <div className="flex-1 h-[1px] bg-[#334155]"></div>
+          <div className="flex-1 h-[1px] bg-gray-300 dark:bg-[#334155]"></div>
+          <span className="px-4 text-xs tracking-widest text-gray-500 dark:text-gray-400">STAFF ACCESS</span>
+          <div className="flex-1 h-[1px] bg-gray-300 dark:bg-[#334155]"></div>
         </div>
 
         {/* Staff + Admin */}
         <div className="flex gap-4">
           <button
             onClick={() => handleStaffLogin("S1001")}
-            className="flex items-center justify-center gap-2 flex-1 border border-[#334155] rounded-lg py-3 hover:border-teal-400 transition"
+            className="flex items-center justify-center gap-2 flex-1 border border-gray-300 dark:border-[#334155] text-gray-700 dark:text-white rounded-lg py-3 hover:border-teal-400 transition"
           >
             <ChefHat size={18}/> Staff
           </button>
 
           <button
             onClick={() => handleStaffLogin("A1001")}
-            className="flex items-center justify-center gap-2 flex-1 border border-[#334155] rounded-lg py-3 hover:border-teal-400 transition"
+            className="flex items-center justify-center gap-2 flex-1 border border-gray-300 dark:border-[#334155] text-gray-700 dark:text-white rounded-lg py-3 hover:border-teal-400 transition"
           >
             <Shield size={18}/> Admin
           </button>

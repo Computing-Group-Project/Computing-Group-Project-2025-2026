@@ -67,15 +67,15 @@ export default function Cart() {
 
           <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
 
-            <div className="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center mb-6">
-              <Sparkles size={32} className="text-slate-400" />
+            <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center mb-6">
+              <Sparkles size={32} className="text-gray-400 dark:text-slate-400" />
             </div>
 
-            <h2 className="text-2xl font-semibold text-white mb-2">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
               Your cart is empty
             </h2>
 
-            <p className="text-slate-400 mb-6">
+            <p className="text-gray-500 dark:text-slate-400 mb-6">
               Looks like you haven't added anything yet.
             </p>
 
@@ -91,7 +91,7 @@ export default function Cart() {
         ) : (
 
           <>
-            <h1 className="text-2xl font-semibold text-white mb-8 tracking-tight">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-8 tracking-tight">
               Shopping Cart
             </h1>
 
@@ -106,8 +106,8 @@ export default function Cart() {
                     key={index}
                     className="
                     flex items-stretch
-                    bg-slate-800/90
-                    border border-slate-700
+                    bg-white dark:bg-slate-800/90
+                    border border-gray-200 dark:border-slate-700
                     rounded-2xl
                     overflow-hidden
                     shadow-lg
@@ -126,17 +126,17 @@ export default function Cart() {
 
                       <div className="space-y-1">
 
-                        <h2 className="text-lg font-semibold text-white">
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                           {item.title}
                         </h2>
 
                         {item.extras?.length > 0 && (
-                          <p className="text-sm text-slate-400">
+                          <p className="text-sm text-gray-500 dark:text-slate-400">
                             + {item.extras.length} extras
                           </p>
                         )}
 
-                        <p className="text-sm text-slate-400">
+                        <p className="text-sm text-gray-500 dark:text-slate-400">
                           Qty: {item.qty}
                         </p>
 
@@ -144,7 +144,7 @@ export default function Cart() {
 
                       <div className="flex items-center gap-6">
 
-                        <p className="text-lg font-semibold text-white">
+                        <p className="text-lg font-semibold text-gray-900 dark:text-white">
                           GK {item.total}
                         </p>
 
@@ -163,9 +163,9 @@ export default function Cart() {
                 ))}
 
                 {/* Suggestion */}
-                <div className="rounded-2xl border border-teal-500/40 bg-gradient-to-r from-emerald-950/40 via-cyan-950/30 to-slate-900 px-6 py-5 space-y-4 shadow-lg">
+                <div className="rounded-2xl border border-teal-200 dark:border-teal-500/40 bg-teal-50 dark:bg-gradient-to-r dark:from-emerald-950/40 dark:via-cyan-950/30 dark:to-slate-900 px-6 py-5 space-y-4 shadow-lg">
 
-                  <div className="flex items-center gap-2 text-teal-400">
+                  <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400">
                     <Sparkles size={18} />
                     <p className="font-semibold">
                       Pairs well with your order
@@ -183,11 +183,11 @@ export default function Cart() {
                       />
 
                       <div>
-                        <p className="text-white font-semibold">
+                        <p className="text-gray-900 dark:text-white font-semibold">
                           {suggestionItem.title}
                         </p>
 
-                        <p className="text-slate-400 text-sm">
+                        <p className="text-gray-500 dark:text-slate-400 text-sm">
                           GK {suggestionItem.price}
                         </p>
                       </div>
@@ -196,7 +196,7 @@ export default function Cart() {
 
                     <button
                       onClick={addSuggestion}
-                      className="bg-slate-700 hover:bg-slate-600 px-6 py-2 rounded-xl text-white"
+                      className="bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 px-6 py-2 rounded-xl text-gray-900 dark:text-white"
                     >
                       Add
                     </button>
@@ -208,28 +208,28 @@ export default function Cart() {
               </div>
 
               {/* RIGHT SIDE */}
-              <div className="bg-slate-800/90 border border-slate-700 rounded-2xl p-8 shadow-xl h-fit">
+              <div className="bg-white dark:bg-slate-800/90 border border-gray-200 dark:border-slate-700 rounded-2xl p-8 shadow-xl h-fit">
 
-                <h2 className="text-xl font-semibold text-white mb-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                   Order Summary
                 </h2>
 
-                <div className="flex justify-between text-slate-400 mb-4">
+                <div className="flex justify-between text-gray-500 dark:text-slate-400 mb-4">
                   <span>Subtotal</span>
                   <span>GK {subtotal}</span>
                 </div>
 
-                <div className="border-t border-slate-700 my-4"></div>
+                <div className="border-t border-gray-200 dark:border-slate-700 my-4"></div>
 
-                <div className="flex justify-between text-xl font-bold text-white mb-6">
+                <div className="flex justify-between text-xl font-bold text-gray-900 dark:text-white mb-6">
                   <span>Total</span>
                   <span className="text-yellow-400">
                     GK {subtotal}
                   </span>
                 </div>
 
-                <div className="bg-slate-700/60 rounded-xl py-3 text-center text-slate-300 mb-6">
-                  Current Balance: <b className="text-white">GK {balance}</b>
+                <div className="bg-gray-100 dark:bg-slate-700/60 rounded-xl py-3 text-center text-gray-600 dark:text-slate-300 mb-6">
+                  Current Balance: <b className="text-gray-900 dark:text-white">GK {balance}</b>
                 </div>
 
                 <button

@@ -112,7 +112,7 @@ function AdminConsole() {
 
         {/* Tabs*/}
         <div className="mb-8">
-          <div className="inline-flex gap-1 rounded-full bg-gray-200 dark:bg-dark-card p-1">
+          <div className="inline-flex flex-wrap gap-1 rounded-full bg-gray-200 dark:bg-dark-card p-1">
             <button
               onClick={() => setActiveTab('staff')}
               className={`px-6 py-2 rounded-full font-medium transition-all ${
@@ -248,7 +248,7 @@ function AdminConsole() {
             )}
 
             {/* Staff Cards */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {staffList.map(staff => (
                 <StaffCard 
                   key={staff.id} 
