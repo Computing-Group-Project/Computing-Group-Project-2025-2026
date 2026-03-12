@@ -1,7 +1,8 @@
-import { Sun, ShoppingBag, Plus, LogOut } from "lucide-react";
+import { Sun, Moon, ShoppingBag, Plus, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useCart } from "../../context/CartContext.jsx";
-import { useWallet } from "../../context/WalletContext.jsx";
+import { useCart } from "../../contexts/CartContext.jsx";
+import { useWallet } from "../../contexts/WalletContext.jsx";
+import { useTheme } from "../../contexts/ThemeContext.jsx";
 
 const Navbar = ({
   title = "Demeter",
@@ -28,6 +29,7 @@ const Navbar = ({
   // Get cart and wallet data safely
   const { cart = [] } = useCart() || {};
   const { balance = 0 } = useWallet() || {};
+  const { theme, toggleTheme } = useTheme();
 
   // Get student name and initials
   const student = JSON.parse(localStorage.getItem("student"));
@@ -98,12 +100,21 @@ const Navbar = ({
           </Link>
         )}
 
-        {/* THEME */}
+        {/* THEME TOGGLE */}
         {showTheme && (
-          <Sun
-            size={20}
-            className={`cursor-pointer text-slate-300 hover:text-white transition ${iconClassName}`}
-          />
+          <button onClick={toggleTheme} className="focus:outline-none">
+            {theme === 'dark' ? (
+              <Sun
+                size={20}
+                className={`cursor-pointer text-yellow-300 hover:text-yellow-200 transition ${iconClassName}`}
+              />
+            ) : (
+              <Moon
+                size={20}
+                className={`cursor-pointer text-slate-300 hover:text-white transition ${iconClassName}`}
+              />
+            )}
+          </button>
         )}
 
         {/* CART */}

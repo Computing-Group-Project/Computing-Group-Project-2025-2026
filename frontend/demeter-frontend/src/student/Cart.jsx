@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import StudentLayout from "../layouts/StudentLayout.jsx";
-import { useCart } from "../context/CartContext.jsx";
-import { useWallet } from "../context/WalletContext.jsx";
+import { useCart } from "../contexts/CartContext.jsx";
+import { useWallet } from "../contexts/WalletContext.jsx";
 import { Trash2, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
