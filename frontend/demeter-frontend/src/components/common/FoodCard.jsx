@@ -1,91 +1,126 @@
+import React from "react";
+
 const FoodCard = ({
   image,
   title = "Food Title",
   description = "Food description goes here.",
-  price = "GK 0",
+  price = 0,
   badge = null,
   buttonText = "Order Now",
   onClick,
   showButton = true,
-
-  // Customization
-  className = "",
-  imageClassName = "",
-  contentClassName = "",
-  badgeClassName = "",
-  priceClassName = "",
-  buttonClassName = "",
+  variant = "home", // home | menu
 }) => {
+
+  const isMenu = variant === "menu";
+
   return (
     <div
+      onClick={isMenu ? onClick : undefined}
       className={`
-        w-full max-w-[420px]
-        bg-slate-800
-        rounded-2xl
-        overflow-hidden
-        shadow-lg
-        text-white
-        transition duration-200
-        ${className}
+      group
+      w-full
+      bg-slate-800
+      rounded-2xl
+      overflow-hidden
+      shadow-md
+      text-white
+      border border-slate-700
+      transition-all duration-300
+      hover:-translate-y-1
+      hover:shadow-xl
+      ${isMenu ? "cursor-pointer" : ""}
       `}
     >
-      {/* IMAGE SECTION */}
-      <div className="relative">
+
+      {/* IMAGE */}
+      <div className="relative overflow-hidden">
         <img
           src={image}
           alt={title}
-          className={`w-full h-[220px] object-cover ${imageClassName}`}
+          className={`w-full ${isMenu ? "h-[180px]" : "h-[220px]"} object-cover transition-transform duration-500 group-hover:scale-110`}
         />
 
-        {badge && (
-          <div
-            className={`
-              absolute top-3 right-3
-              bg-black/70
-              text-white
-              text-xs
-              px-3 py-1
-              rounded-full
-              backdrop-blur-sm
-              ${badgeClassName}
-            `}
-          >
+        {/* Badge for Home cards */}
+        {!isMenu && badge && (
+          <div className="absolute top-3 right-3 bg-black/70 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm">
             {badge}
           </div>
         )}
       </div>
 
       {/* CONTENT */}
-      <div className={`p-5 ${contentClassName}`}>
-        <h3 className="text-lg font-semibold mb-2">
-          {title}
-        </h3>
+      <div className={`${isMenu ? "p-4" : "p-5"} group-hover:bg-slate-700/40 transition-colors`}>
 
-        <p className="text-slate-400 text-sm mb-4">
+        {/* TITLE + PRICE */}
+        <div className={`flex justify-between items-start ${isMenu ? "mb-1" : "mb-2"}`}>
+          <h3 className={`${isMenu ? "text-base" : "text-lg"} font-semibold`}>
+            {title}
+          </h3>
+
+          {isMenu && (
+            <span className="text-yellow-400 font-semibold text-sm">
+              GK {price}
+            </span>
+          )}
+        </div>
+
+        {/* DESCRIPTION */}
+        <p className={`text-slate-400 ${isMenu ? "text-xs mb-2" : "text-sm mb-3"}`}>
           {description}
         </p>
 
-        <div className="flex justify-between items-center">
-          <span
-            className={`text-yellow-400 font-semibold ${priceClassName}`}
-          >
-            {price}
-          </span>
+        {/* TAGS */}
+        {isMenu && badge && (
+          <div className="flex gap-2 mb-2 flex-wrap">
+            {(Array.isArray(badge) ? badge : [badge]).map((tag, i) => (
+              <span
+                key={i}
+                className="text-[10px] px-2 py-0.5 rounded bg-slate-700/60 text-slate-200"
+              >
+                {tag.toUpperCase()}
+              </span>
+            ))}
+          </div>
+        )}
 
-          {showButton && (
-            <button
-              onClick={onClick}
-              className={`
-                text-slate-300 text-sm
-                hover:text-white
-                transition
-                ${buttonClassName}
-              `}
-            >
-              {buttonText} →
-            </button>
-          )}
-        </div>
+        {/* HOME CARD BUTTON AREA */}
+        {!isMenu && (
+          <div className="flex justify-between items-center">
+            <span className="text-yellow-400 font-semibold">
+              GK {price}
+            </span>
+
+            {showButton && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClick();
+                }}
+                className="text-sm text-white hover:text-cyan-400 flex items-center gap-2"
+              >
+                {buttonText}
+                <span className="transition-transform duration-300 group-hover:translate-x-1">
+                  →
+                </span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* MENU ADD BUTTON */}
+        {isMenu && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick();
+            }}
+            className="mt-1 w-full py-1.5 rounded-lg bg-slate-700 hover:bg-cyan-500 hover:text-slate-900 transition text-sm font-medium"
+          >
+            {buttonText}
+          </button>
+        )}
+
       </div>
     </div>
   );
