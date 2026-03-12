@@ -29,7 +29,7 @@ const PromotionList = () => {
       setDiscounts(data);
     } catch (err) {
       setError('Failed to load discounts');
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
     } finally {
       setLoading(false);
     }
@@ -156,7 +156,7 @@ const PromotionList = () => {
 
       {loading ? (
         <div className="text-center py-8">
-          <div className="animate-spin h-10 w-10 text-blue-500 mx-auto">&#x27F3;</div>
+          <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
         </div>
       ) : discounts.length === 0 ? (
         <p className="text-gray-500 dark:text-dark-textMuted text-center py-8">No discounts found</p>

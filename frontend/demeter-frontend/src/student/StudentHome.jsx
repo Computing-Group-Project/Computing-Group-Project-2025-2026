@@ -116,7 +116,7 @@ export default function StudentHome() {
         {/* Recommended */}
         <section className="mb-14">
 
-          <h2 className="mb-6 text-xl font-semibold text-white">
+          <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">
             ✨ Recommended for You
           </h2>
 

@@ -2,8 +2,7 @@ import React from 'react';
 import DiscountCard from './DiscountCard';
 
 const DiscountSuggestion = () => {
-  // mock data
-  const suggestions = [
+  const [suggestions, setSuggestions] = React.useState([
     {
       id: 1,
       type: 'surplus',
@@ -22,7 +21,15 @@ const DiscountSuggestion = () => {
       prediction: 'Low sales velocity',
       action: 'Create "Afternoon Snack" bundle at 15% off.'
     }
-  ];
+  ]);
+
+  const handleApprove = (id) => {
+    setSuggestions((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const handleDismiss = (id) => {
+    setSuggestions((prev) => prev.filter((s) => s.id !== id));
+  };
 
   return (
     // main container
@@ -42,9 +49,11 @@ const DiscountSuggestion = () => {
       {/* card list */}
       <div>
         {suggestions.map((suggestion) => (
-          <DiscountCard 
+          <DiscountCard
             key={suggestion.id}
-            {...suggestion} // passes all properties 
+            {...suggestion}
+            onApprove={() => handleApprove(suggestion.id)}
+            onDismiss={() => handleDismiss(suggestion.id)}
           />
         ))}
       </div>

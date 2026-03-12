@@ -30,7 +30,7 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
       setFormData(data);
     } catch (err) {
       setError('Failed to load discount');
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
     } finally {
       setLoading(false);
     }
@@ -71,7 +71,7 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
       onSave?.(savedDiscount);
     } catch (err) {
       setError(err.message);
-      console.error(err);
+      if (import.meta.env.DEV) console.error(err);
     } finally {
       setLoading(false);
     }
@@ -157,7 +157,7 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
             Requirements
           </label>
           <textarea

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const DiscountCard = ({ title, item, expiry, prediction, action, type }) => {
+const DiscountCard = ({ title, item, expiry, prediction, action, type, onApprove, onDismiss }) => {
   // change colors based on the type of alert (Surplus = Red, Bundle = Blue)
   const isSurplus = type === 'surplus';
 
@@ -37,16 +37,20 @@ const DiscountCard = ({ title, item, expiry, prediction, action, type }) => {
       {/* btns */}
       <div className="flex gap-3">
         {/* approve btn */}
-        <button className={`flex-1 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors ${
-          isSurplus 
-            ? 'bg-red-400 hover:bg-red-500 dark:bg-red-600 dark:hover:bg-red-500' 
+        <button
+          onClick={onApprove}
+          className={`flex-1 py-2 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors ${
+          isSurplus
+            ? 'bg-red-400 hover:bg-red-500 dark:bg-red-600 dark:hover:bg-red-500'
             : 'bg-blue-500 hover:bg-blue-600'
         }`}>
           Approve
         </button>
 
         {/* dismiss btn */}
-        <button className="flex-1 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+        <button
+          onClick={onDismiss}
+          className="flex-1 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
           Dismiss
         </button>
       </div>
