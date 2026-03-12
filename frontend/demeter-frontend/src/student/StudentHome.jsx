@@ -1,40 +1,45 @@
 import React from "react";
-import FoodCard from "../components/commen/FoodCard";
-import CafeteriaCard from "../components/commen/CafeteriaCard";
+import { useNavigate } from "react-router-dom";
+import FoodCard from "../components/common/FoodCard.jsx";
+import CafeteriaCard from "../components/common/CafeteriaCard.jsx";
+import StudentLayout from "../layouts/StudentLayout.jsx";
+import quinoa from "../assets/submarine.svg";
+import burger from "../assets/burger.svg";
+
 
 // First row (Recommended)
-const recommendedItems = [
+  const recommendedItems = [
   {
     id: 1,
+    cafeId: 1,
     name: "Neuro-Burger",
+    image: burger,
     price: 45,
     description:
       "Plant-based patty with smart-sauce and crispy sweet potato fries.",
-    image:
-      "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=1200&q=60",
     tag: "vegetarian",
   },
   {
     id: 2,
+    cafeId: 1,
     name: "Quantum Quinoa Bowl",
+    image: quinoa,
     price: 38,
     description: "Fresh quinoa, avocado, kale, and a lemon-tahini dressing.",
-    image:
-      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=60",
     tag: "vegan",
   },
   {
     id: 3,
+    cafeId: 3,
     name: "Sunset Smoothie",
+    image: burger,
     price: 20,
     description: "Mango, pineapple, and strawberry blend with yogurt.",
-    image:
-      "https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&w=1200&q=60",
     tag: "drink",
   },
 ];
 
-// Second row (Campus Cafeterias)
+// Campus Cafeterias
 const cafeterias = [
   {
     id: 1,
@@ -72,7 +77,8 @@ const cafeterias = [
     hours: "10:00 – 18:00",
     status: "Open",
     rating: 4,
-    description: "Rooftop dining with the best view of the campus.",
+    description:
+      "Rooftop dining with the best panoramic view of the campus skyline.",
     image:
       "https://images.unsplash.com/photo-1444723121867-7a241cacace9?auto=format&fit=crop&w=1600&q=60",
     popularItems: [
@@ -82,38 +88,78 @@ const cafeterias = [
   },
 ];
 
+
 export default function StudentHome() {
+  const student = JSON.parse(localStorage.getItem("student"));
+  const firstName = student?.fullName?.split(" ")[0] || "Student";
+
+  const navigate = useNavigate();
+
   return (
-    <div>
-      {/* Welcome Section */}
-      <section className="mb-10">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome back, Alex</h1>
-        <p className="mt-2 text-gray-500 dark:text-gray-300">
-          Your next meal is just a few taps away.
-        </p>
-      </section>
+    <StudentLayout>
 
-      {/* Recommended Section */}
-      <section className="mb-14">
-        <h2 className="mb-6 text-xl font-semibold">✨ Recommended for You</h2>
+      <div className="w-screen relative left-1/2 -translate-x-1/2 px-6">
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {recommendedItems.map((item) => (
-            <FoodCard key={item.id} item={item} />
+        {/* Welcome Section */}
+        <section className="mb-10">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Welcome back, {firstName}
+          </h1>
+          
+
+          <p className="mt-2 text-gray-500 dark:text-gray-300">
+            Your next meal is just a few taps away.
+          </p>
+        </section>
+
+
+        {/* Recommended */}
+        <section className="mb-14">
+
+          <h2 className="mb-6 text-xl font-semibold text-white">
+            ✨ Recommended for You
+          </h2>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+            {recommendedItems.map((item) => (
+            <FoodCard
+              key={item.id}
+              image={item.image}
+              title={item.name}
+              description={item.description}
+              price={`${item.price}`}
+              badge={item.tag}
+              buttonText="order now"
+              variant="home"
+              onClick={() => navigate(`/cafe/${item.cafeId}`)}
+            />
           ))}
-        </div>
-      </section>
 
-      {/* Campus Cafeterias Section */}
-      <section>
-        <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Campus Cafeterias</h2>
+          </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {cafeterias.map((cafe) => (
-            <CafeteriaCard key={cafe.id} cafe={cafe} />
-          ))}
-        </div>
-      </section>
-    </div>
+        </section>
+
+
+        {/* Cafeterias */}
+        <section>
+
+          <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">
+            Campus Cafeterias
+          </h2>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+            {cafeterias.map((cafe) => (
+              <CafeteriaCard key={cafe.id} cafe={cafe} />
+            ))}
+
+          </div>
+
+        </section>
+
+      </div>
+
+    </StudentLayout>
   );
 }
