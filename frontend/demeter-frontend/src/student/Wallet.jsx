@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import StudentLayout from "../layouts/StudentLayout.jsx";
-import { useWallet } from "../context/WalletContext.jsx";
+import { useWallet } from "../contexts/WalletContext.jsx";
 import { useNavigate } from "react-router-dom";
 
 const Wallet = () => {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useCart } from "../../context/CartContext.jsx";
+import { useCart } from "../../contexts/CartContext.jsx";
 
 
 export default function FoodModal({ food, onClose }) {

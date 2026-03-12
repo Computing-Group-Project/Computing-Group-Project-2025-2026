@@ -1,36 +1,47 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { CartProvider } from "./context/CartContext.jsx";
-import { WalletProvider } from "./context/WalletContext.jsx";
+import { CartProvider } from "./contexts/CartContext.jsx";
+import { WalletProvider } from "./contexts/WalletContext.jsx";
+import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 import StudentHome from "./student/StudentHome.jsx";
 import CafeMenu from "./student/CafeMenu.jsx";
 import Wallet from "./student/Wallet.jsx";
 import Cart from "./student/Cart.jsx";
 import Orders from "./student/Orders.jsx";
-
 import Login from "./auth/Login.jsx";
+import AdminConsole from "./admin/AdminConsole.jsx";
+import PromotionManagementConsole from "./admin/PromotionManagementConsole.jsx";
+import StaffDashboard from "./staff/StaffDashboard.jsx";
+import StaffLayout from "./layouts/StaffLayout.jsx";
+
 function App() {
   return (
-    <WalletProvider>
-      <CartProvider>
+    <ThemeProvider>
+      <WalletProvider>
+        <CartProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/login" element={<Login />} />
 
-        <BrowserRouter>
+              {/* Student routes */}
+              <Route path="/" element={<StudentHome />} />
+              <Route path="/cafe/:id" element={<CafeMenu />} />
+              <Route path="/wallet" element={<Wallet />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/orders" element={<Orders />} />
 
-          <Routes>
-            <Route path="/login" element={<Login />} />
-      
-            <Route path="/" element={<StudentHome />} />
-            <Route path="/cafe/:id" element={<CafeMenu />} />
-            <Route path="/wallet" element={<Wallet />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/orders" element={<Orders />} />
-            <Route path="*" element={<Navigate to="/login" />} />
+              {/* Admin routes */}
+              <Route path="/admin" element={<AdminConsole />} />
+              <Route path="/admin/promotions" element={<PromotionManagementConsole />} />
 
-          </Routes>
+              {/* Staff routes */}
+              <Route path="/staff" element={<StaffLayout><StaffDashboard /></StaffLayout>} />
 
-        </BrowserRouter>
-
-      </CartProvider>
-    </WalletProvider>
+              <Route path="*" element={<Navigate to="/login" />} />
+            </Routes>
+          </BrowserRouter>
+        </CartProvider>
+      </WalletProvider>
+    </ThemeProvider>
   );
 }
 

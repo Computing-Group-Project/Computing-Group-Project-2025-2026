@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 
 export default function StudentLayout({ children }) {
 
-  const [darkMode, setDarkMode] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(null);
 
@@ -23,19 +22,6 @@ export default function StudentLayout({ children }) {
   }, []);
 
 
-  /* DARK MODE SYSTEM */
-  useEffect(() => {
-
-    const root = window.document.documentElement;
-
-    if (darkMode)
-      root.classList.add("dark");
-    else
-      root.classList.remove("dark");
-
-  }, [darkMode]);
-
-
   /* LOGOUT */
   const handleLogout = () => {
 
@@ -51,8 +37,6 @@ export default function StudentLayout({ children }) {
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
 
       <Navbar
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
         onAddBalance={() => navigate("/wallet")}
         onProfileClick={() => setProfileOpen(!profileOpen)}
         onExitClick={handleLogout}
