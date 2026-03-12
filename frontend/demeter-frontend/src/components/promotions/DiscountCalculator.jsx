@@ -19,7 +19,7 @@ const DiscountCalculator = ({ cafeteriaId }) => {
       const data = await response.json();
       setDiscounts(data);
     } catch (error) {
-      console.error('Error fetching discounts:', error);
+      if (import.meta.env.DEV) console.error('Error fetching discounts:', error);
     } finally {
       setLoading(false);
     }
@@ -46,7 +46,7 @@ const DiscountCalculator = ({ cafeteriaId }) => {
 
       {loading ? (
         <div className="text-center py-4">
-          <div className="animate-spin h-8 w-8 text-blue-500 mx-auto">&#x27F3;</div>
+          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
         </div>
       ) : discounts.length > 0 ? (
         <div className="space-y-3">
