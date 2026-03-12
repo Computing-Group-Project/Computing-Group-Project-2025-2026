@@ -34,7 +34,7 @@ const SearchBar = ({
           bg-slate-700
           text-white
           text-sm
-          border border-black
+          border border-slate-600
           focus:border-teal-400
           focus:outline-none
           transition

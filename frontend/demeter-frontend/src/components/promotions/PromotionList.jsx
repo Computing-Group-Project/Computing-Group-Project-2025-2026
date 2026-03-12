@@ -114,9 +114,9 @@ const PromotionList = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white dark:bg-dark-card rounded-lg shadow-md p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Discounts</h2>
+        <h2 className="text-2xl font-bold dark:text-dark-text">Discounts</h2>
         <button
           onClick={() => {
             setSelectedDiscount(null);
@@ -140,7 +140,7 @@ const PromotionList = () => {
                   : f === 'PENDING'
                   ? 'bg-yellow-500 text-white'
                   : 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-700'
+                : 'bg-gray-100 dark:bg-dark-bg text-gray-700 dark:text-dark-textMuted'
             }`}
           >
             {f === 'ALL' ? 'All' : f === 'ACTIVE' ? 'Active' : 'Pending Approval'}
@@ -159,32 +159,32 @@ const PromotionList = () => {
           <div className="animate-spin h-10 w-10 text-blue-500 mx-auto">&#x27F3;</div>
         </div>
       ) : discounts.length === 0 ? (
-        <p className="text-gray-500 text-center py-8">No discounts found</p>
+        <p className="text-gray-500 dark:text-dark-textMuted text-center py-8">No discounts found</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-gray-50 dark:bg-dark-bg border-b dark:border-dark-border">
               <tr>
-                <th className="text-left px-4 py-3">Type</th>
-                <th className="text-left px-4 py-3">Value</th>
-                <th className="text-left px-4 py-3">Items</th>
-                <th className="text-left px-4 py-3">Requirements</th>
-                <th className="text-left px-4 py-3">Status</th>
-                <th className="text-left px-4 py-3">AI</th>
-                <th className="text-left px-4 py-3">Actions</th>
+                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Type</th>
+                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Value</th>
+                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Items</th>
+                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Requirements</th>
+                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Status</th>
+                <th className="text-left px-4 py-3 dark:text-dark-textMuted">AI</th>
+                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Actions</th>
               </tr>
             </thead>
             <tbody>
               {discounts.map((discount) => (
-                <tr key={discount.discountId} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">{discount.discountType}</td>
-                  <td className="px-4 py-3">
+                <tr key={discount.discountId} className="border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-dark-bg">
+                  <td className="px-4 py-3 font-medium dark:text-dark-text">{discount.discountType}</td>
+                  <td className="px-4 py-3 dark:text-dark-text">
                     {discount.discountType === 'PERCENTAGE'
                       ? `${discount.discountValue}%`
                       : `${discount.discountValue} GK`}
                   </td>
-                  <td className="px-4 py-3">{discount.applicableItems || '-'}</td>
-                  <td className="px-4 py-3">{discount.requirements || '-'}</td>
+                  <td className="px-4 py-3 dark:text-dark-textMuted">{discount.applicableItems || '-'}</td>
+                  <td className="px-4 py-3 dark:text-dark-textMuted">{discount.requirements || '-'}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusStyle(discount)}`}>
                       {getStatusLabel(discount)}
@@ -203,7 +203,10 @@ const PromotionList = () => {
                     {getStatusLabel(discount) === 'PENDING' && (
                       <>
                         <button
-                          onClick={() => handleApprove(discount.discountId, 23)}
+                          onClick={() => {
+                            const staff = JSON.parse(localStorage.getItem('staff'));
+                            handleApprove(discount.discountId, staff?.id || 0);
+                          }}
                           className="text-green-500 hover:text-green-700 text-sm"
                         >
                           Approve

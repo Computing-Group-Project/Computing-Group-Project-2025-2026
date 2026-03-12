@@ -78,8 +78,8 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-lg font-semibold mb-4">
+    <div className="bg-white dark:bg-dark-card rounded-lg shadow-md p-6">
+      <h3 className="text-lg font-semibold mb-4 dark:text-dark-text">
         {discountId ? 'Edit Discount' : 'Create Discount'}
       </h3>
 
@@ -92,7 +92,7 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
               Cafeteria ID *
             </label>
             <input
@@ -101,20 +101,20 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
               value={formData.cafeteriaId || ''}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Cafeteria ID"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
               Discount Type *
             </label>
             <select
               name="discountType"
               value={formData.discountType}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="PERCENTAGE">Percentage (%)</option>
               <option value="FIXED_AMOUNT">Fixed Amount (GK)</option>
@@ -126,7 +126,7 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
               Discount Value *
             </label>
             <input
@@ -136,13 +136,13 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
               onChange={handleChange}
               required
               step="0.01"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Value"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
               Applicable Items
             </label>
             <input
@@ -150,7 +150,7 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
               name="applicableItems"
               value={formData.applicableItems || ''}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="e.g., [1, 2, 3] or ALL"
             />
           </div>
@@ -164,7 +164,7 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
             name="requirements"
             value={formData.requirements || ''}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="e.g., Min Order Value: 50 GK"
             rows="2"
           />
@@ -172,7 +172,7 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
               Start Date
             </label>
             <input
@@ -180,12 +180,12 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
               name="startDate"
               value={formData.startDate || ''}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
               End Date
             </label>
             <input
@@ -193,13 +193,13 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
               name="endDate"
               value={formData.endDate || ''}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
         <div className="mb-4">
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-dark-textMuted">
             <input
               type="checkbox"
               name="isActive"
@@ -215,7 +215,7 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+            className="px-4 py-2 text-gray-600 dark:text-dark-textMuted bg-gray-100 dark:bg-dark-bg rounded-lg hover:bg-gray-200 dark:hover:bg-dark-border"
           >
             Cancel
           </button>

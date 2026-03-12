@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../components/common/Navbar.jsx";
 import ProfileModal from "../components/common/ProfileModal.jsx";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../contexts/CartContext.jsx";
 
 export default function StudentLayout({ children }) {
 
@@ -9,6 +10,7 @@ export default function StudentLayout({ children }) {
   const [profilePhoto, setProfilePhoto] = useState(null);
 
   const navigate = useNavigate();
+  const { clearCart } = useCart();
 
   /* LOGIN PROTECTION */
   useEffect(() => {
@@ -26,6 +28,7 @@ export default function StudentLayout({ children }) {
   const handleLogout = () => {
 
     localStorage.removeItem("student");
+    clearCart();
 
     navigate("/login");
 
