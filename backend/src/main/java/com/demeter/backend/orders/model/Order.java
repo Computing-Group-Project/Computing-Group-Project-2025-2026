@@ -2,12 +2,18 @@ package com.demeter.backend.orders.model;
 
 import com.demeter.backend.shared.enums.OrderStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Setter
+@Getter
 @Entity
-@Table(name = "orders")
+@Table(name = "`Order`")
 public class Order {
+    // Getters and Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
@@ -22,9 +28,20 @@ public class Order {
     private Double finalAmount;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "order_status")
     private OrderStatus status;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "placed_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "confirmed_at")
+    private LocalDateTime confirmedAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
+    @Column(name = "special_instructions", columnDefinition = "TEXT")
+    private String specialInstructions;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items;
@@ -40,34 +57,4 @@ public class Order {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
-    public Long getOrderId() { return orderId; }
-    public void setOrderId(Long orderId) { this.orderId = orderId; }
-
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-
-    public Long getCafeteriaId() { return cafeteriaId; }
-    public void setCafeteriaId(Long cafeteriaId) { this.cafeteriaId = cafeteriaId; }
-
-    public Double getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(Double totalAmount) { this.totalAmount = totalAmount; }
-
-    public String getAppliedPromoCode() { return appliedPromoCode; }
-    public void setAppliedPromoCode(String appliedPromoCode) { this.appliedPromoCode = appliedPromoCode; }
-
-    public Double getDiscountAmount() { return discountAmount; }
-    public void setDiscountAmount(Double discountAmount) { this.discountAmount = discountAmount; }
-
-    public Double getFinalAmount() { return finalAmount; }
-    public void setFinalAmount(Double finalAmount) { this.finalAmount = finalAmount; }
-
-    public OrderStatus getStatus() { return status; }
-    public void setStatus(OrderStatus status) { this.status = status; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public List<OrderItem> getItems() { return items; }
-    public void setItems(List<OrderItem> items) { this.items = items; }
 }

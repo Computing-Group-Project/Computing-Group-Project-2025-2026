@@ -123,6 +123,9 @@ INSERT INTO Staff (user_id, assigned_cafeteria_id) VALUES
     (45, 2),   -- heimerdinger → Hex Core Cafe
     (48, 3);   -- viktor → Skyline Sips
 
+INSERT INTO Admin (user_id) VALUES
+    (61);  -- admin_user
+
 -- =========================================================================
 -- 4. INSERT MENU ITEMS
 -- =========================================================================

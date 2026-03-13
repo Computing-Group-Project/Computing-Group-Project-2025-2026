@@ -43,7 +43,7 @@ public class OrderController {
         String role = jwtUtil.extractRole(token);
 
         if (!"STAFF".equals(role) && !"ADMIN".equals(role)) {
-            String email = jwtUtil.extractEmail(token);
+            String username = jwtUtil.extractUsername(token);
             // Non-staff/admin users can only view their own orders
             // The frontend passes userId, so we verify via the token
         }

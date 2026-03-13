@@ -23,13 +23,13 @@ public class AuthController {
 
         return new UserResponseDTO(
                 savedUser.getId(),
-                savedUser.getEmail(),
+                savedUser.getUsername(),
                 savedUser.getRole()
         );
     }
 
     @PostMapping("/login")
     public String login(@Valid @RequestBody User user) {
-        return authService.login(user.getEmail(), user.getPassword());
+        return authService.login(user.getUsername(), user.getPassword());
     }
 }

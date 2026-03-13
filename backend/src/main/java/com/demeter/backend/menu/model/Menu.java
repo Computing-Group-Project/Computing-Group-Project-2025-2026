@@ -1,10 +1,16 @@
 package com.demeter.backend.menu.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
+@Setter
+@Getter
 @Entity
-@Table(name = "menus")
+@Table(name = "MenuItem")
 public class Menu {
 
     @Id
@@ -13,43 +19,53 @@ public class Menu {
 
     private String name;
     private String description;
-    private Double price;
+
+    @Column(name = "base_price")
+    private Double basePrice;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "preparation_time")
+    private Integer preparationTime;
+
+    @Column(name = "is_available")
     private boolean available = true;
+
+    @Column(name = "cafeteria_id")
+    private Long cafeteriaId;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Customization> customizations;
+    private List<MenuItemCustomization> customizations;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     public Menu() {}
 
-    public Menu(String name, String description, Double price, Category category) {
+    public Menu(String name, String description, Double basePrice, Category category) {
         this.name = name;
         this.description = description;
-        this.price = price;
+        this.basePrice = basePrice;
         this.category = category;
     }
 
-    public Long getMenuId() { return menuId; }
-    public void setMenuId(Long menuId) { this.menuId = menuId; }
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
-
-    public boolean isAvailable() { return available; }
-    public void setAvailable(boolean available) { this.available = available; }
-
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
-
-    public List<Customization> getCustomizations() { return customizations; }
-    public void setCustomizations(List<Customization> customizations) { this.customizations = customizations; }
 }

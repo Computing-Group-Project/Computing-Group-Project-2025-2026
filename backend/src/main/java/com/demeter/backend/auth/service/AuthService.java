@@ -30,16 +30,16 @@ public class AuthService {
     }
 
     @LogActivity(action = "USER_LOGIN", targetTable = "USER")
-    public String login(String email, String password) {
+    public String login(String username, String password) {
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         }
 
-        return jwtUtil.generateToken(user.getEmail(), user.getRole());
+        return jwtUtil.generateToken(user.getUsername(), user.getRole());
     }
 
     private void validatePasswordStrength(String password) {

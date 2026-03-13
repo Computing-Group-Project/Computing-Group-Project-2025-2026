@@ -24,12 +24,12 @@ public class JwtUtil {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String email, String role) {
+    public String generateToken(String username, String role) {
         Date now = new Date();
         Date expiry = new Date(System.currentTimeMillis() + expirationMs);
 
         return Jwts.builder()
-                .subject(email)
+                .subject(username)
                 .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiry)
@@ -37,7 +37,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String extractEmail(String token) {
+    public String extractUsername(String token) {
         return parseClaims(token).getSubject();
     }
 

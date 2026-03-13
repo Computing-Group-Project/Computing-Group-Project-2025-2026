@@ -45,6 +45,11 @@ CREATE TABLE Staff (
                        FOREIGN KEY (assigned_cafeteria_id) REFERENCES Cafeteria(cafeteria_id)
 );
 
+CREATE TABLE Admin (
+                       user_id INT PRIMARY KEY,
+                       FOREIGN KEY (user_id) REFERENCES `User`(user_id)
+);
+
 CREATE TABLE MenuItem (
                           item_id INT AUTO_INCREMENT PRIMARY KEY,
                           cafeteria_id INT NOT NULL,

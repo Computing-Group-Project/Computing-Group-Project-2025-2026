@@ -43,7 +43,7 @@ class AuthServiceTest {
     @Test
     void register_withValidUser_shouldEncodePasswordAndSave() {
         User user = new User();
-        user.setEmail("test@bastion.edu");
+        user.setUsername("test_student");
         user.setPassword("secure123");
         user.setRole("STUDENT");
 
@@ -63,7 +63,7 @@ class AuthServiceTest {
     @Test
     void register_withWeakPassword_tooShort_shouldThrow() {
         User user = new User();
-        user.setEmail("test@bastion.edu");
+        user.setUsername("test_student");
         user.setPassword("abc1");
         user.setRole("STUDENT");
 
@@ -74,7 +74,7 @@ class AuthServiceTest {
     @Test
     void register_withWeakPassword_noDigits_shouldThrow() {
         User user = new User();
-        user.setEmail("test@bastion.edu");
+        user.setUsername("test_student");
         user.setPassword("abcdefgh");
         user.setRole("STUDENT");
 
@@ -85,7 +85,7 @@ class AuthServiceTest {
     @Test
     void register_withWeakPassword_noLetters_shouldThrow() {
         User user = new User();
-        user.setEmail("test@bastion.edu");
+        user.setUsername("test_student");
         user.setPassword("12345678");
         user.setRole("STUDENT");
 
@@ -96,7 +96,7 @@ class AuthServiceTest {
     @Test
     void register_withNullPassword_shouldThrow() {
         User user = new User();
-        user.setEmail("test@bastion.edu");
+        user.setUsername("test_student");
         user.setPassword(null);
         user.setRole("STUDENT");
 
@@ -110,38 +110,38 @@ class AuthServiceTest {
     void login_withValidCredentials_shouldReturnToken() {
         User user = new User();
         user.setId(1L);
-        user.setEmail("test@bastion.edu");
+        user.setUsername("test_student");
         user.setPassword(passwordEncoder.encode("secure123"));
         user.setRole("STUDENT");
 
-        when(userRepository.findByEmail("test@bastion.edu")).thenReturn(Optional.of(user));
-        when(jwtUtil.generateToken("test@bastion.edu", "STUDENT")).thenReturn("mock-jwt-token");
+        when(userRepository.findByUsername("test_student")).thenReturn(Optional.of(user));
+        when(jwtUtil.generateToken("test_student", "STUDENT")).thenReturn("mock-jwt-token");
 
-        String token = authService.login("test@bastion.edu", "secure123");
+        String token = authService.login("test_student", "secure123");
 
         assertEquals("mock-jwt-token", token);
-        verify(jwtUtil).generateToken("test@bastion.edu", "STUDENT");
+        verify(jwtUtil).generateToken("test_student", "STUDENT");
     }
 
     @Test
-    void login_withNonExistentEmail_shouldThrow() {
-        when(userRepository.findByEmail("unknown@bastion.edu")).thenReturn(Optional.empty());
+    void login_withNonExistentUsername_shouldThrow() {
+        when(userRepository.findByUsername("unknown_user")).thenReturn(Optional.empty());
 
         AppException ex = assertThrows(AppException.class,
-                () -> authService.login("unknown@bastion.edu", "password1"));
+                () -> authService.login("unknown_user", "password1"));
         assertEquals(ErrorCode.INVALID_CREDENTIALS, ex.getErrorCode());
     }
 
     @Test
     void login_withWrongPassword_shouldThrow() {
         User user = new User();
-        user.setEmail("test@bastion.edu");
+        user.setUsername("test_student");
         user.setPassword(passwordEncoder.encode("correct123"));
 
-        when(userRepository.findByEmail("test@bastion.edu")).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername("test_student")).thenReturn(Optional.of(user));
 
         AppException ex = assertThrows(AppException.class,
-                () -> authService.login("test@bastion.edu", "wrongpass1"));
+                () -> authService.login("test_student", "wrongpass1"));
         assertEquals(ErrorCode.INVALID_CREDENTIALS, ex.getErrorCode());
     }
 }

@@ -1,61 +1,50 @@
 package com.demeter.backend.users.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Setter
+@Getter
 @Entity
-@Table(name = "users")
+@Table(name = "`User`")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Email(message = "Email must be valid")
-    @NotBlank(message = "Email is required")
+    @NotBlank(message = "Username is required")
     @Column(unique = true)
-    private String email;
+    private String username;
 
     @NotBlank(message = "Password is required")
+    @Column(name = "password_hash")
     private String password;
 
     @NotBlank(message = "Role is required")
     @Pattern(regexp = "ADMIN|STUDENT|STAFF", message = "Role must be ADMIN, STUDENT, or STAFF")
     private String role;
 
+    @Column(name = "krakens_balance")
+    private BigDecimal krakensBalance = BigDecimal.ZERO;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
+
     public User() {}
 
-    public Long getId() {
-        return id;
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
 }

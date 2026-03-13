@@ -1,26 +1,18 @@
 package com.demeter.backend.users.dto.response;
 
+import lombok.Getter;
+
+@Getter
 public class UserResponseDTO {
 
     private Long id;
-    private String email;
+    private String username;
     private String role;
 
-    public UserResponseDTO(Long id, String email, String role) {
+    public UserResponseDTO(Long id, String username, String role) {
         this.id = id;
-        this.email = email;
+        this.username = username;
         this.role = role;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getRole() {
-        return role;
-    }
 }

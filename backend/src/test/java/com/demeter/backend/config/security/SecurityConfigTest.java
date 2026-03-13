@@ -21,7 +21,7 @@ class SecurityConfigTest {
     void authEndpoints_shouldBeAccessibleWithoutToken() throws Exception {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"test@bastion.edu\",\"password\":\"password123\",\"role\":\"STUDENT\"}"))
+                        .content("{\"username\":\"test_student\",\"password\":\"password123\",\"role\":\"STUDENT\"}"))
                 .andExpect(status().isUnauthorized()); // user not found, but endpoint is accessible (not 403)
     }
 
@@ -39,10 +39,10 @@ class SecurityConfigTest {
     }
 
     @Test
-    void authRegister_shouldRejectInvalidEmail() throws Exception {
+    void authRegister_shouldRejectBlankUsername() throws Exception {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"not-an-email\",\"password\":\"secure123\",\"role\":\"STUDENT\"}"))
+                        .content("{\"username\":\"\",\"password\":\"secure123\",\"role\":\"STUDENT\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -50,7 +50,7 @@ class SecurityConfigTest {
     void authRegister_shouldRejectBlankPassword() throws Exception {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"test@bastion.edu\",\"password\":\"\",\"role\":\"STUDENT\"}"))
+                        .content("{\"username\":\"test_student\",\"password\":\"\",\"role\":\"STUDENT\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -58,7 +58,7 @@ class SecurityConfigTest {
     void authRegister_shouldRejectInvalidRole() throws Exception {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"test@bastion.edu\",\"password\":\"secure123\",\"role\":\"HACKER\"}"))
+                        .content("{\"username\":\"test_student\",\"password\":\"secure123\",\"role\":\"HACKER\"}"))
                 .andExpect(status().isBadRequest());
     }
 
@@ -66,7 +66,7 @@ class SecurityConfigTest {
     void authRegister_shouldRejectWeakPassword() throws Exception {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"test@bastion.edu\",\"password\":\"short\",\"role\":\"STUDENT\"}"))
+                        .content("{\"username\":\"test_student\",\"password\":\"short\",\"role\":\"STUDENT\"}"))
                 .andExpect(status().isBadRequest());
     }
 }

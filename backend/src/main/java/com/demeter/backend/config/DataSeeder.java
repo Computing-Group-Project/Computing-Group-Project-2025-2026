@@ -3,7 +3,7 @@ package com.demeter.backend.config;
 import com.demeter.backend.menu.model.*;
 import com.demeter.backend.menu.repo.CategoryRepository;
 import com.demeter.backend.menu.repo.MenuRepository;
-import com.demeter.backend.menu.repo.CustomizationRepository;
+import com.demeter.backend.menu.repo.MenuItemCustomizationRepository;
 import com.demeter.backend.users.model.User;
 import com.demeter.backend.users.repo.UserRepository;
 
@@ -17,7 +17,7 @@ public class DataSeeder {
     @Bean
     CommandLineRunner seedDatabase(CategoryRepository categoryRepo,
                                    MenuRepository menuRepo,
-                                   CustomizationRepository customizationRepo,
+                                   MenuItemCustomizationRepository customizationRepo,
                                    UserRepository userRepo) {
 
         return args -> {
@@ -29,17 +29,17 @@ public class DataSeeder {
 
             // ---------- Seed Users ----------
             User admin = new User();
-            admin.setEmail("admin@demeter.com");
+            admin.setUsername("admin_user");
             admin.setPassword("admin123");
             admin.setRole("ADMIN");
 
             User student = new User();
-            student.setEmail("student@demeter.com");
+            student.setUsername("student_user");
             student.setPassword("student123");
             student.setRole("STUDENT");
 
             User staff = new User();
-            staff.setEmail("staff@demeter.com");
+            staff.setUsername("staff_user");
             staff.setPassword("staff123");
             staff.setRole("STAFF");
 
@@ -63,6 +63,7 @@ public class DataSeeder {
                     450.0,
                     rice
             );
+            chickenRice.setCafeteriaId(1L);
 
             Menu icedCoffee = new Menu(
                     "Iced Coffee",
@@ -70,6 +71,7 @@ public class DataSeeder {
                     250.0,
                     beverages
             );
+            icedCoffee.setCafeteriaId(1L);
 
             Menu vegRoll = new Menu(
                     "Vegetable Roll",
@@ -77,16 +79,21 @@ public class DataSeeder {
                     120.0,
                     snacks
             );
+            vegRoll.setCafeteriaId(2L);
 
             menuRepo.save(chickenRice);
             menuRepo.save(icedCoffee);
             menuRepo.save(vegRoll);
 
             // ---------- Seed Customizations ----------
-            Customization spiceLevel = new Customization("Spice Level", chickenRice);
+            MenuItemCustomization spiceLevel = new MenuItemCustomization(
+                    "Spice", "ADD", 0.0, chickenRice
+            );
             customizationRepo.save(spiceLevel);
 
-            Customization sugarLevel = new Customization("Sugar Level", icedCoffee);
+            MenuItemCustomization sugarLevel = new MenuItemCustomization(
+                    "Sugar", "ADD", 0.0, icedCoffee
+            );
             customizationRepo.save(sugarLevel);
 
             System.out.println("Test data seeded successfully.");
