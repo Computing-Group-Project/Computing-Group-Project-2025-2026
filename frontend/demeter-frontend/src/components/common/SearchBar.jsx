@@ -31,8 +31,9 @@ const SearchBar = ({
           ${showIcon ? "pl-11 pr-4" : "px-4"}
           py-3
           rounded-xl
-          bg-slate-700
-          text-white
+          bg-gray-100 dark:bg-slate-700
+          text-gray-900 dark:text-white
+          placeholder-gray-400 dark:placeholder-gray-500
           text-sm
           border border-slate-600
           focus:border-teal-400

@@ -22,7 +22,6 @@ export default function CafeMenu() {
   const filters = ["All", "Vegetarian", "Vegan", "Drink", "Healthy", "Best-Seller"];
 
   // MENUS FOR EACH CAFE
-// MENUS FOR EACH CAFE
 const cafeMenus = {
   1: {
     name: "Hex-Core Cafe",
@@ -134,7 +133,7 @@ const cafeMenus = {
   if (!cafe) {
     return (
       <StudentLayout>
-        <div className="text-white p-10 text-center">
+        <div className="text-gray-900 dark:text-white p-10 text-center">
           Cafe not found
         </div>
       </StudentLayout>
@@ -164,10 +163,10 @@ const cafeMenus = {
         <button
           onClick={() => navigate("/")}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-          text-sm font-medium text-white
-          bg-slate-800/60 backdrop-blur
-          border border-slate-700
-          hover:bg-slate-700
+          text-sm font-medium text-gray-700 dark:text-white
+          bg-white/60 dark:bg-slate-800/60 backdrop-blur
+          border border-gray-200 dark:border-slate-700
+          hover:bg-gray-100 dark:hover:bg-slate-700
           hover:shadow-md hover:shadow-slate-900/40
           active:scale-95
           transition-all duration-200 mb-6"
@@ -177,7 +176,7 @@ const cafeMenus = {
         </button>
 
         {/* Banner */}
-        <div className="relative w-full h-[260px] rounded-2xl overflow-hidden mb-8">
+        <div className="relative w-full h-[180px] sm:h-[260px] rounded-2xl overflow-hidden mb-8">
 
           <img
             src={cafe.banner}
@@ -187,7 +186,7 @@ const cafeMenus = {
 
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center px-4">
 
-            <h1 className="text-4xl md:text-5xl font-bold text-white">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white">
               {cafe.name}
             </h1>
 
@@ -200,7 +199,7 @@ const cafeMenus = {
         </div>
 
         {/* Search + Filters */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-8">
 
           <div className="flex-1">
             <SearchBar
@@ -210,7 +209,7 @@ const cafeMenus = {
             />
           </div>
 
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-2 sm:gap-3 flex-wrap">
             {filters.map((item) => (
               <button
                 key={item}
@@ -219,7 +218,7 @@ const cafeMenus = {
                 ${
                   filter === item
                     ? "bg-teal-400 text-black"
-                    : "border border-slate-600 text-slate-300 hover:bg-slate-800"
+                    : "border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800"
                 }`}
               >
                 {item}

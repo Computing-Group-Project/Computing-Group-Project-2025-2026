@@ -76,22 +76,22 @@ const Wallet = () => {
         {/* BACK BUTTON */}
         <button
           onClick={() => navigate("/")}
-          className="mb-6 px-4 py-2 rounded-lg border border-slate-700 text-white bg-slate-800 hover:bg-slate-700"
+          className="mb-6 px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-white bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700"
         >
           ← Back to Dashboard
         </button>
 
 
         {/* BALANCE CARD */}
-        <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 flex justify-between items-center">
+        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-sm rounded-xl p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
 
           <div>
-            <h2 className="text-gray-400 text-sm uppercase">
+            <h2 className="text-gray-500 dark:text-gray-400 text-sm uppercase">
               Current Balance
             </h2>
 
             <div className="flex items-baseline mt-2">
-              <span className="text-4xl font-bold text-white">
+              <span className="text-4xl font-bold text-gray-900 dark:text-white">
                 {balance.toFixed(2)}
               </span>
 
@@ -116,10 +116,10 @@ const Wallet = () => {
 
 
         {/* TRANSACTION TABLE */}
-        <div className="mt-8 bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+        <div className="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-sm rounded-xl overflow-hidden">
 
-          <div className="p-6 border-b border-slate-700">
-            <h3 className="text-lg font-semibold text-white">
+          <div className="p-6 border-b border-gray-200 dark:border-slate-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Transaction History
             </h3>
           </div>
@@ -128,7 +128,7 @@ const Wallet = () => {
 
             <table className="w-full text-left text-sm">
 
-              <thead className="bg-slate-700 text-gray-300 uppercase text-xs">
+              <thead className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 uppercase text-xs">
 
                 <tr>
                   <th className="p-4">Date</th>
@@ -141,17 +141,17 @@ const Wallet = () => {
 
               </thead>
 
-              <tbody className="divide-y divide-slate-700">
+              <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
 
                 {transactions.map((tx) => (
 
                   <tr key={tx.transaction_id}>
 
-                    <td className="p-4 text-gray-400">
+                    <td className="p-4 text-gray-500 dark:text-gray-400">
                       {tx.created_at}
                     </td>
 
-                    <td className="p-4 text-white">
+                    <td className="p-4 text-gray-900 dark:text-white">
                       {tx.description}
                     </td>
 
@@ -172,7 +172,7 @@ const Wallet = () => {
 
                     </td>
 
-                    <td className="p-4 text-gray-400 font-mono text-xs">
+                    <td className="p-4 text-gray-500 dark:text-gray-400 font-mono text-xs">
                       {tx.reference_id}
                     </td>
 
@@ -186,7 +186,7 @@ const Wallet = () => {
                       {tx.amount.toFixed(2)} GK
                     </td>
 
-                    <td className="p-4 text-right text-gray-300">
+                    <td className="p-4 text-right text-gray-600 dark:text-gray-300">
                       {tx.balance_after.toFixed(2)}
                     </td>
 
@@ -208,9 +208,9 @@ const Wallet = () => {
 
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
 
-            <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-md p-6">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl w-full max-w-md p-6">
 
-              <h3 className="text-xl font-bold text-white mb-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
                 Add Funds
               </h3>
 
@@ -223,7 +223,7 @@ const Wallet = () => {
                   value={amountToAdd}
                   onChange={(e) => setAmountToAdd(e.target.value)}
                   placeholder="Enter amount (LKR)"
-                  className="w-full bg-slate-700 text-white p-3 rounded-lg mb-4"
+                  className="w-full bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white p-3 rounded-lg mb-4"
                 />
 
                 <div className="flex gap-3">
@@ -231,7 +231,7 @@ const Wallet = () => {
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="flex-1 border border-slate-600 text-gray-300 py-2 rounded-lg"
+                    className="flex-1 border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 py-2 rounded-lg"
                   >
                     Cancel
                   </button>

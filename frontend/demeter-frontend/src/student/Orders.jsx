@@ -66,21 +66,21 @@ export default function Orders() {
 
     <StudentLayout>
 
-      <div className="max-w-4xl mx-auto px-8 py-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-8 py-10">
 
         {/* TITLE */}
-        <h1 className="text-3xl font-semibold text-center text-white">
+        <h1 className="text-3xl font-semibold text-center text-gray-900 dark:text-white">
           Order Tracking
         </h1>
 
-        <p className="text-center text-gray-400 mt-1">
+        <p className="text-center text-gray-500 dark:text-gray-400 mt-1">
           ID: #{order.id}
         </p>
 
         {/* PROGRESS CARD */}
-        <div className="mt-8 bg-slate-800 border border-slate-700 p-8 rounded-xl shadow-lg">
+        <div className="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-8 rounded-xl shadow-lg">
 
-          <div className="flex justify-between">
+          <div className="flex justify-between overflow-x-auto gap-2">
 
             {steps.map((step, index) => {
 
@@ -99,13 +99,13 @@ export default function Orders() {
                         ? "bg-yellow-400 text-black"
                         : active
                         ? "bg-yellow-400 text-black animate-pulse"
-                        : "bg-slate-700 text-gray-400"
+                        : "bg-gray-200 dark:bg-slate-700 text-gray-400 dark:text-gray-400"
                     }`}
                   >
                     {step.icon}
                   </div>
 
-                  <p className="text-sm text-white mt-2 text-center">
+                  <p className="text-sm text-gray-900 dark:text-white mt-2 text-center">
                     {step.label}
                   </p>
 
@@ -141,13 +141,13 @@ export default function Orders() {
         {/* REVIEW CARD */}
         {showReview && !reviewSubmitted && (
 
-          <div className="mt-8 bg-slate-800 border border-yellow-400/40 rounded-xl p-6 text-center">
+          <div className="mt-8 bg-white dark:bg-slate-800 border border-yellow-300 dark:border-yellow-400/40 rounded-xl p-6 text-center">
 
-            <h2 className="text-white text-lg font-semibold mb-2">
+            <h2 className="text-gray-900 dark:text-white text-lg font-semibold mb-2">
               How was your meal?
             </h2>
 
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-4">
               Review within 10m to earn rewards!
             </p>
 
@@ -171,12 +171,13 @@ export default function Orders() {
 
             <textarea
               placeholder="Leave a review (optional, max 200 chars)"
-              className="w-full bg-slate-700 text-white p-3 rounded-lg mb-4"
+              className="w-full bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white p-3 rounded-lg mb-4"
             />
 
             <div className="flex justify-between">
 
               <button
+                type="button"
                 onClick={() => setShowReview(false)}
                 className="text-gray-400"
               >
@@ -184,6 +185,7 @@ export default function Orders() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setReviewSubmitted(true)}
                 className="bg-teal-500 px-6 py-2 rounded-lg text-black font-semibold"
               >
@@ -220,9 +222,9 @@ export default function Orders() {
         )}
 
         {/* ORDER DETAILS */}
-        <div className="mt-8 bg-slate-800 border border-slate-700 p-6 rounded-xl shadow-lg">
+        <div className="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-6 rounded-xl shadow-lg">
 
-          <h2 className="text-white font-semibold mb-4">
+          <h2 className="text-gray-900 dark:text-white font-semibold mb-4">
             Order Details
           </h2>
 
@@ -246,12 +248,12 @@ export default function Orders() {
 
                   <div className="flex flex-col">
 
-                    <span className="text-white text-sm font-medium">
+                    <span className="text-gray-900 dark:text-white text-sm font-medium">
                       {qty}x {title}
                     </span>
 
                     {item.extras?.length > 0 && (
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-gray-500 dark:text-slate-400">
                         {item.extras.map(e => e.name).join(", ")}
                       </span>
                     )}
@@ -270,7 +272,7 @@ export default function Orders() {
 
           })}
 
-          <div className="border-t border-slate-700 pt-3 flex justify-between text-white font-semibold">
+          <div className="border-t border-gray-200 dark:border-slate-700 pt-3 flex justify-between text-gray-900 dark:text-white font-semibold">
 
             <span>Total Paid</span>
             <span>GK {order.total}</span>

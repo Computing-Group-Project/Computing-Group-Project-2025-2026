@@ -80,7 +80,7 @@ function WalletTable() {
 
       {/* Student Results */}
       {!selectedStudent && searchQuery && filteredStudents.length > 0 && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {filteredStudents.map((student) => (
             <button
               key={student.id}
@@ -122,7 +122,7 @@ function WalletTable() {
       {/* Selected Student Card*/}
       {selectedStudent && (
         <div className="bg-gray-50 dark:bg-dark-bg rounded-xl p-5">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-4">
             {/* LEFT - Student Name in Separate White Box */}
             <div className="flex-1 bg-white dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-5">
               <div className="flex items-center justify-between">
