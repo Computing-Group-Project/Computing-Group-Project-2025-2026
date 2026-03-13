@@ -1,0 +1,100 @@
+name: Demeter CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  # ── Backend: Build & Test ──
+  backend:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testpass
+          MYSQL_DATABASE: demeter_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build and run tests
+        run: cd backend && mvn clean verify
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/demeter_db
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: testpass
+          JWT_SECRET: ci-test-secret-key-that-is-at-least-32-chars
+
+  # ── Frontend: Lint & Build ──
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/demeter-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: cd frontend/demeter-frontend && npm ci
+
+      - name: Lint
+        run: cd frontend/demeter-frontend && npm run lint
+
+      - name: Build
+        run: cd frontend/demeter-frontend && npm run build
+
+  # ── AI Service: Install & Validate ──
+  ai-service:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: ai-service/requirements.txt
+
+      - name: Install dependencies
+        run: cd ai-service && pip install -r requirements.txt
+
+      - name: Validate imports
+        run: |
+          cd ai-service
+          python -c "
+          import fastapi
+          import uvicorn
+          import pydantic
+          import nltk
+          import pandas
+          import numpy
+          import sklearn
+          import joblib
+          print('All dependencies imported successfully')
+          "
