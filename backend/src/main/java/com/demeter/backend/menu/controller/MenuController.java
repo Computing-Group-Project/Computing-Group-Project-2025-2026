@@ -4,6 +4,7 @@ import com.demeter.backend.menu.model.Menu;
 import com.demeter.backend.menu.service.MenuService;
 import com.demeter.backend.shared.dto.response.ApiResponse;
 import com.demeter.backend.shared.constants.ApiResponseMessages;
+import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,7 @@ public class MenuController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{categoryId}")
-    public ApiResponse<Menu> createMenu(@RequestBody Menu menu,
+    public ApiResponse<Menu> createMenu(@Valid @RequestBody Menu menu,
                                         @PathVariable Long categoryId) {
         return new ApiResponse<>(true,
                 ApiResponseMessages.MENU_CREATED,

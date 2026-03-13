@@ -3,6 +3,7 @@ package com.demeter.backend.promotions.controller;
 import com.demeter.backend.promotions.dto.DiscountDTO;
 import com.demeter.backend.promotions.model.Discount;
 import com.demeter.backend.promotions.service.DiscountService;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +25,7 @@ public class DiscountController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
-    public ResponseEntity<DiscountDTO> createDiscount(@RequestBody DiscountDTO discountDTO) {
+    public ResponseEntity<DiscountDTO> createDiscount(@Valid @RequestBody DiscountDTO discountDTO) {
         Discount discount = modelMapper.map(discountDTO, Discount.class);
         Discount saved = discountService.createDiscount(discount);
         return ResponseEntity.ok(modelMapper.map(saved, DiscountDTO.class));
@@ -105,7 +106,7 @@ public class DiscountController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     public ResponseEntity<DiscountDTO> updateDiscount(@PathVariable Integer id,
-                                                       @RequestBody DiscountDTO discountDTO) {
+                                                       @Valid @RequestBody DiscountDTO discountDTO) {
         Discount discount = modelMapper.map(discountDTO, Discount.class);
         Discount updated = discountService.updateDiscount(id, discount);
         return ResponseEntity.ok(modelMapper.map(updated, DiscountDTO.class));

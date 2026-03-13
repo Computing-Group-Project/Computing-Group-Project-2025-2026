@@ -1,6 +1,9 @@
 package com.demeter.backend.users.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "users")
@@ -10,12 +13,17 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Email(message = "Email must be valid")
+    @NotBlank(message = "Email is required")
     @Column(unique = true)
     private String email;
 
+    @NotBlank(message = "Password is required")
     private String password;
 
-    private String role; // ADMIN, STUDENT, STAFF
+    @NotBlank(message = "Role is required")
+    @Pattern(regexp = "ADMIN|STUDENT|STAFF", message = "Role must be ADMIN, STUDENT, or STAFF")
+    private String role;
 
     public User() {}
 

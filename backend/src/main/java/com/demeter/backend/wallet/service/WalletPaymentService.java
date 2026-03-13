@@ -110,7 +110,7 @@ public class WalletPaymentService {
         }
 
         if (tx.getType() == TransactionType.CREDIT) {
-            Wallet wallet = walletRepository.findById(tx.getWalletId())
+            Wallet wallet = walletRepository.findByIdForUpdate(tx.getWalletId())
                     .orElseThrow(() -> new IllegalArgumentException("Wallet not found"));
 
             if (wallet.getStatus() != WalletStatus.ACTIVE) {

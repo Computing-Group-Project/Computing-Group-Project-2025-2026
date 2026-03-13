@@ -1,9 +1,11 @@
 package com.demeter.backend.orders.service;
 
 import com.demeter.backend.orders.model.Order;
+import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.enums.OrderStatus;
+import com.demeter.backend.shared.exception.AppException;
 import com.demeter.backend.orders.repo.OrderRepository;
-import com.demeter.backend.shared.util.LogActivity; // Added import
+import com.demeter.backend.shared.util.LogActivity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +19,6 @@ public class OrderService {
         this.repo = repo;
     }
 
-    // Task 08: Capture the full order object upon placement
     @Transactional
     @LogActivity(action = "PLACE_ORDER", targetTable = "ORDER")
     public Order placeOrder(Order order) {
@@ -25,14 +26,12 @@ public class OrderService {
         return repo.save(order);
     }
 
-    // Task 08: Capture the transition of order statuses
     @Transactional
     @LogActivity(action = "UPDATE_ORDER_STATUS", targetTable = "ORDER")
     public Order updateStatus(Long id, OrderStatus status) {
         Order order = repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        // Note: The Aspect will capture the 'Order' state before and after this change
         order.setStatus(status);
         return repo.save(order);
     }

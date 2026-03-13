@@ -39,3 +39,9 @@ app:
   uploads-dir: uploads
   max-file-bytes: 5242880
 
+# AI Service Configuration
+demeter:
+  ai-service:
+    base-url: ${DEMETER_AI_BASE_URL:http://localhost:8001}
+    api-key: ${DEMETER_AI_API_KEY:demeter-ai-service-key-2024}
+
