@@ -7,7 +7,7 @@ import api from "../utils/api.js";
 const Wallet = () => {
 
   const navigate = useNavigate();
-  const { balance, refreshBalance } = useWallet();
+  const { balance } = useWallet();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [amountToAdd, setAmountToAdd] = useState("");

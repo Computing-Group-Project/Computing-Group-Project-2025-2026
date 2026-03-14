@@ -12,7 +12,7 @@ export default function StudentLayout({ children }) {
 
   const navigate = useNavigate();
   const { clearCart } = useCart();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
 
   /* LOGIN PROTECTION */
   useEffect(() => {

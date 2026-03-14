@@ -33,7 +33,7 @@ const QueueList = ({ cafeteriaId = 1 }) => {
 
   // WebSocket for real-time updates
   useEffect(() => {
-    const client = connectWebSocket((stompClient) => {
+    connectWebSocket((stompClient) => {
       subscribe(stompClient, "/topic/staff", () => {
         fetchOrders();
       });

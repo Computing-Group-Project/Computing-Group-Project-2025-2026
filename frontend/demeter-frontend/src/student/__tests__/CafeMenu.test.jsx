@@ -31,7 +31,7 @@ vi.mock("../../components/common/FoodCard.jsx", () => ({
 }));
 
 vi.mock("../../components/common/FoodModal.jsx", () => ({
-  default: ({ food, onClose }) => <div data-testid="food-modal">{food.title}</div>,
+  default: ({ food }) => <div data-testid="food-modal">{food.title}</div>,
 }));
 
 vi.mock("../../assets/burger.svg", () => ({ default: "burger.svg" }));

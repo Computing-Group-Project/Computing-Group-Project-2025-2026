@@ -70,8 +70,8 @@ export default function Orders() {
 
   // WebSocket for real-time updates
   useEffect(() => {
-    const client = connectWebSocket((stompClient) => {
-      subscribe(stompClient, "/topic/orders", (msg) => {
+    connectWebSocket((stompClient) => {
+      subscribe(stompClient, "/topic/orders", () => {
         // Refresh orders when an update comes in
         fetchOrders();
       });
