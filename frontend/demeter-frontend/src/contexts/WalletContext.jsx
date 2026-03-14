@@ -1,15 +1,35 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import api from "../utils/api.js";
 
 const WalletContext = createContext();
 
 export const WalletProvider = ({ children }) => {
+  const [balance, setBalance] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  // load logged student from localStorage
-  const storedStudent = JSON.parse(localStorage.getItem("student"));
+  const fetchBalance = useCallback(async () => {
+    try {
+      const authData = localStorage.getItem("authData");
+      if (!authData) return;
 
-  const [balance, setBalance] = useState(
-    storedStudent?.wallet || 1500
-  );
+      const { role } = JSON.parse(authData);
+      if (role !== "STUDENT") return;
+
+      setLoading(true);
+      const response = await api.get("/api/wallet/balance");
+      setBalance(parseFloat(response.data.data.balance) || 0);
+    } catch {
+      // Silently fail if not authenticated or API unavailable
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBalance();
+  }, [fetchBalance]);
+
+  const refreshBalance = fetchBalance;
 
   const addFunds = (amount) => {
     setBalance((prev) => prev + amount);
@@ -20,7 +40,7 @@ export const WalletProvider = ({ children }) => {
   };
 
   return (
-    <WalletContext.Provider value={{ balance, addFunds, deductFunds }}>
+    <WalletContext.Provider value={{ balance, addFunds, deductFunds, refreshBalance, loading }}>
       {children}
     </WalletContext.Provider>
   );

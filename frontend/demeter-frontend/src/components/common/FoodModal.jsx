@@ -39,6 +39,8 @@ export default function FoodModal({ food, onClose }) {
 
   const handleAdd = () => {
   addToCart({
+    menuItemId: food.menuItemId || food.id,
+    cafeteriaId: food.cafeteriaId,
     title: food.title,
     image: food.image,
     price: food.price,

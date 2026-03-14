@@ -1,38 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import StudentLayout from "../layouts/StudentLayout.jsx";
 import { useWallet } from "../contexts/WalletContext.jsx";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api.js";
 
 const Wallet = () => {
 
   const navigate = useNavigate();
-  const { balance, addFunds } = useWallet();
+  const { balance, refreshBalance } = useWallet();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [amountToAdd, setAmountToAdd] = useState("");
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [transactions, setTransactions] = useState([
-    {
-      transaction_id: 101,
-      transaction_type: "ORDER_PAYMENT",
-      amount: -450,
-      balance_before: 1950,
-      balance_after: 1500,
-      reference_id: "ORD-2024-001",
-      description: "Payment for Order #ORD-2024-001 at Hexcore Café",
-      created_at: "2024-03-10 12:30:00"
-    },
-    {
-      transaction_id: 100,
-      transaction_type: "TOP_UP",
-      amount: 1000,
-      balance_before: 950,
-      balance_after: 1950,
-      reference_id: "PAY-8821",
-      description: "Wallet top-up via Admin Console",
-      created_at: "2024-03-09 09:15:00"
-    }
-  ]);
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const res = await api.get("/api/wallet/transactions");
+        setTransactions(res.data.data || []);
+      } catch {
+        setTransactions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, []);
 
   const handleOpenModal = () => setIsModalOpen(true);
 
@@ -41,31 +35,15 @@ const Wallet = () => {
     setAmountToAdd("");
   };
 
-  const handleAddFunds = (e) => {
+  const handleAddFunds = async (e) => {
     e.preventDefault();
-
     const amount = parseFloat(amountToAdd);
-
     if (!amount || amount <= 0) return;
 
-    const newBalance = balance + amount;
-
-    addFunds(amount);
-
-    const newTransaction = {
-      transaction_id: transactions.length + 200,
-      transaction_type: "TOP_UP",
-      amount: amount,
-      balance_before: balance,
-      balance_after: newBalance,
-      reference_id: `PAY-${Math.floor(Math.random() * 10000)}`,
-      description: "User initiated top-up",
-      created_at: new Date().toISOString().replace("T", " ").substring(0, 19)
-    };
-
-    setTransactions(prev => [newTransaction, ...prev]);
-
+    // Note: Top-up requires ADMIN role, so this is just for UI
+    // In production, admin does top-ups from the admin console
     handleCloseModal();
+    alert("Please ask an admin to top up your wallet.");
   };
 
   return (
@@ -92,7 +70,7 @@ const Wallet = () => {
 
             <div className="flex items-baseline mt-2">
               <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                {balance.toFixed(2)}
+                {Number(balance).toFixed(2)}
               </span>
 
               <span className="ml-2 text-xl font-semibold text-yellow-400">
@@ -101,7 +79,7 @@ const Wallet = () => {
             </div>
 
             <p className="text-xs text-gray-500 mt-1">
-              1 GK = 1 LKR
+              1 GK = 10 LKR
             </p>
           </div>
 
@@ -124,81 +102,75 @@ const Wallet = () => {
             </h3>
           </div>
 
-          <div className="overflow-x-auto">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin h-8 w-8 border-4 border-teal-400 border-t-transparent rounded-full mx-auto"></div>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
 
-            <table className="w-full text-left text-sm">
+              <table className="w-full text-left text-sm">
 
-              <thead className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 uppercase text-xs">
-
-                <tr>
-                  <th className="p-4">Date</th>
-                  <th className="p-4">Description</th>
-                  <th className="p-4">Type</th>
-                  <th className="p-4">Ref ID</th>
-                  <th className="p-4 text-right">Amount</th>
-                  <th className="p-4 text-right">Balance After</th>
-                </tr>
-
-              </thead>
-
-              <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
-
-                {transactions.map((tx) => (
-
-                  <tr key={tx.transaction_id}>
-
-                    <td className="p-4 text-gray-500 dark:text-gray-400">
-                      {tx.created_at}
-                    </td>
-
-                    <td className="p-4 text-gray-900 dark:text-white">
-                      {tx.description}
-                    </td>
-
-                    <td className="p-4">
-
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-semibold
-                        ${
-                          tx.transaction_type === "TOP_UP"
-                            ? "bg-green-900 text-green-300"
-                            : tx.transaction_type === "REFUND"
-                            ? "bg-blue-900 text-blue-300"
-                            : "bg-red-900 text-red-300"
-                        }`}
-                      >
-                        {tx.transaction_type}
-                      </span>
-
-                    </td>
-
-                    <td className="p-4 text-gray-500 dark:text-gray-400 font-mono text-xs">
-                      {tx.reference_id}
-                    </td>
-
-                    <td
-                      className={`p-4 text-right font-semibold
-                      ${
-                        tx.amount > 0 ? "text-green-400" : "text-red-400"
-                      }`}
-                    >
-                      {tx.amount > 0 ? "+" : ""}
-                      {tx.amount.toFixed(2)} GK
-                    </td>
-
-                    <td className="p-4 text-right text-gray-600 dark:text-gray-300">
-                      {tx.balance_after.toFixed(2)}
-                    </td>
-
+                <thead className="bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 uppercase text-xs">
+                  <tr>
+                    <th className="p-4">Date</th>
+                    <th className="p-4">Description</th>
+                    <th className="p-4">Type</th>
+                    <th className="p-4">Ref ID</th>
+                    <th className="p-4 text-right">Amount</th>
+                    <th className="p-4 text-right">Balance After</th>
                   </tr>
+                </thead>
 
-                ))}
+                <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+                  {transactions.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="p-8 text-center text-gray-500 dark:text-gray-400">
+                        No transactions yet
+                      </td>
+                    </tr>
+                  ) : (
+                    transactions.map((tx) => (
+                      <tr key={tx.transactionId}>
+                        <td className="p-4 text-gray-500 dark:text-gray-400">
+                          {tx.createdAt ? new Date(tx.createdAt).toLocaleString() : "N/A"}
+                        </td>
+                        <td className="p-4 text-gray-900 dark:text-white">
+                          {tx.description}
+                        </td>
+                        <td className="p-4">
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-semibold
+                            ${tx.type === "CREDIT"
+                              ? "bg-green-900 text-green-300"
+                              : "bg-red-900 text-red-300"
+                            }`}
+                          >
+                            {tx.type}
+                          </span>
+                        </td>
+                        <td className="p-4 text-gray-500 dark:text-gray-400 font-mono text-xs">
+                          {tx.referenceId || "-"}
+                        </td>
+                        <td
+                          className={`p-4 text-right font-semibold
+                          ${tx.type === "CREDIT" ? "text-green-400" : "text-red-400"}`}
+                        >
+                          {tx.type === "CREDIT" ? "+" : "-"}
+                          {Number(tx.amount).toFixed(2)} GK
+                        </td>
+                        <td className="p-4 text-right text-gray-600 dark:text-gray-300">
+                          {Number(tx.balanceAfter).toFixed(2)}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
 
-              </tbody>
+              </table>
 
-            </table>
-
-          </div>
+            </div>
+          )}
 
         </div>
 
@@ -222,7 +194,7 @@ const Wallet = () => {
                   required
                   value={amountToAdd}
                   onChange={(e) => setAmountToAdd(e.target.value)}
-                  placeholder="Enter amount (LKR)"
+                  placeholder="Enter amount (GK)"
                   className="w-full bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white p-3 rounded-lg mb-4"
                 />
 

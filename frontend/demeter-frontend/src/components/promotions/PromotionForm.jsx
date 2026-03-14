@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../utils/api.js';
 
 const PromotionForm = ({ discountId, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -25,9 +26,8 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
   const fetchDiscount = async (id) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/discounts/${id}`);
-      const data = await response.json();
-      setFormData(data);
+      const res = await api.get(`/api/discounts/${id}`);
+      setFormData(res.data);
     } catch (err) {
       setError('Failed to load discount');
       if (import.meta.env.DEV) console.error(err);
@@ -50,27 +50,13 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
     setError(null);
 
     try {
-      const method = discountId ? 'PUT' : 'POST';
-      const url = discountId
-        ? `http://localhost:8080/api/discounts/${discountId}`
-        : 'http://localhost:8080/api/discounts';
+      const res = discountId
+        ? await api.put(`/api/discounts/${discountId}`, formData)
+        : await api.post('/api/discounts', formData);
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save discount');
-      }
-
-      const savedDiscount = await response.json();
-      onSave?.(savedDiscount);
+      onSave?.(res.data);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || 'Failed to save discount');
       if (import.meta.env.DEV) console.error(err);
     } finally {
       setLoading(false);

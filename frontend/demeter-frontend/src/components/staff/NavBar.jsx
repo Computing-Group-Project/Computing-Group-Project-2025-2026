@@ -1,16 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../contexts/AuthContext.jsx';
 
 const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  const staffData = JSON.parse(localStorage.getItem('staff'));
-  const staffName = staffData?.fullName || 'Staff';
+  const staffName = user?.username || 'Staff';
 
   const handleLogout = () => {
-    localStorage.removeItem('staff');
+    logout();
     navigate('/login');
   };
 

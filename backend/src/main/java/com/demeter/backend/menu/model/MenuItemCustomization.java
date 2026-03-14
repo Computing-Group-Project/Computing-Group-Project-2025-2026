@@ -1,5 +1,6 @@
 package com.demeter.backend.menu.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +28,7 @@ public class MenuItemCustomization {
     @Column(name = "is_available")
     private boolean available = true;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "item_id")
     private Menu menu;

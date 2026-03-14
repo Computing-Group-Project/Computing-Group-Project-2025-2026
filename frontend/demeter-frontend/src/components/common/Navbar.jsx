@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext.jsx";
 import { useWallet } from "../../contexts/WalletContext.jsx";
 import { useTheme } from "../../contexts/ThemeContext.jsx";
+import { useAuth } from "../../contexts/AuthContext.jsx";
 
 const Navbar = ({
   title = "Demeter",
@@ -14,7 +15,7 @@ const Navbar = ({
   showProfile = true,
   showExit = true,
 
-  profilePhoto = null,   // optional profile image
+  profilePhoto = null,
 
   onProfileClick,
   onExitClick,
@@ -26,19 +27,18 @@ const Navbar = ({
   profileClassName = "",
   exitClassName = "",
 }) => {
-  // Get cart and wallet data safely
   const { cart = [] } = useCart() || {};
   const { balance = 0 } = useWallet() || {};
   const { theme, toggleTheme } = useTheme();
+  const { user } = useAuth();
 
-  // Get student name and initials
-  const student = JSON.parse(localStorage.getItem("student"));
-  const name = student?.fullName || "Student";
+  const name = user?.username || "Student";
   const initials = name
-    .split(" ")
+    .split(/[_\s]/)
     .map((n) => n[0])
     .join("")
-    .toUpperCase();
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <nav
@@ -84,7 +84,7 @@ const Navbar = ({
               `}
             >
               <span className="text-sm md:text-base leading-none">
-                {balance.toFixed(2)} GK
+                {Number(balance).toFixed(2)} GK
               </span>
               <div className="
                 ml-3

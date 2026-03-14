@@ -1,39 +1,26 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import StudentLayout from "../layouts/StudentLayout.jsx";
 import { useCart } from "../contexts/CartContext.jsx";
 import { useWallet } from "../contexts/WalletContext.jsx";
+import { useAuth } from "../contexts/AuthContext.jsx";
 import { Trash2, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-
-const suggestionItem = {
-  id: 201,
-  title: "Void Latte",
-  price: 15,
-  image:
-    "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80",
-};
+import api from "../utils/api.js";
 
 export default function Cart() {
 
-  const { cart, addToCart, removeFromCart, clearCart } = useCart();
-  const { balance, deductFunds } = useWallet();
+  const { cart, removeFromCart, clearCart } = useCart();
+  const { balance, refreshBalance } = useWallet();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [checkingOut, setCheckingOut] = useState(false);
 
   const subtotal = useMemo(
     () => cart.reduce((sum, item) => sum + item.total, 0),
     [cart]
   );
 
-  const addSuggestion = () => {
-    addToCart({
-      ...suggestionItem,
-      qty: 1,
-      total: suggestionItem.price,
-    });
-  };
-
-  const handleCheckout = () => {
-
+  const handleCheckout = async () => {
     if (cart.length === 0) {
       alert("Your cart is empty!");
       return;
@@ -44,18 +31,36 @@ export default function Cart() {
       return;
     }
 
-    deductFunds(subtotal);
+    setCheckingOut(true);
 
-    const order = {
-      id: Math.floor(Math.random() * 100000),
-      items: cart,
-      total: subtotal
-    };
+    try {
+      // Determine cafeteria from first cart item
+      const cafeteriaId = cart[0]?.cafeteriaId || 1;
 
-    clearCart();
+      const orderData = {
+        userId: user.userId,
+        cafeteriaId: cafeteriaId,
+        totalAmount: subtotal,
+        items: cart.map(item => ({
+          menuItemId: item.menuItemId || item.id,
+          quantity: item.qty,
+          unitPrice: item.price,
+          subtotal: item.total,
+        })),
+      };
 
-    navigate("/orders", { state: order });
+      const res = await api.post("/api/orders", orderData);
+      const savedOrder = res.data.data;
 
+      clearCart();
+      await refreshBalance();
+
+      navigate("/orders", { state: { orderId: savedOrder.orderId, items: cart, total: subtotal } });
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to place order. Please try again.");
+    } finally {
+      setCheckingOut(false);
+    }
   };
 
   return (
@@ -162,49 +167,6 @@ export default function Cart() {
 
                 ))}
 
-                {/* Suggestion */}
-                <div className="rounded-2xl border border-teal-200 dark:border-teal-500/40 bg-teal-50 dark:bg-gradient-to-r dark:from-emerald-950/40 dark:via-cyan-950/30 dark:to-slate-900 px-6 py-5 space-y-4 shadow-lg">
-
-                  <div className="flex items-center gap-2 text-teal-600 dark:text-teal-400">
-                    <Sparkles size={18} />
-                    <p className="font-semibold">
-                      Pairs well with your order
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-
-                    <div className="flex items-center gap-4">
-
-                      <img
-                        src={suggestionItem.image}
-                        alt={suggestionItem.title}
-                        className="w-12 h-12 rounded-lg object-cover"
-                      />
-
-                      <div>
-                        <p className="text-gray-900 dark:text-white font-semibold">
-                          {suggestionItem.title}
-                        </p>
-
-                        <p className="text-gray-500 dark:text-slate-400 text-sm">
-                          GK {suggestionItem.price}
-                        </p>
-                      </div>
-
-                    </div>
-
-                    <button
-                      onClick={addSuggestion}
-                      className="bg-gray-200 dark:bg-slate-700 hover:bg-gray-300 dark:hover:bg-slate-600 px-6 py-2 rounded-xl text-gray-900 dark:text-white"
-                    >
-                      Add
-                    </button>
-
-                  </div>
-
-                </div>
-
               </div>
 
               {/* RIGHT SIDE */}
@@ -229,14 +191,15 @@ export default function Cart() {
                 </div>
 
                 <div className="bg-gray-100 dark:bg-slate-700/60 rounded-xl py-3 text-center text-gray-600 dark:text-slate-300 mb-6">
-                  Current Balance: <b className="text-gray-900 dark:text-white">GK {balance}</b>
+                  Current Balance: <b className="text-gray-900 dark:text-white">GK {Number(balance).toFixed(2)}</b>
                 </div>
 
                 <button
                   onClick={handleCheckout}
-                  className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-3 rounded-xl"
+                  disabled={checkingOut}
+                  className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-3 rounded-xl disabled:opacity-50"
                 >
-                  Pay with Gold Krakens
+                  {checkingOut ? "Processing..." : "Pay with Gold Krakens"}
                 </button>
 
               </div>

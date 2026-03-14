@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface TransactionHistoryRepository extends JpaRepository<TransactionHistory, Long> {
     List<TransactionHistory> findByUserId(Long userId);
+    List<TransactionHistory> findByUserIdOrderByCreatedAtDesc(Long userId);
 }

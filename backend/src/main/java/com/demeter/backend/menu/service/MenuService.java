@@ -33,6 +33,10 @@ public class MenuService {
         return menuRepo.findAll();
     }
 
+    public List<Menu> getMenusByCafeteria(Long cafeteriaId) {
+        return menuRepo.findByCafeteriaId(cafeteriaId);
+    }
+
     public Menu getMenuById(Long id) {
         return menuRepo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.MENU_NOT_FOUND));

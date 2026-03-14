@@ -1,6 +1,6 @@
 import React from 'react';
 
-const QueueItem = ({ order, onCancel, onAccept, onMarkReady }) => {
+const QueueItem = ({ order, onCancel, onAccept, onMarkReady, onMarkCompleted }) => {
   // destructure the order object for easier access
   const { id, time, items, status } = order;
 
@@ -47,9 +47,14 @@ const QueueItem = ({ order, onCancel, onAccept, onMarkReady }) => {
         )}
 
         {status === 'Preparing' && (
-          // mark ready
           <button onClick={onMarkReady} className="flex-1 md:flex-none px-6 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 text-sm font-semibold rounded-lg transition-colors border border-gray-200 dark:border-gray-600">
             Mark Ready
+          </button>
+        )}
+
+        {status === 'Ready' && onMarkCompleted && (
+          <button onClick={onMarkCompleted} className="flex-1 md:flex-none px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-semibold rounded-lg transition-colors">
+            Complete
           </button>
         )}
 

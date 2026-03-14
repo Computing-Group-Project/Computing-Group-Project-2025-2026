@@ -1,5 +1,6 @@
 package com.demeter.backend.orders.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +26,7 @@ public class OrderItem {
 
     private Double subtotal;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;

@@ -6,12 +6,15 @@ import com.demeter.backend.orders.service.OrderService;
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.enums.OrderStatus;
 import com.demeter.backend.shared.exception.AppException;
+import com.demeter.backend.wallet.service.KrakensWalletService;
+import com.demeter.backend.ws.NotificationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +28,12 @@ class OrderServiceTest {
     @Mock
     private OrderRepository repo;
 
+    @Mock
+    private KrakensWalletService walletService;
+
+    @Mock
+    private NotificationService notificationService;
+
     @InjectMocks
     private OrderService orderService;
 
@@ -32,6 +41,8 @@ class OrderServiceTest {
     void placeOrder_shouldSetStatusToPlacedAndSave() {
         Order order = new Order(1L, 1L, 45.0);
 
+        when(walletService.debit(eq(1L), any(BigDecimal.class), anyString(), any()))
+                .thenReturn(new BigDecimal("55.00"));
         when(repo.save(any(Order.class))).thenAnswer(invocation -> {
             Order saved = invocation.getArgument(0);
             saved.setOrderId(1L);
@@ -43,6 +54,8 @@ class OrderServiceTest {
         assertEquals(OrderStatus.PLACED, result.getStatus());
         assertNotNull(result.getOrderId());
         verify(repo).save(order);
+        verify(walletService).debit(eq(1L), any(BigDecimal.class), anyString(), any());
+        verify(notificationService).sendToStaff(any());
     }
 
     @Test
@@ -58,6 +71,7 @@ class OrderServiceTest {
 
         assertEquals(OrderStatus.PREPARING, result.getStatus());
         verify(repo).save(existing);
+        verify(notificationService).sendOrderUpdate(any());
     }
 
     @Test

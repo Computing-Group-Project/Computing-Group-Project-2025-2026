@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import PromotionForm from './PromotionForm';
+import { useAuth } from '../../contexts/AuthContext.jsx';
+import api from '../../utils/api.js';
 
 const PromotionList = () => {
+  const { user } = useAuth();
   const [discounts, setDiscounts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -19,14 +22,13 @@ const PromotionList = () => {
     try {
       const endpoint =
         filter === 'ACTIVE'
-          ? 'http://localhost:8080/api/discounts/active'
+          ? '/api/discounts/active'
           : filter === 'PENDING'
-          ? 'http://localhost:8080/api/discounts/pending'
-          : 'http://localhost:8080/api/discounts';
+          ? '/api/discounts/pending'
+          : '/api/discounts';
 
-      const response = await fetch(endpoint);
-      const data = await response.json();
-      setDiscounts(data);
+      const res = await api.get(endpoint);
+      setDiscounts(res.data);
     } catch (err) {
       setError('Failed to load discounts');
       if (import.meta.env.DEV) console.error(err);
@@ -38,9 +40,7 @@ const PromotionList = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this discount?')) {
       try {
-        await fetch(`http://localhost:8080/api/discounts/${id}`, {
-          method: 'DELETE',
-        });
+        await api.delete(`/api/discounts/${id}`);
         fetchDiscounts();
       } catch (err) {
         console.error('Error deleting discount:', err);
@@ -50,9 +50,7 @@ const PromotionList = () => {
 
   const handleDeactivate = async (id) => {
     try {
-      await fetch(`http://localhost:8080/api/discounts/${id}/deactivate`, {
-        method: 'PUT',
-      });
+      await api.put(`/api/discounts/${id}/deactivate`);
       fetchDiscounts();
     } catch (err) {
       console.error('Error deactivating discount:', err);
@@ -61,9 +59,7 @@ const PromotionList = () => {
 
   const handleApprove = async (id, staffUserId) => {
     try {
-      await fetch(`http://localhost:8080/api/discounts/${id}/approve?staffUserId=${staffUserId}`, {
-        method: 'PUT',
-      });
+      await api.put(`/api/discounts/${id}/approve?staffUserId=${staffUserId}`);
       fetchDiscounts();
     } catch (err) {
       console.error('Error approving discount:', err);
@@ -72,9 +68,7 @@ const PromotionList = () => {
 
   const handleReject = async (id) => {
     try {
-      await fetch(`http://localhost:8080/api/discounts/${id}/reject`, {
-        method: 'PUT',
-      });
+      await api.put(`/api/discounts/${id}/reject`);
       fetchDiscounts();
     } catch (err) {
       console.error('Error rejecting discount:', err);
@@ -204,8 +198,7 @@ const PromotionList = () => {
                       <>
                         <button
                           onClick={() => {
-                            const staff = JSON.parse(localStorage.getItem('staff'));
-                            handleApprove(discount.discountId, staff?.id || 0);
+                            handleApprove(discount.discountId, user?.userId || 0);
                           }}
                           className="text-green-500 hover:text-green-700 text-sm"
                         >

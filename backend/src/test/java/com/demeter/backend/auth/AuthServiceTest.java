@@ -1,11 +1,13 @@
 package com.demeter.backend.auth;
 
+import com.demeter.backend.auth.dto.response.LoginResponseDTO;
 import com.demeter.backend.auth.service.AuthService;
 import com.demeter.backend.config.security.JwtUtil;
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.exception.AppException;
 import com.demeter.backend.users.model.User;
 import com.demeter.backend.users.repo.UserRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,13 +31,16 @@ class AuthServiceTest {
     @Mock
     private JwtUtil jwtUtil;
 
+    @Mock
+    private EntityManager entityManager;
+
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(userRepository, passwordEncoder, jwtUtil);
+        authService = new AuthService(userRepository, passwordEncoder, jwtUtil, entityManager);
     }
 
     // ── Registration Tests ──
@@ -107,7 +112,7 @@ class AuthServiceTest {
     // ── Login Tests ──
 
     @Test
-    void login_withValidCredentials_shouldReturnToken() {
+    void login_withValidCredentials_shouldReturnLoginResponseDTO() {
         User user = new User();
         user.setId(1L);
         user.setUsername("test_student");
@@ -117,9 +122,13 @@ class AuthServiceTest {
         when(userRepository.findByUsername("test_student")).thenReturn(Optional.of(user));
         when(jwtUtil.generateToken("test_student", "STUDENT", 1L)).thenReturn("mock-jwt-token");
 
-        String token = authService.login("test_student", "secure123");
+        LoginResponseDTO result = authService.login("test_student", "secure123");
 
-        assertEquals("mock-jwt-token", token);
+        assertEquals("mock-jwt-token", result.getToken());
+        assertEquals(1L, result.getUserId());
+        assertEquals("test_student", result.getUsername());
+        assertEquals("STUDENT", result.getRole());
+        assertNull(result.getAssignedCafeteriaId());
         verify(jwtUtil).generateToken("test_student", "STUDENT", 1L);
     }
 

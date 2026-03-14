@@ -1,75 +1,44 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GraduationCap, Shield, ChefHat } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext.jsx";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [studentId, setStudentId] = useState("");
+  const { login } = useAuth();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Predefined student accounts
-  const students = {
-    "32566": {
-      id: "32566",
-      fullName: "Alex Fernando",
-      batch: "Batch 2023",
-      wallet: 1500
-    },
-    "32567": {
-      id: "32567",
-      fullName: "Maria Silva",
-      batch: "Batch 2022",
-      wallet: 980
-    }
-  };
+  const handleLogin = async (overrideUsername, overridePassword) => {
+    const u = overrideUsername || username;
+    const p = overridePassword || password;
 
-  // Predefined staff accounts
-  const staff = {
-    "S1001": {
-      id: "S1001",
-      fullName: "John Carter",
-      role: "Staff"
-    },
-    "S1002": {
-      id: "S1002",
-      fullName: "Linda Brown",
-      role: "Staff"
-    },
-    "A1001": {
-      id: "A1001",
-      fullName: "Michael Scott",
-      role: "Admin"
-    }
-  };
-
-  const handleStudentLogin = () => {
-    if (!studentId) {
-      alert("Please enter your University ID");
+    if (!u || !p) {
+      setError("Please enter username and password");
       return;
     }
 
-    const student = students[studentId];
-    if (!student) {
-      alert("Student not found");
-      return;
-    }
+    setError("");
+    setLoading(true);
 
-    localStorage.setItem("student", JSON.stringify(student));
-    navigate("/");
-  };
+    try {
+      const auth = await login(u, p);
 
-  const handleStaffLogin = (id) => {
-    const user = staff[id];
-    if (!user) {
-      alert("Staff/Admin not found");
-      return;
-    }
-
-    localStorage.setItem("staff", JSON.stringify(user));
-
-    if (user.role === "Admin") {
-      navigate("/admin");
-    } else {
-      navigate("/staff");
+      if (auth.role === "ADMIN") {
+        navigate("/admin");
+      } else if (auth.role === "STAFF") {
+        navigate("/staff");
+      } else {
+        navigate("/");
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Invalid username or password"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,45 +62,64 @@ export default function Login() {
           Bastion University Smart Cafeteria
         </p>
 
-        {/* Label */}
-        <label className="text-sm text-gray-600 dark:text-gray-300 mb-2 block">University ID</label>
+        {/* Error */}
+        {error && (
+          <div className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg mb-4 text-sm">
+            {error}
+          </div>
+        )}
 
-        {/* Input */}
+        {/* Username */}
+        <label className="text-sm text-gray-600 dark:text-gray-300 mb-2 block">Username</label>
         <input
           type="text"
-          placeholder="e.g. 2024-STUD-001"
-          value={studentId}
-          onChange={(e) => setStudentId(e.target.value)}
+          placeholder="Enter your username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="w-full p-3 rounded-lg border border-gray-300 dark:border-[#334155] bg-gray-50 dark:bg-[#0f172a] text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-teal-400 mb-4"
+        />
+
+        {/* Password */}
+        <label className="text-sm text-gray-600 dark:text-gray-300 mb-2 block">Password</label>
+        <input
+          type="password"
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleLogin()}
           className="w-full p-3 rounded-lg border border-gray-300 dark:border-[#334155] bg-gray-50 dark:bg-[#0f172a] text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-teal-400 mb-5"
         />
 
         {/* Login Button */}
         <button
-          onClick={handleStudentLogin}
-          className="w-full py-3 rounded-lg bg-teal-400 text-slate-900 font-semibold hover:bg-teal-300 transition"
+          onClick={() => handleLogin()}
+          disabled={loading}
+          className="w-full py-3 rounded-lg bg-teal-400 text-slate-900 font-semibold hover:bg-teal-300 transition disabled:opacity-50"
         >
-          Login as Student
+          {loading ? "Logging in..." : "Login"}
         </button>
 
         {/* Divider */}
         <div className="flex items-center my-8">
           <div className="flex-1 h-[1px] bg-gray-300 dark:bg-[#334155]"></div>
-          <span className="px-4 text-xs tracking-widest text-gray-500 dark:text-gray-400">STAFF ACCESS</span>
+          <span className="px-4 text-xs tracking-widest text-gray-500 dark:text-gray-400">QUICK LOGIN</span>
           <div className="flex-1 h-[1px] bg-gray-300 dark:bg-[#334155]"></div>
         </div>
 
-        {/* Staff + Admin */}
+        {/* Staff + Admin quick login */}
         <div className="flex gap-4">
           <button
-            onClick={() => handleStaffLogin("S1001")}
-            className="flex items-center justify-center gap-2 flex-1 border border-gray-300 dark:border-[#334155] text-gray-700 dark:text-white rounded-lg py-3 hover:border-teal-400 transition"
+            onClick={() => handleLogin("swain", "password123")}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 flex-1 border border-gray-300 dark:border-[#334155] text-gray-700 dark:text-white rounded-lg py-3 hover:border-teal-400 transition disabled:opacity-50"
           >
             <ChefHat size={18}/> Staff
           </button>
 
           <button
-            onClick={() => handleStaffLogin("A1001")}
-            className="flex items-center justify-center gap-2 flex-1 border border-gray-300 dark:border-[#334155] text-gray-700 dark:text-white rounded-lg py-3 hover:border-teal-400 transition"
+            onClick={() => handleLogin("admin_user", "password123")}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 flex-1 border border-gray-300 dark:border-[#334155] text-gray-700 dark:text-white rounded-lg py-3 hover:border-teal-400 transition disabled:opacity-50"
           >
             <Shield size={18}/> Admin
           </button>

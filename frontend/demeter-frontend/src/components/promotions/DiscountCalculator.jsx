@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../utils/api.js';
 
 const DiscountCalculator = ({ cafeteriaId }) => {
   const [discounts, setDiscounts] = useState([]);
@@ -13,11 +14,8 @@ const DiscountCalculator = ({ cafeteriaId }) => {
   const fetchActiveDiscounts = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/discounts/cafeteria/${cafeteriaId}/active`
-      );
-      const data = await response.json();
-      setDiscounts(data);
+      const res = await api.get(`/api/discounts/cafeteria/${cafeteriaId}/active`);
+      setDiscounts(res.data);
     } catch (error) {
       if (import.meta.env.DEV) console.error('Error fetching discounts:', error);
     } finally {

@@ -2,8 +2,10 @@ package com.demeter.backend.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -29,10 +31,16 @@ public class SecurityConfig {
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/cafeterias/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/menus/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/discounts/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/cafeteria/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter,
@@ -50,7 +58,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", config);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 

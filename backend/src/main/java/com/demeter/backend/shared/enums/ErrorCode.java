@@ -1,7 +1,9 @@
 package com.demeter.backend.shared.enums;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+@Getter
 public enum ErrorCode {
     ORDER_NOT_FOUND("Order not found", HttpStatus.NOT_FOUND),
     MENU_NOT_FOUND("Menu item not found", HttpStatus.NOT_FOUND),
@@ -13,6 +15,11 @@ public enum ErrorCode {
     UNAUTHORIZED_ACCESS("You are not authorized to access this resource", HttpStatus.FORBIDDEN),
     BAD_REQUEST("Invalid request", HttpStatus.BAD_REQUEST),
     VALIDATION_FAILED("Validation failed", HttpStatus.BAD_REQUEST),
+    INSUFFICIENT_BALANCE("Insufficient Gold Krakens balance", HttpStatus.BAD_REQUEST),
+    REVIEW_NOT_FOUND("Review not found", HttpStatus.NOT_FOUND),
+    REVIEW_ALREADY_EXISTS("Review already submitted for this order", HttpStatus.CONFLICT),
+    REVIEW_WINDOW_EXPIRED("Review window has expired (1 hour after completion)", HttpStatus.BAD_REQUEST),
+    CAFETERIA_NOT_FOUND("Cafeteria not found", HttpStatus.NOT_FOUND),
     INTERNAL_ERROR("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String message;
@@ -23,6 +30,4 @@ public enum ErrorCode {
         this.status = status;
     }
 
-    public String getMessage() { return message; }
-    public HttpStatus getStatus() { return status; }
 }

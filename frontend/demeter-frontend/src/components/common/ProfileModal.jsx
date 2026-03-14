@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext.jsx";
 
 export default function ProfileModal({
   open,
@@ -7,11 +8,11 @@ export default function ProfileModal({
   profilePhoto
 }) {
 
-  const student = JSON.parse(localStorage.getItem("student"));
+  const { user } = useAuth();
 
-  const name = student?.fullName || "Student";
-  const studentId = student?.id || "N/A";
-  const batch = student?.batch || "N/A";
+  const name = user?.username || "Student";
+  const studentId = user?.userId || "N/A";
+  const batch = "N/A";
 
   const initials = name
     .split(" ")

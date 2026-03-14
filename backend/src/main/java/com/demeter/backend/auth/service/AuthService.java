@@ -1,11 +1,14 @@
 package com.demeter.backend.auth.service;
 
+import com.demeter.backend.auth.dto.response.LoginResponseDTO;
 import com.demeter.backend.config.security.JwtUtil;
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.exception.AppException;
 import com.demeter.backend.shared.util.LogActivity;
+import com.demeter.backend.users.model.Staff;
 import com.demeter.backend.users.model.User;
 import com.demeter.backend.users.repo.UserRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +18,14 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final EntityManager entityManager;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       JwtUtil jwtUtil, EntityManager entityManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.entityManager = entityManager;
     }
 
     @LogActivity(action = "USER_REGISTER", targetTable = "USER")
@@ -30,8 +36,7 @@ public class AuthService {
     }
 
     @LogActivity(action = "USER_LOGIN", targetTable = "USER")
-    public String login(String username, String password) {
-
+    public LoginResponseDTO login(String username, String password) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
 
@@ -39,7 +44,21 @@ public class AuthService {
             throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         }
 
-        return jwtUtil.generateToken(user.getUsername(), user.getRole(), user.getId());
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole(), user.getId());
+
+        Integer assignedCafeteriaId = null;
+        if ("STAFF".equals(user.getRole())) {
+            try {
+                Staff staff = entityManager.find(Staff.class, user.getId());
+                if (staff != null) {
+                    assignedCafeteriaId = staff.getAssignedCafeteriaId();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        return new LoginResponseDTO(token, user.getId(), user.getUsername(),
+                user.getRole(), assignedCafeteriaId);
     }
 
     private void validatePasswordStrength(String password) {

@@ -53,6 +53,17 @@ public class OrderController {
     }
 
     @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
+    @GetMapping("/cafeteria/{cafeteriaId}")
+    public ApiResponse<List<Order>> getOrdersByCafeteria(
+            @PathVariable Long cafeteriaId,
+            @RequestParam(required = false, defaultValue = "false") boolean activeOnly) {
+        List<Order> orders = activeOnly
+                ? service.getActiveOrdersByCafeteria(cafeteriaId)
+                : service.getOrdersByCafeteria(cafeteriaId);
+        return new ApiResponse<>(true, ApiResponseMessages.ORDERS_FETCHED, orders);
+    }
+
+    @PreAuthorize("hasAnyRole('STAFF','ADMIN')")
     @GetMapping
     public ApiResponse<List<Order>> getAllOrders() {
         return new ApiResponse<>(true, ApiResponseMessages.ALL_ORDERS_FETCHED, service.getAllOrders());

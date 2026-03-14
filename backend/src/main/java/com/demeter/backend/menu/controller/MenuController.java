@@ -43,6 +43,13 @@ public class MenuController {
                 service.getMenuById(id));
     }
 
+    @GetMapping("/cafeteria/{cafeteriaId}")
+    public ApiResponse<List<Menu>> getMenusByCafeteria(@PathVariable Long cafeteriaId) {
+        return new ApiResponse<>(true,
+                ApiResponseMessages.MENUS_FETCHED,
+                service.getMenusByCafeteria(cafeteriaId));
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ApiResponse<String> deleteMenu(@PathVariable Long id) {

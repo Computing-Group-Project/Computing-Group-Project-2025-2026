@@ -3,6 +3,7 @@ import Navbar from "../components/common/Navbar.jsx";
 import ProfileModal from "../components/common/ProfileModal.jsx";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext.jsx";
+import { useAuth } from "../contexts/AuthContext.jsx";
 
 export default function StudentLayout({ children }) {
 
@@ -11,32 +12,23 @@ export default function StudentLayout({ children }) {
 
   const navigate = useNavigate();
   const { clearCart } = useCart();
+  const { user, logout, isAuthenticated } = useAuth();
 
   /* LOGIN PROTECTION */
   useEffect(() => {
-
-    const student = localStorage.getItem("student");
-
-    if (!student) {
+    if (!isAuthenticated) {
       navigate("/login");
     }
-
-  }, []);
-
+  }, [isAuthenticated]);
 
   /* LOGOUT */
   const handleLogout = () => {
-
-    localStorage.removeItem("student");
     clearCart();
-
+    logout();
     navigate("/login");
-
   };
 
-
   return (
-
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
 
       <Navbar
@@ -58,6 +50,5 @@ export default function StudentLayout({ children }) {
       />
 
     </div>
-
   );
 }
