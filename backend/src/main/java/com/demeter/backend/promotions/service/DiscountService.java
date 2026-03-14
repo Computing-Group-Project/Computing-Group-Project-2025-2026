@@ -2,6 +2,8 @@ package com.demeter.backend.promotions.service;
 
 import com.demeter.backend.promotions.model.Discount;
 import com.demeter.backend.promotions.repo.DiscountRepository;
+import com.demeter.backend.shared.enums.ErrorCode;
+import com.demeter.backend.shared.exception.AppException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,14 +54,14 @@ public class DiscountService {
             discount.setApprovedBy(staffUserId);
             discount.setIsActive(true);
             return discountRepository.save(discount);
-        }).orElseThrow(() -> new RuntimeException("Discount not found"));
+        }).orElseThrow(() -> new AppException(ErrorCode.DISCOUNT_NOT_FOUND));
     }
 
     public Discount rejectDiscount(Integer discountId) {
         return discountRepository.findById(discountId).map(discount -> {
             discount.setIsActive(false);
             return discountRepository.save(discount);
-        }).orElseThrow(() -> new RuntimeException("Discount not found"));
+        }).orElseThrow(() -> new AppException(ErrorCode.DISCOUNT_NOT_FOUND));
     }
 
     public Discount updateDiscount(Integer id, Discount discount) {
@@ -74,7 +76,7 @@ public class DiscountService {
             existing.setEndDate(discount.getEndDate());
             existing.setIsActive(discount.getIsActive());
             return discountRepository.save(existing);
-        }).orElseThrow(() -> new RuntimeException("Discount not found"));
+        }).orElseThrow(() -> new AppException(ErrorCode.DISCOUNT_NOT_FOUND));
     }
 
     public void deleteDiscount(Integer id) {
@@ -85,6 +87,6 @@ public class DiscountService {
         return discountRepository.findById(id).map(discount -> {
             discount.setIsActive(false);
             return discountRepository.save(discount);
-        }).orElseThrow(() -> new RuntimeException("Discount not found"));
+        }).orElseThrow(() -> new AppException(ErrorCode.DISCOUNT_NOT_FOUND));
     }
 }

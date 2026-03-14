@@ -16,7 +16,7 @@ class JwtUtilTest {
 
     @Test
     void generateToken_shouldReturnNonNullToken() {
-        String token = jwtUtil.generateToken("test_student", "STUDENT");
+        String token = jwtUtil.generateToken("test_student", "STUDENT", 1L);
 
         assertNotNull(token);
         assertFalse(token.isEmpty());
@@ -24,7 +24,7 @@ class JwtUtilTest {
 
     @Test
     void extractUsername_shouldReturnCorrectUsername() {
-        String token = jwtUtil.generateToken("test_student", "STUDENT");
+        String token = jwtUtil.generateToken("test_student", "STUDENT", 1L);
 
         String username = jwtUtil.extractUsername(token);
 
@@ -33,7 +33,7 @@ class JwtUtilTest {
 
     @Test
     void extractRole_shouldReturnCorrectRole() {
-        String token = jwtUtil.generateToken("test_student", "ADMIN");
+        String token = jwtUtil.generateToken("test_student", "ADMIN", 1L);
 
         String role = jwtUtil.extractRole(token);
 
@@ -41,10 +41,19 @@ class JwtUtilTest {
     }
 
     @Test
+    void extractUserId_shouldReturnCorrectUserId() {
+        String token = jwtUtil.generateToken("test_student", "STUDENT", 42L);
+
+        Long userId = jwtUtil.extractUserId(token);
+
+        assertEquals(42L, userId);
+    }
+
+    @Test
     void extractUsername_withDifferentRoles_shouldWork() {
-        String studentToken = jwtUtil.generateToken("student_user", "STUDENT");
-        String staffToken = jwtUtil.generateToken("staff_user", "STAFF");
-        String adminToken = jwtUtil.generateToken("admin_user", "ADMIN");
+        String studentToken = jwtUtil.generateToken("student_user", "STUDENT", 1L);
+        String staffToken = jwtUtil.generateToken("staff_user", "STAFF", 2L);
+        String adminToken = jwtUtil.generateToken("admin_user", "ADMIN", 3L);
 
         assertEquals("student_user", jwtUtil.extractUsername(studentToken));
         assertEquals("staff_user", jwtUtil.extractUsername(staffToken));
@@ -64,7 +73,7 @@ class JwtUtilTest {
     void extractUsername_withExpiredToken_shouldThrow() {
         JwtUtil shortLivedJwt = new JwtUtil(
                 "test-secret-key-for-unit-tests-minimum-32-chars-long", 0);
-        String token = shortLivedJwt.generateToken("test_student", "STUDENT");
+        String token = shortLivedJwt.generateToken("test_student", "STUDENT", 1L);
 
         assertThrows(Exception.class, () -> jwtUtil.extractUsername(token));
     }

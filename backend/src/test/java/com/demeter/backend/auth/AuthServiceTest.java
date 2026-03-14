@@ -115,12 +115,12 @@ class AuthServiceTest {
         user.setRole("STUDENT");
 
         when(userRepository.findByUsername("test_student")).thenReturn(Optional.of(user));
-        when(jwtUtil.generateToken("test_student", "STUDENT")).thenReturn("mock-jwt-token");
+        when(jwtUtil.generateToken("test_student", "STUDENT", 1L)).thenReturn("mock-jwt-token");
 
         String token = authService.login("test_student", "secure123");
 
         assertEquals("mock-jwt-token", token);
-        verify(jwtUtil).generateToken("test_student", "STUDENT");
+        verify(jwtUtil).generateToken("test_student", "STUDENT", 1L);
     }
 
     @Test

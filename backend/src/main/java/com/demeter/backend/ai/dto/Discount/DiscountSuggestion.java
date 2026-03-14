@@ -1,6 +1,6 @@
 package com.demeter.backend.ai.dto.Discount;
 
-import com.demeter.backend.ai.enums.DiscountType;
+import com.demeter.backend.shared.enums.DiscountType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

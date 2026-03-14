@@ -23,7 +23,7 @@ public class AuditLog {
     private String targetTable;
 
     @Column(name = "target_id")
-    private String targetId;
+    private Integer targetId;
 
     @Column(name = "old_value", columnDefinition = "TEXT")
     private String oldValue;

@@ -22,9 +22,12 @@ public class Order {
     private Long cafeteriaId;
     private Double totalAmount;
 
-    // Discount and promotion fields
+    // Discount and promotion fields (not persisted — computed at checkout)
+    @Transient
     private String appliedPromoCode;
+    @Transient
     private Double discountAmount = 0.0;
+    @Transient
     private Double finalAmount;
 
     @Enumerated(EnumType.STRING)

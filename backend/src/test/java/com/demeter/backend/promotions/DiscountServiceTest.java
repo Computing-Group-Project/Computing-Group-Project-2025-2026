@@ -3,6 +3,8 @@ package com.demeter.backend.promotions;
 import com.demeter.backend.promotions.model.Discount;
 import com.demeter.backend.promotions.repo.DiscountRepository;
 import com.demeter.backend.promotions.service.DiscountService;
+import com.demeter.backend.shared.enums.ErrorCode;
+import com.demeter.backend.shared.exception.AppException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -121,10 +123,38 @@ class DiscountServiceTest {
     }
 
     @Test
-    void approveDiscount_withInvalidId_shouldThrow() {
+    void approveDiscount_withInvalidId_shouldThrowAppException() {
         when(discountRepository.findById(999)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class,
+        AppException ex = assertThrows(AppException.class,
                 () -> discountService.approveDiscount(999, 42));
+        assertEquals(ErrorCode.DISCOUNT_NOT_FOUND, ex.getErrorCode());
+    }
+
+    @Test
+    void rejectDiscount_withInvalidId_shouldThrowAppException() {
+        when(discountRepository.findById(999)).thenReturn(Optional.empty());
+
+        AppException ex = assertThrows(AppException.class,
+                () -> discountService.rejectDiscount(999));
+        assertEquals(ErrorCode.DISCOUNT_NOT_FOUND, ex.getErrorCode());
+    }
+
+    @Test
+    void updateDiscount_withInvalidId_shouldThrowAppException() {
+        when(discountRepository.findById(999)).thenReturn(Optional.empty());
+
+        AppException ex = assertThrows(AppException.class,
+                () -> discountService.updateDiscount(999, createTestDiscount()));
+        assertEquals(ErrorCode.DISCOUNT_NOT_FOUND, ex.getErrorCode());
+    }
+
+    @Test
+    void deactivateDiscount_withInvalidId_shouldThrowAppException() {
+        when(discountRepository.findById(999)).thenReturn(Optional.empty());
+
+        AppException ex = assertThrows(AppException.class,
+                () -> discountService.deactivateDiscount(999));
+        assertEquals(ErrorCode.DISCOUNT_NOT_FOUND, ex.getErrorCode());
     }
 }
