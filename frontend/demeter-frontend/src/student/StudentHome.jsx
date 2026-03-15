@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
 import FoodCard from "../components/common/FoodCard.jsx";
 import FoodModal from "../components/common/FoodModal.jsx";
 import CafeteriaCard from "../components/common/CafeteriaCard.jsx";
@@ -31,7 +30,6 @@ export default function StudentHome() {
   const { user } = useAuth();
   const rawName = user?.username?.split("_")[0] || "Student";
   const firstName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-  const navigate = useNavigate();
 
   const [cafeterias, setCafeterias] = useState([]);
   const [recommendedItems] = useState(fallbackRecommended);

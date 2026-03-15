@@ -4,9 +4,7 @@ import userEvent from "@testing-library/user-event";
 import StudentHome from "../StudentHome.jsx";
 
 // Mock react-router-dom
-const mockNavigate = vi.fn();
 vi.mock("react-router-dom", () => ({
-  useNavigate: () => mockNavigate,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
 }));
 
