@@ -27,6 +27,11 @@ vi.mock("../../contexts/WalletContext.jsx", () => ({
   }),
 }));
 
+// Mock PaymentGatewayModal (rendered via portal)
+vi.mock("../../components/common/PaymentGatewayModal.jsx", () => ({
+  default: () => null,
+}));
+
 import api from "../../utils/api.js";
 
 describe("Wallet", () => {
@@ -46,7 +51,7 @@ describe("Wallet", () => {
     });
   });
 
-  it("shows transaction history table", async () => {
+  it("shows transaction history table with correct sign for deposits", async () => {
     api.get.mockResolvedValueOnce({
       data: {
         data: [
@@ -61,6 +66,15 @@ describe("Wallet", () => {
           },
           {
             transactionId: 2,
+            description: "Semester Start Allowance",
+            type: "DEPOSIT",
+            amount: 100,
+            balanceAfter: 100,
+            referenceId: null,
+            createdAt: "2026-02-13T09:00:00",
+          },
+          {
+            transactionId: 3,
             description: "Wallet Top-Up",
             type: "CREDIT",
             amount: 200,
@@ -77,9 +91,15 @@ describe("Wallet", () => {
     await waitFor(() => {
       expect(screen.getByText("Transaction History")).toBeInTheDocument();
       expect(screen.getByText("Order Payment")).toBeInTheDocument();
+      expect(screen.getByText("Semester Start Allowance")).toBeInTheDocument();
       expect(screen.getByText("Wallet Top-Up")).toBeInTheDocument();
       expect(screen.getByText("DEBIT")).toBeInTheDocument();
+      expect(screen.getByText("DEPOSIT")).toBeInTheDocument();
       expect(screen.getByText("CREDIT")).toBeInTheDocument();
+      // DEBIT shows negative, DEPOSIT and CREDIT show positive
+      expect(screen.getByText("-45.00 GK")).toBeInTheDocument();
+      expect(screen.getByText("+100.00 GK")).toBeInTheDocument();
+      expect(screen.getByText("+200.00 GK")).toBeInTheDocument();
     });
   });
 

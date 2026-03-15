@@ -11,6 +11,13 @@ vi.mock("../../utils/api.js", () => ({
   },
 }));
 
+// Mock WebSocket utilities (WalletContext subscribes to /topic/orders)
+vi.mock("../../utils/websocket.js", () => ({
+  connectWebSocket: vi.fn(),
+  subscribe: vi.fn(),
+  disconnectWebSocket: vi.fn(),
+}));
+
 import api from "../../utils/api.js";
 
 // Helper component to interact with wallet context
@@ -86,6 +93,53 @@ describe("WalletContext", () => {
 
     await user.click(screen.getByText("Deduct 30"));
     expect(screen.getByTestId("balance").textContent).toBe("70");
+  });
+
+  it("subscribes to WebSocket for real-time updates when STUDENT", async () => {
+    const { connectWebSocket, subscribe } = await import("../../utils/websocket.js");
+
+    localStorage.setItem(
+      "authData",
+      JSON.stringify({ role: "STUDENT", token: "test-token" })
+    );
+    api.get.mockResolvedValue({
+      data: { data: { balance: 100 } },
+    });
+
+    // Make connectWebSocket invoke its callback with a mock client
+    const mockClient = {};
+    connectWebSocket.mockImplementation((cb) => cb(mockClient));
+
+    render(
+      <WalletProvider>
+        <WalletConsumer />
+      </WalletProvider>
+    );
+
+    await waitFor(() => {
+      expect(connectWebSocket).toHaveBeenCalled();
+      expect(subscribe).toHaveBeenCalledWith(mockClient, "/topic/orders", expect.any(Function));
+    });
+  });
+
+  it("does not subscribe to WebSocket for non-STUDENT roles", async () => {
+    const { connectWebSocket } = await import("../../utils/websocket.js");
+
+    localStorage.setItem(
+      "authData",
+      JSON.stringify({ role: "STAFF", token: "test-token" })
+    );
+
+    render(
+      <WalletProvider>
+        <WalletConsumer />
+      </WalletProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("loading").textContent).toBe("false");
+    });
+    expect(connectWebSocket).not.toHaveBeenCalled();
   });
 
   it("throws when useWallet is used outside WalletProvider", () => {

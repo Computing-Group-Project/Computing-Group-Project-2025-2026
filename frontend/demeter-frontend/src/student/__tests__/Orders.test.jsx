@@ -14,12 +14,13 @@ vi.mock("../../utils/api.js", () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
+    put: vi.fn(),
   },
 }));
 
 // Mock websocket
 vi.mock("../../utils/websocket.js", () => ({
-  connectWebSocket: vi.fn(() => ({})),
+  connectWebSocket: vi.fn(),
   subscribe: vi.fn(),
   disconnectWebSocket: vi.fn(),
 }));
@@ -55,20 +56,36 @@ describe("Orders", () => {
   });
 
   it("renders order tracking with order details", async () => {
-    api.get.mockResolvedValueOnce({
-      data: {
-        data: [
-          {
-            orderId: 101,
-            status: "PLACED",
-            totalAmount: 90,
-            cafeteriaId: 1,
-            items: [
-              { name: "Neuro-Burger", quantity: 2, unitPrice: 45, subtotal: 90 },
+    // First call: fetch orders
+    api.get.mockImplementation((url) => {
+      if (url.includes("/api/orders/user/")) {
+        return Promise.resolve({
+          data: {
+            data: [
+              {
+                orderId: 101,
+                status: "PLACED",
+                totalAmount: 90,
+                cafeteriaId: 1,
+                items: [
+                  { menuItemId: 1, name: "Neuro-Burger", quantity: 2, unitPrice: 45, subtotal: 90 },
+                ],
+              },
             ],
           },
-        ],
-      },
+        });
+      }
+      // Menu fetch for name resolution
+      if (url.includes("/api/menus/cafeteria/")) {
+        return Promise.resolve({
+          data: {
+            data: [
+              { menuId: 1, name: "Neuro-Burger" },
+            ],
+          },
+        });
+      }
+      return Promise.resolve({ data: { data: [] } });
     });
 
     render(<Orders />);
@@ -80,22 +97,37 @@ describe("Orders", () => {
     });
   });
 
-  it("displays order items with correct quantities", async () => {
-    api.get.mockResolvedValueOnce({
-      data: {
-        data: [
-          {
-            orderId: 55,
-            status: "PREPARING",
-            totalAmount: 128,
-            cafeteriaId: 2,
-            items: [
-              { name: "Pasta", quantity: 2, unitPrice: 40, subtotal: 80 },
-              { name: "Smoothie", quantity: 1, unitPrice: 48, subtotal: 48 },
+  it("displays order items with resolved names and quantities", async () => {
+    api.get.mockImplementation((url) => {
+      if (url.includes("/api/orders/user/")) {
+        return Promise.resolve({
+          data: {
+            data: [
+              {
+                orderId: 55,
+                status: "PREPARING",
+                totalAmount: 128,
+                cafeteriaId: 2,
+                items: [
+                  { menuItemId: 10, quantity: 2, unitPrice: 40, subtotal: 80 },
+                  { menuItemId: 11, quantity: 1, unitPrice: 48, subtotal: 48 },
+                ],
+              },
             ],
           },
-        ],
-      },
+        });
+      }
+      if (url.includes("/api/menus/cafeteria/2")) {
+        return Promise.resolve({
+          data: {
+            data: [
+              { menuId: 10, name: "Pasta" },
+              { menuId: 11, name: "Smoothie" },
+            ],
+          },
+        });
+      }
+      return Promise.resolve({ data: { data: [] } });
     });
 
     render(<Orders />);
@@ -103,6 +135,36 @@ describe("Orders", () => {
     await waitFor(() => {
       expect(screen.getByText(/2x Pasta/)).toBeInTheDocument();
       expect(screen.getByText(/1x Smoothie/)).toBeInTheDocument();
+    });
+  });
+
+  it("shows cancel button for PLACED orders", async () => {
+    api.get.mockImplementation((url) => {
+      if (url.includes("/api/orders/user/")) {
+        return Promise.resolve({
+          data: {
+            data: [
+              {
+                orderId: 200,
+                status: "PLACED",
+                totalAmount: 50,
+                cafeteriaId: 1,
+                items: [{ menuItemId: 1, quantity: 1, unitPrice: 50, subtotal: 50 }],
+              },
+            ],
+          },
+        });
+      }
+      if (url.includes("/api/menus/cafeteria/")) {
+        return Promise.resolve({ data: { data: [{ menuId: 1, name: "Burger" }] } });
+      }
+      return Promise.resolve({ data: { data: [] } });
+    });
+
+    render(<Orders />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Cancel Order")).toBeInTheDocument();
     });
   });
 });

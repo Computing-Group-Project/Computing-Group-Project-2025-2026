@@ -38,13 +38,6 @@ vi.mock("../../contexts/AuthContext.jsx", () => ({
   }),
 }));
 
-vi.mock("../../contexts/ThemeContext", () => ({
-  useTheme: () => ({
-    theme: "light",
-    toggleTheme: vi.fn(),
-  }),
-}));
-
 import api from "../../utils/api.js";
 
 describe("AdminConsole", () => {

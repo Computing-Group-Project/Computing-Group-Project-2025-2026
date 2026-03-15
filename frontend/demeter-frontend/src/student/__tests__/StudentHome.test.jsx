@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import StudentHome from "../StudentHome.jsx";
 
 // Mock react-router-dom
@@ -26,9 +27,21 @@ vi.mock("../../components/common/CafeteriaCard.jsx", () => ({
   default: ({ cafe }) => <div data-testid="cafe-card">{cafe.name}</div>,
 }));
 
-// Mock FoodCard
+// Mock FoodCard — capture onClick so we can test it opens the modal
 vi.mock("../../components/common/FoodCard.jsx", () => ({
-  default: ({ title }) => <div data-testid="food-card">{title}</div>,
+  default: ({ title, onClick }) => (
+    <div data-testid="food-card" onClick={onClick}>{title}</div>
+  ),
+}));
+
+// Mock FoodModal
+vi.mock("../../components/common/FoodModal.jsx", () => ({
+  default: ({ food, onClose }) => (
+    <div data-testid="food-modal">
+      <span>{food.title}</span>
+      <button onClick={onClose}>Close</button>
+    </div>
+  ),
 }));
 
 // Mock AuthContext
@@ -101,6 +114,26 @@ describe("StudentHome", () => {
       expect(screen.getByText("The Last Drop")).toBeInTheDocument();
       expect(screen.getByText("Hex Core Cafe")).toBeInTheDocument();
       expect(screen.getByText("Skyline Sips")).toBeInTheDocument();
+    });
+  });
+
+  it("opens FoodModal when clicking a recommended item", async () => {
+    const user = userEvent.setup();
+    api.get.mockResolvedValueOnce({ data: { data: [] } });
+
+    render(<StudentHome />);
+
+    await waitFor(() => {
+      expect(screen.getByText("Neuro-Burger")).toBeInTheDocument();
+    });
+
+    // Click the first recommended food card
+    const foodCards = screen.getAllByTestId("food-card");
+    await user.click(foodCards[0]);
+
+    // FoodModal should appear (rendered via portal)
+    await waitFor(() => {
+      expect(screen.getByTestId("food-modal")).toBeInTheDocument();
     });
   });
 });

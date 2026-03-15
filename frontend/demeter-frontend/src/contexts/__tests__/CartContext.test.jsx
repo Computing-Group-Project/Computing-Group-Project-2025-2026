@@ -13,7 +13,8 @@ function CartConsumer() {
       {cart.map((item, i) => (
         <span key={i} data-testid={`item-${i}`}>{item.title}</span>
       ))}
-      <button onClick={() => addToCart({ title: "Burger", total: 45 })}>Add</button>
+      <button onClick={() => addToCart({ title: "Burger", total: 45, cafeteriaId: 1 })}>Add</button>
+      <button onClick={() => addToCart({ title: "Smoothie", total: 20, cafeteriaId: 2 })}>Add Other Cafe</button>
       <button onClick={() => removeFromCart(0)}>Remove</button>
       <button onClick={clearCart}>Clear</button>
     </div>
@@ -76,6 +77,55 @@ describe("CartContext", () => {
     await user.click(screen.getByText("Clear"));
     expect(screen.getByTestId("count").textContent).toBe("0");
     expect(screen.getByTestId("total").textContent).toBe("0");
+  });
+
+  it("prompts before adding items from a different cafeteria", async () => {
+    const user = userEvent.setup();
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
+
+    render(
+      <CartProvider>
+        <CartConsumer />
+      </CartProvider>
+    );
+
+    // Add item from cafeteria 1
+    await user.click(screen.getByText("Add"));
+    expect(screen.getByTestId("count").textContent).toBe("1");
+
+    // Try to add from cafeteria 2 — decline the prompt
+    await user.click(screen.getByText("Add Other Cafe"));
+    expect(confirmSpy).toHaveBeenCalled();
+    // Cart unchanged because user declined
+    expect(screen.getByTestId("count").textContent).toBe("1");
+    expect(screen.getByTestId("item-0").textContent).toBe("Burger");
+
+    confirmSpy.mockRestore();
+  });
+
+  it("replaces cart when user confirms switching cafeteria", async () => {
+    const user = userEvent.setup();
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+
+    render(
+      <CartProvider>
+        <CartConsumer />
+      </CartProvider>
+    );
+
+    // Add item from cafeteria 1
+    await user.click(screen.getByText("Add"));
+    expect(screen.getByTestId("count").textContent).toBe("1");
+    expect(screen.getByTestId("item-0").textContent).toBe("Burger");
+
+    // Add from cafeteria 2 — accept the prompt
+    await user.click(screen.getByText("Add Other Cafe"));
+    expect(confirmSpy).toHaveBeenCalled();
+    // Cart replaced with the new item
+    expect(screen.getByTestId("count").textContent).toBe("1");
+    expect(screen.getByTestId("item-0").textContent).toBe("Smoothie");
+
+    confirmSpy.mockRestore();
   });
 
   it("throws when useCart is used outside CartProvider", () => {

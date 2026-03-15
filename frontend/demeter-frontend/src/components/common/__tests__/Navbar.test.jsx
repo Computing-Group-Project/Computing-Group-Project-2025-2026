@@ -20,13 +20,6 @@ vi.mock("../../../contexts/WalletContext.jsx", () => ({
   }),
 }));
 
-vi.mock("../../../contexts/ThemeContext.jsx", () => ({
-  useTheme: () => ({
-    theme: "light",
-    toggleTheme: vi.fn(),
-  }),
-}));
-
 vi.mock("../../../contexts/AuthContext.jsx", () => ({
   useAuth: () => ({
     user: { username: "john_doe", userId: 1, role: "STUDENT" },
