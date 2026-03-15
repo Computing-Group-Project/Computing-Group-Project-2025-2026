@@ -37,6 +37,7 @@ export default function Orders() {
   const [reviewText, setReviewText] = useState("");
   const [loading, setLoading] = useState(true);
   const [reviewError, setReviewError] = useState(null);
+  const [menuNames, setMenuNames] = useState({});
 
   const fetchOrders = useCallback(async () => {
     if (!user?.userId) return;
@@ -68,6 +69,27 @@ export default function Orders() {
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
+
+  // Fetch menu item names for all cafeterias referenced by orders
+  useEffect(() => {
+    if (orders.length === 0) return;
+    const cafeteriaIds = [...new Set(orders.map(o => o.cafeteriaId).filter(Boolean))];
+    const fetchMenuNames = async () => {
+      const map = { ...menuNames };
+      for (const cId of cafeteriaIds) {
+        try {
+          const res = await api.get(`/api/menus/cafeteria/${cId}`);
+          (res.data.data || []).forEach(item => {
+            map[item.menuId] = item.name;
+          });
+        } catch {
+          // skip
+        }
+      }
+      setMenuNames(map);
+    };
+    fetchMenuNames();
+  }, [orders]);
 
   // WebSocket for real-time updates
   useEffect(() => {
@@ -290,7 +312,7 @@ export default function Orders() {
               <h2 className="text-gray-900 dark:text-white font-semibold mb-4">Order Details</h2>
 
               {(selectedOrder.items || passedState?.items || []).map((item, index) => {
-                const title = item.title || item.name || "Food Item";
+                const title = item.title || item.name || menuNames[item.menuItemId] || "Food Item";
                 const qty = item.qty || item.quantity || 1;
                 const price = item.total || item.subtotal || (item.unitPrice * qty) || 0;
 

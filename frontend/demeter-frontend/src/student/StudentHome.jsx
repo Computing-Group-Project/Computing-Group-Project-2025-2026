@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import FoodCard from "../components/common/FoodCard.jsx";
+import FoodModal from "../components/common/FoodModal.jsx";
 import CafeteriaCard from "../components/common/CafeteriaCard.jsx";
 import StudentLayout from "../layouts/StudentLayout.jsx";
 import { useAuth } from "../contexts/AuthContext.jsx";
@@ -34,6 +36,7 @@ export default function StudentHome() {
   const [cafeterias, setCafeterias] = useState([]);
   const [recommendedItems] = useState(fallbackRecommended);
   const [loading, setLoading] = useState(true);
+  const [selectedFood, setSelectedFood] = useState(null);
 
   useEffect(() => {
     const fetchCafeterias = async () => {
@@ -98,7 +101,15 @@ export default function StudentHome() {
                   badge={item.tag}
                   buttonText="order now"
                   variant="home"
-                  onClick={() => navigate(`/cafe/${item.cafeId}`)}
+                  onClick={() => setSelectedFood({
+                    menuItemId: item.id,
+                    cafeteriaId: item.cafeId,
+                    title: item.name,
+                    image: item.image,
+                    price: item.price,
+                    description: item.description,
+                    extras: [],
+                  })}
                 />
               );
             })}
@@ -124,6 +135,14 @@ export default function StudentHome() {
         </section>
 
       </div>
+
+      {selectedFood && createPortal(
+        <FoodModal
+          food={selectedFood}
+          onClose={() => setSelectedFood(null)}
+        />,
+        document.body
+      )}
     </StudentLayout>
   );
 }

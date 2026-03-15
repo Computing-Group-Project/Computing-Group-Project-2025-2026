@@ -6,7 +6,17 @@ export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
 
   const addToCart = (item) => {
-    setCart((prev) => [...prev, item]);
+    setCart((prev) => {
+      // If cart has items from a different cafeteria, ask to switch
+      if (prev.length > 0 && prev[0].cafeteriaId !== item.cafeteriaId) {
+        const confirmed = window.confirm(
+          "Your cart has items from a different cafeteria. Clear the cart and add this item instead?"
+        );
+        if (!confirmed) return prev;
+        return [item];
+      }
+      return [...prev, item];
+    });
   };
 
   const removeFromCart = (index) => {

@@ -5,7 +5,7 @@ let stompClient = null;
 
 export function connectWebSocket(onConnected) {
   stompClient = new Client({
-    webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+    webSocketFactory: () => new SockJS(`${import.meta.env.VITE_WS_BASE_URL ?? "http://localhost:8080"}/ws`),
     reconnectDelay: 5000,
     onConnect: () => {
       if (onConnected) onConnected(stompClient);

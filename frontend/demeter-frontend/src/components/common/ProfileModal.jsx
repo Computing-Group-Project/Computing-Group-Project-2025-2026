@@ -43,7 +43,7 @@ export default function ProfileModal({
   return (
     <div className="fixed inset-0 flex justify-center items-start pt-20 sm:justify-end sm:pr-6 z-50">
 
-      <div className="w-[90vw] max-w-[360px] max-h-[calc(100vh-6rem)] overflow-y-auto bg-slate-900 border border-slate-700 rounded-2xl shadow-xl p-6">
+      <div className="w-[90vw] max-w-[360px] max-h-[calc(100vh-6rem)] overflow-y-auto bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-xl p-6">
 
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">

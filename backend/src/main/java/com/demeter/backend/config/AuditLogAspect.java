@@ -29,28 +29,39 @@ public class AuditLogAspect {
         Object[] args = joinPoint.getArgs();
         String oldValue = "N/A";
 
-        if (args.length > 1) {
-            oldValue = objectMapper.writeValueAsString(args[1]);
+        try {
+            if (args.length > 1) {
+                oldValue = objectMapper.writeValueAsString(args[1]);
+            }
+        } catch (Exception ignored) {
+            // Don't let audit serialization prevent the main operation
         }
 
         Object result;
-        String status = "SUCCESS";
 
         try {
             result = joinPoint.proceed();
-
-            String newValue = objectMapper.writeValueAsString(result);
-
-            Long userId = extractUserId(result);
-            saveLog(logActivity, oldValue, newValue, status, userId);
-            return result;
-
         } catch (Exception e) {
-            status = "FAILURE";
-            Long userId = extractUserId(null);
-            saveLog(logActivity, oldValue, "N/A", status, userId);
+            // The main operation failed — log and re-throw
+            try {
+                Long userId = extractUserId(null);
+                saveLog(logActivity, oldValue, "N/A", "FAILURE", userId);
+            } catch (Exception logEx) {
+                // Audit logging must never mask the original exception
+            }
             throw e;
         }
+
+        // Main operation succeeded — log asynchronously without risking a rollback
+        try {
+            String newValue = objectMapper.writeValueAsString(result);
+            Long userId = extractUserId(result);
+            saveLog(logActivity, oldValue, newValue, "SUCCESS", userId);
+        } catch (Exception ignored) {
+            // Audit logging failure must not affect the successful operation
+        }
+
+        return result;
     }
 
     private Long extractUserId(Object result) {

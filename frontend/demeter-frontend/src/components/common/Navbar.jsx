@@ -1,8 +1,7 @@
-import { Sun, Moon, ShoppingBag, Plus, LogOut } from "lucide-react";
+import { ShoppingBag, Plus, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext.jsx";
 import { useWallet } from "../../contexts/WalletContext.jsx";
-import { useTheme } from "../../contexts/ThemeContext.jsx";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 
 const Navbar = ({
@@ -10,7 +9,6 @@ const Navbar = ({
   logoLetter = "D",
 
   showBalance = true,
-  showTheme = true,
   showCart = true,
   showProfile = true,
   showExit = true,
@@ -29,7 +27,6 @@ const Navbar = ({
 }) => {
   const { cart = [] } = useCart() || {};
   const { balance = 0 } = useWallet() || {};
-  const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
 
   const name = user?.username || "Student";
@@ -98,23 +95,6 @@ const Navbar = ({
               </div>
             </div>
           </Link>
-        )}
-
-        {/* THEME TOGGLE */}
-        {showTheme && (
-          <button onClick={toggleTheme} className="focus:outline-none">
-            {theme === 'dark' ? (
-              <Sun
-                size={20}
-                className={`cursor-pointer text-yellow-300 hover:text-yellow-200 transition ${iconClassName}`}
-              />
-            ) : (
-              <Moon
-                size={20}
-                className={`cursor-pointer text-slate-300 hover:text-white transition ${iconClassName}`}
-              />
-            )}
-          </button>
         )}
 
         {/* CART */}

@@ -34,8 +34,8 @@ export default function Cart() {
     setCheckingOut(true);
 
     try {
-      // Determine cafeteria from first cart item
-      const cafeteriaId = cart[0]?.cafeteriaId || 1;
+      // All items are guaranteed to be from the same cafeteria (enforced by CartContext)
+      const cafeteriaId = cart[0].cafeteriaId;
 
       const orderData = {
         userId: user.userId,

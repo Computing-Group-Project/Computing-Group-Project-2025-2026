@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import StudentLayout from "../layouts/StudentLayout.jsx";
 import { useWallet } from "../contexts/WalletContext.jsx";
 import { useNavigate } from "react-router-dom";
@@ -132,7 +133,7 @@ const Wallet = () => {
                         <td className="p-4">
                           <span
                             className={`px-2 py-1 rounded text-xs font-semibold
-                            ${tx.type === "CREDIT"
+                            ${["CREDIT", "DEPOSIT", "REFUND"].includes(tx.type)
                               ? "bg-green-900 text-green-300"
                               : "bg-red-900 text-red-300"
                             }`}
@@ -145,9 +146,9 @@ const Wallet = () => {
                         </td>
                         <td
                           className={`p-4 text-right font-semibold
-                          ${tx.type === "CREDIT" ? "text-green-400" : "text-red-400"}`}
+                          ${["CREDIT", "DEPOSIT", "REFUND"].includes(tx.type) ? "text-green-400" : "text-red-400"}`}
                         >
-                          {tx.type === "CREDIT" ? "+" : "-"}
+                          {["CREDIT", "DEPOSIT", "REFUND"].includes(tx.type) ? "+" : "-"}
                           {Number(tx.amount).toFixed(2)} GK
                         </td>
                         <td className="p-4 text-right text-gray-600 dark:text-gray-300">
@@ -166,14 +167,16 @@ const Wallet = () => {
         </div>
 
 
-        {/* PAYMENT GATEWAY MODAL */}
+      </div>
+
+      {createPortal(
         <PaymentGatewayModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           onSuccess={handleTopUpSuccess}
-        />
-
-      </div>
+        />,
+        document.body
+      )}
 
     </StudentLayout>
   );

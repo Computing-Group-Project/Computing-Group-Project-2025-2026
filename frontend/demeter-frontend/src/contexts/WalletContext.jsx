@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import api from "../utils/api.js";
+import { connectWebSocket, subscribe, disconnectWebSocket } from "../utils/websocket.js";
 
 const WalletContext = createContext();
 
@@ -27,6 +28,24 @@ export const WalletProvider = ({ children }) => {
 
   useEffect(() => {
     fetchBalance();
+  }, [fetchBalance]);
+
+  // Subscribe to WebSocket for real-time balance updates
+  useEffect(() => {
+    const authData = localStorage.getItem("authData");
+    if (!authData) return;
+
+    const { role } = JSON.parse(authData);
+    if (role !== "STUDENT") return;
+
+    connectWebSocket((stompClient) => {
+      // Refresh balance whenever an order event occurs (payment, refund, etc.)
+      subscribe(stompClient, "/topic/orders", () => {
+        fetchBalance();
+      });
+    });
+
+    return () => disconnectWebSocket();
   }, [fetchBalance]);
 
   const refreshBalance = fetchBalance;

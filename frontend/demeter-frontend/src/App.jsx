@@ -14,6 +14,7 @@ import AdminConsole from "./admin/AdminConsole.jsx";
 import PromotionManagementConsole from "./admin/PromotionManagementConsole.jsx";
 import StaffDashboard from "./staff/StaffDashboard.jsx";
 import StaffLayout from "./layouts/StaffLayout.jsx";
+import ThemeToggle from "./components/common/ThemeToggle.jsx";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <WalletProvider>
           <CartProvider>
             <BrowserRouter>
+              <ThemeToggle />
               <Routes>
                 <Route path="/login" element={<Login />} />
 

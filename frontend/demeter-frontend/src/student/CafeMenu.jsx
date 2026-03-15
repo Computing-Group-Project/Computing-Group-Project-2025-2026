@@ -218,13 +218,15 @@ export default function CafeMenu() {
           ))}
         </div>
 
-        {selectedFood && (
-          <FoodModal
-            food={selectedFood}
-            onClose={() => setSelectedFood(null)}
-          />
-        )}
       </div>
+
+      {selectedFood && createPortal(
+        <FoodModal
+          food={selectedFood}
+          onClose={() => setSelectedFood(null)}
+        />,
+        document.body
+      )}
     </StudentLayout>
   );
 }

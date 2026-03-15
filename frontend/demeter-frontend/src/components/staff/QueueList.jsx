@@ -15,7 +15,7 @@ const QueueList = ({ cafeteriaId = 1 }) => {
         const res = await api.get(`/api/menus/cafeteria/${cafeteriaId}`);
         const items = res.data.data || [];
         const map = {};
-        items.forEach(item => { map[item.itemId] = item.name; });
+        items.forEach(item => { map[item.menuId] = item.name; });
         setMenuItems(map);
       } catch {
         // Keep empty map
@@ -62,41 +62,20 @@ const QueueList = ({ cafeteriaId = 1 }) => {
     return () => disconnectWebSocket();
   }, [fetchOrders]);
 
-  const handleCancel = async (id) => {
+  const updateStatus = async (id, status, actionLabel) => {
     try {
-      await api.put(`/api/orders/${id}/status?status=CANCELLED`);
+      await api.put(`/api/orders/${id}/status?status=${status}`);
       fetchOrders();
     } catch (err) {
-      console.error("Failed to cancel order:", err);
+      console.error(`Failed to ${actionLabel}:`, err);
+      alert(`Failed to ${actionLabel}. ${err.response?.data?.message || "Please try again."}`);
     }
   };
 
-  const handleAccept = async (id) => {
-    try {
-      await api.put(`/api/orders/${id}/status?status=CONFIRMED`);
-      fetchOrders();
-    } catch (err) {
-      console.error("Failed to accept order:", err);
-    }
-  };
-
-  const handleMarkReady = async (id) => {
-    try {
-      await api.put(`/api/orders/${id}/status?status=READY`);
-      fetchOrders();
-    } catch (err) {
-      console.error("Failed to mark ready:", err);
-    }
-  };
-
-  const handleMarkCompleted = async (id) => {
-    try {
-      await api.put(`/api/orders/${id}/status?status=COMPLETED`);
-      fetchOrders();
-    } catch (err) {
-      console.error("Failed to mark completed:", err);
-    }
-  };
+  const handleCancel = (id) => updateStatus(id, "CANCELLED", "cancel order");
+  const handleAccept = (id) => updateStatus(id, "CONFIRMED", "accept order");
+  const handleMarkReady = (id) => updateStatus(id, "READY", "mark ready");
+  const handleMarkCompleted = (id) => updateStatus(id, "COMPLETED", "mark completed");
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6 h-full">

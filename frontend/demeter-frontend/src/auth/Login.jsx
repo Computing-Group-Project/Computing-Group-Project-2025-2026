@@ -1,17 +1,63 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { GraduationCap, Shield, ChefHat } from "lucide-react";
+import { GraduationCap, Shield, ChefHat, ArrowLeft } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext.jsx";
+
+const portals = [
+  {
+    role: "STUDENT",
+    label: "Student",
+    icon: GraduationCap,
+    accent: "teal",
+    description: "Order food, track deliveries, manage your wallet",
+    bg: "bg-teal-400",
+    bgHover: "hover:border-teal-400",
+    bgLight: "bg-teal-400/10",
+    textAccent: "text-teal-400",
+    btnClass: "bg-teal-400 hover:bg-teal-300 text-slate-900",
+    focusRing: "focus:border-teal-400",
+    glowColor: "bg-teal-400",
+  },
+  {
+    role: "STAFF",
+    label: "Staff",
+    icon: ChefHat,
+    accent: "amber",
+    description: "Manage orders, update menus, handle your cafeteria",
+    bg: "bg-amber-400",
+    bgHover: "hover:border-amber-400",
+    bgLight: "bg-amber-400/10",
+    textAccent: "text-amber-400",
+    btnClass: "bg-amber-400 hover:bg-amber-300 text-slate-900",
+    focusRing: "focus:border-amber-400",
+    glowColor: "bg-amber-400",
+  },
+  {
+    role: "ADMIN",
+    label: "Admin",
+    icon: Shield,
+    accent: "violet",
+    description: "System management, analytics, user administration",
+    bg: "bg-violet-500",
+    bgHover: "hover:border-violet-500",
+    bgLight: "bg-violet-500/10",
+    textAccent: "text-violet-400",
+    btnClass: "bg-violet-500 hover:bg-violet-400 text-white",
+    focusRing: "focus:border-violet-500",
+    glowColor: "bg-violet-500",
+  },
+];
 
 export default function Login() {
   const navigate = useNavigate();
   const { login, isAuthenticated, user } = useAuth();
+
+  const [selectedPortal, setSelectedPortal] = useState(null);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Redirect already-authenticated users to their dashboard
   useEffect(() => {
     if (isAuthenticated && user?.role) {
       if (user.role === "ADMIN") navigate("/admin", { replace: true });
@@ -20,11 +66,8 @@ export default function Login() {
     }
   }, [isAuthenticated, user, navigate]);
 
-  const handleLogin = async (overrideUsername, overridePassword) => {
-    const u = overrideUsername || username;
-    const p = overridePassword || password;
-
-    if (!u || !p) {
+  const handleLogin = async () => {
+    if (!username || !password) {
       setError("Please enter username and password");
       return;
     }
@@ -33,42 +76,95 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const auth = await login(u, p);
+      const auth = await login(username, password);
 
-      if (auth.role === "ADMIN") {
-        navigate("/admin");
-      } else if (auth.role === "STAFF") {
-        navigate("/staff");
-      } else {
-        navigate("/");
-      }
+      if (auth.role === "ADMIN") navigate("/admin");
+      else if (auth.role === "STAFF") navigate("/staff");
+      else navigate("/");
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Invalid username or password"
-      );
+      setError(err.response?.data?.message || "Invalid username or password");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleBack = () => {
+    setSelectedPortal(null);
+    setUsername("");
+    setPassword("");
+    setError("");
+  };
+
+  const portal = portals.find((p) => p.role === selectedPortal);
+
+  // ── Portal Selector ──
+  if (!selectedPortal) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gradient-to-br dark:from-[#0f172a] dark:to-[#1e293b] transition-colors px-4">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Demeter</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">
+            Bastion University Smart Cafeteria
+          </p>
+        </div>
+
+        {/* Portal cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 w-full max-w-3xl">
+          {portals.map((p) => {
+            const Icon = p.icon;
+            return (
+              <button
+                key={p.role}
+                onClick={() => setSelectedPortal(p.role)}
+                className={`group flex flex-col items-center gap-4 p-8 rounded-2xl border-2 border-gray-200 dark:border-[#334155] bg-white dark:bg-[#1e293b] ${p.bgHover} transition-all duration-200 hover:shadow-lg hover:-translate-y-1`}
+              >
+                <div className={`w-16 h-16 rounded-2xl ${p.bgLight} flex items-center justify-center transition-colors`}>
+                  <Icon className={p.textAccent} size={30} />
+                </div>
+                <div className="text-center">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {p.label}
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                    {p.description}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Login Form ──
+  const Icon = portal.icon;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gradient-to-br dark:from-[#1f2a37] dark:to-[#334155] transition-colors">
-      <div className="w-[90vw] max-w-[430px] bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] shadow-2xl rounded-2xl p-6 sm:p-10 text-gray-900 dark:text-white relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gradient-to-br dark:from-[#0f172a] dark:to-[#1e293b] transition-colors px-4">
+      <div className="w-full max-w-[430px] bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] shadow-2xl rounded-2xl p-6 sm:p-10 text-gray-900 dark:text-white relative overflow-hidden">
+        {/* Accent top bar */}
+        <div className={`absolute top-0 left-0 w-full h-[3px] ${portal.glowColor} rounded-t-2xl`}></div>
 
-        {/* top glow border */}
-        <div className="absolute top-0 left-0 w-full h-[3px] bg-teal-400 rounded-t-2xl"></div>
+        {/* Back button */}
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-6"
+        >
+          <ArrowLeft size={16} /> Back
+        </button>
 
-        {/* Icon */}
-        <div className="flex justify-center mb-6">
-          <div className="bg-teal-400/20 w-14 h-14 flex items-center justify-center rounded-full">
-            <GraduationCap className="text-teal-400" size={28}/>
+        {/* Icon + Title */}
+        <div className="flex justify-center mb-5">
+          <div className={`${portal.bgLight} w-14 h-14 flex items-center justify-center rounded-full`}>
+            <Icon className={portal.textAccent} size={28} />
           </div>
         </div>
 
-        {/* Title */}
         <h1 className="text-3xl font-semibold text-center text-gray-900 dark:text-white">Demeter</h1>
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-1 mb-8">
-          Bastion University Smart Cafeteria
+          {portal.label} Portal
         </p>
 
         {/* Error */}
@@ -85,7 +181,7 @@ export default function Login() {
           placeholder="Enter your username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full p-3 rounded-lg border border-gray-300 dark:border-[#334155] bg-gray-50 dark:bg-[#0f172a] text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-teal-400 mb-4"
+          className={`w-full p-3 rounded-lg border border-gray-300 dark:border-[#334155] bg-gray-50 dark:bg-[#0f172a] text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none ${portal.focusRing} mb-4`}
         />
 
         {/* Password */}
@@ -96,43 +192,17 @@ export default function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          className="w-full p-3 rounded-lg border border-gray-300 dark:border-[#334155] bg-gray-50 dark:bg-[#0f172a] text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-teal-400 mb-5"
+          className={`w-full p-3 rounded-lg border border-gray-300 dark:border-[#334155] bg-gray-50 dark:bg-[#0f172a] text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none ${portal.focusRing} mb-5`}
         />
 
-        {/* Login Button */}
+        {/* Login button */}
         <button
-          onClick={() => handleLogin()}
+          onClick={handleLogin}
           disabled={loading}
-          className="w-full py-3 rounded-lg bg-teal-400 text-slate-900 font-semibold hover:bg-teal-300 transition disabled:opacity-50"
+          className={`w-full py-3 rounded-lg font-semibold transition disabled:opacity-50 ${portal.btnClass}`}
         >
           {loading ? "Logging in..." : "Login"}
         </button>
-
-        {/* Divider */}
-        <div className="flex items-center my-8">
-          <div className="flex-1 h-[1px] bg-gray-300 dark:bg-[#334155]"></div>
-          <span className="px-4 text-xs tracking-widest text-gray-500 dark:text-gray-400">QUICK LOGIN</span>
-          <div className="flex-1 h-[1px] bg-gray-300 dark:bg-[#334155]"></div>
-        </div>
-
-        {/* Staff + Admin quick login */}
-        <div className="flex gap-4">
-          <button
-            onClick={() => handleLogin("swain", "pass")}
-            disabled={loading}
-            className="flex items-center justify-center gap-2 flex-1 border border-gray-300 dark:border-[#334155] text-gray-700 dark:text-white rounded-lg py-3 hover:border-teal-400 transition disabled:opacity-50"
-          >
-            <ChefHat size={18}/> Staff
-          </button>
-
-          <button
-            onClick={() => handleLogin("admin_user", "pass")}
-            disabled={loading}
-            className="flex items-center justify-center gap-2 flex-1 border border-gray-300 dark:border-[#334155] text-gray-700 dark:text-white rounded-lg py-3 hover:border-teal-400 transition disabled:opacity-50"
-          >
-            <Shield size={18}/> Admin
-          </button>
-        </div>
       </div>
     </div>
   );
