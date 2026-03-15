@@ -3,47 +3,38 @@ import StudentLayout from "../layouts/StudentLayout.jsx";
 import { useWallet } from "../contexts/WalletContext.jsx";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api.js";
+import PaymentGatewayModal from "../components/common/PaymentGatewayModal.jsx";
 
 const Wallet = () => {
 
   const navigate = useNavigate();
-  const { balance } = useWallet();
+  const { balance, refreshBalance } = useWallet();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [amountToAdd, setAmountToAdd] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchTransactions = async () => {
+    try {
+      const res = await api.get("/api/wallet/transactions");
+      setTransactions(res.data.data || []);
+    } catch {
+      setTransactions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const res = await api.get("/api/wallet/transactions");
-        setTransactions(res.data.data || []);
-      } catch {
-        setTransactions([]);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTransactions();
   }, []);
 
   const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setAmountToAdd("");
-  };
-
-  const handleAddFunds = async (e) => {
-    e.preventDefault();
-    const amount = parseFloat(amountToAdd);
-    if (!amount || amount <= 0) return;
-
-    // Note: Top-up requires ADMIN role, so this is just for UI
-    // In production, admin does top-ups from the admin console
-    handleCloseModal();
-    alert("Please ask an admin to top up your wallet.");
+  const handleTopUpSuccess = () => {
+    refreshBalance();
+    fetchTransactions();
   };
 
   return (
@@ -175,55 +166,12 @@ const Wallet = () => {
         </div>
 
 
-        {/* ADD FUNDS MODAL */}
-        {isModalOpen && (
-
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-
-            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl w-full max-w-md p-6">
-
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                Add Funds
-              </h3>
-
-              <form onSubmit={handleAddFunds}>
-
-                <input
-                  type="number"
-                  min="1"
-                  required
-                  value={amountToAdd}
-                  onChange={(e) => setAmountToAdd(e.target.value)}
-                  placeholder="Enter amount (GK)"
-                  className="w-full bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white p-3 rounded-lg mb-4"
-                />
-
-                <div className="flex gap-3">
-
-                  <button
-                    type="button"
-                    onClick={handleCloseModal}
-                    className="flex-1 border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-gray-300 py-2 rounded-lg"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="submit"
-                    className="flex-1 bg-yellow-400 text-black py-2 rounded-lg font-semibold"
-                  >
-                    Confirm
-                  </button>
-
-                </div>
-
-              </form>
-
-            </div>
-
-          </div>
-
-        )}
+        {/* PAYMENT GATEWAY MODAL */}
+        <PaymentGatewayModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSuccess={handleTopUpSuccess}
+        />
 
       </div>
 

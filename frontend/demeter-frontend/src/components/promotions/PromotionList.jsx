@@ -11,6 +11,21 @@ const PromotionList = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedDiscount, setSelectedDiscount] = useState(null);
   const [filter, setFilter] = useState('ALL');
+  const [cafeteriaMap, setCafeteriaMap] = useState({});
+
+  useEffect(() => {
+    const fetchCafeterias = async () => {
+      try {
+        const res = await api.get('/api/cafeterias');
+        const map = {};
+        (res.data.data || []).forEach(c => { map[c.cafeteriaId] = c.name; });
+        setCafeteriaMap(map);
+      } catch {
+        // Keep empty map
+      }
+    };
+    fetchCafeterias();
+  }, []);
 
   useEffect(() => {
     fetchDiscounts();
@@ -159,6 +174,7 @@ const PromotionList = () => {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-dark-bg border-b dark:border-dark-border">
               <tr>
+                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Cafeteria</th>
                 <th className="text-left px-4 py-3 dark:text-dark-textMuted">Type</th>
                 <th className="text-left px-4 py-3 dark:text-dark-textMuted">Value</th>
                 <th className="text-left px-4 py-3 dark:text-dark-textMuted">Items</th>
@@ -171,6 +187,7 @@ const PromotionList = () => {
             <tbody>
               {discounts.map((discount) => (
                 <tr key={discount.discountId} className="border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-dark-bg">
+                  <td className="px-4 py-3 dark:text-dark-text">{cafeteriaMap[discount.cafeteriaId] || `#${discount.cafeteriaId}`}</td>
                   <td className="px-4 py-3 font-medium dark:text-dark-text">{discount.discountType}</td>
                   <td className="px-4 py-3 dark:text-dark-text">
                     {discount.discountType === 'PERCENTAGE'

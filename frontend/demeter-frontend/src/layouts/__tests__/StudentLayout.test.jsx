@@ -28,21 +28,19 @@ vi.mock("../../contexts/CartContext.jsx", () => ({
   }),
 }));
 
-let mockIsAuthenticated = true;
 const mockLogout = vi.fn();
 
 vi.mock("../../contexts/AuthContext.jsx", () => ({
   useAuth: () => ({
-    user: mockIsAuthenticated ? { username: "student1", userId: 1, role: "STUDENT", token: "tok" } : null,
+    user: { username: "student1", userId: 1, role: "STUDENT", token: "tok" },
     logout: mockLogout,
-    isAuthenticated: mockIsAuthenticated,
+    isAuthenticated: true,
   }),
 }));
 
 describe("StudentLayout", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockIsAuthenticated = true;
   });
 
   it("renders children and navbar when authenticated", () => {
@@ -56,14 +54,13 @@ describe("StudentLayout", () => {
     expect(screen.getByTestId("child-content")).toBeInTheDocument();
   });
 
-  it("redirects to /login when not authenticated", () => {
-    mockIsAuthenticated = false;
+  it("renders navbar with correct structure", () => {
     render(
       <StudentLayout>
-        <div>Protected Content</div>
+        <div>Content</div>
       </StudentLayout>
     );
 
-    expect(mockNavigate).toHaveBeenCalledWith("/login");
+    expect(screen.getByTestId("navbar")).toBeInTheDocument();
   });
 });

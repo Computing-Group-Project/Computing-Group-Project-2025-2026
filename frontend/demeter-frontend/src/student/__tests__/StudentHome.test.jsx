@@ -39,9 +39,11 @@ vi.mock("../../contexts/AuthContext.jsx", () => ({
   }),
 }));
 
-// Mock SVG imports
-vi.mock("../../assets/submarine.svg", () => ({ default: "submarine.svg" }));
-vi.mock("../../assets/burger.svg", () => ({ default: "burger.svg" }));
+// Mock foodImages utility
+vi.mock("../../utils/foodImages.js", () => ({
+  getFoodImage: (name) => `mock-image-${name}`,
+  getCafeteriaImage: (id) => `mock-cafe-image-${id}`,
+}));
 
 import api from "../../utils/api.js";
 
@@ -56,7 +58,7 @@ describe("StudentHome", () => {
     render(<StudentHome />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Welcome back, john/)).toBeInTheDocument();
+      expect(screen.getByText(/Welcome back, John/)).toBeInTheDocument();
     });
   });
 

@@ -34,15 +34,13 @@ vi.mock("../../components/staff/DiscountSuggestion", () => ({
 }));
 
 // Mock AuthContext
-let mockUser = { username: "swain", userId: 2, role: "STAFF", assignedCafeteriaId: 1, token: "tok" };
-let mockIsAuthenticated = true;
 const mockLogout = vi.fn();
 
 vi.mock("../../contexts/AuthContext.jsx", () => ({
   useAuth: () => ({
-    user: mockUser,
+    user: { username: "swain", userId: 2, role: "STAFF", assignedCafeteriaId: 1, token: "tok" },
     logout: mockLogout,
-    isAuthenticated: mockIsAuthenticated,
+    isAuthenticated: true,
   }),
 }));
 
@@ -51,26 +49,26 @@ import api from "../../utils/api.js";
 describe("StaffDashboard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUser = { username: "swain", userId: 2, role: "STAFF", assignedCafeteriaId: 1, token: "tok" };
-    mockIsAuthenticated = true;
   });
 
   it("renders dashboard header and stat cards", async () => {
-    api.get.mockResolvedValueOnce({
-      data: {
-        data: [
-          { orderId: 1, status: "PLACED", totalAmount: 45 },
-          { orderId: 2, status: "COMPLETED", totalAmount: 90 },
-          { orderId: 3, status: "PREPARING", totalAmount: 60 },
-        ],
-      },
-    });
+    api.get
+      .mockResolvedValueOnce({ data: { data: { name: "The Last Drop" } } }) // cafeteria name
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { orderId: 1, status: "PLACED", totalAmount: 45 },
+            { orderId: 2, status: "COMPLETED", totalAmount: 90 },
+            { orderId: 3, status: "PREPARING", totalAmount: 60 },
+          ],
+        },
+      });
 
     render(<StaffDashboard />);
 
     await waitFor(() => {
       expect(screen.getByText("Staff Dashboard")).toBeInTheDocument();
-      expect(screen.getByText(/Staff: swain/)).toBeInTheDocument();
+      expect(screen.getByText(/Staff: Swain/)).toBeInTheDocument();
     });
 
     // Stat cards render
@@ -79,7 +77,9 @@ describe("StaffDashboard", () => {
   });
 
   it("renders queue list and discount suggestion components", async () => {
-    api.get.mockResolvedValueOnce({ data: { data: [] } });
+    api.get
+      .mockResolvedValueOnce({ data: { data: { name: "The Last Drop" } } })
+      .mockResolvedValueOnce({ data: { data: [] } });
 
     render(<StaffDashboard />);
 
@@ -87,14 +87,5 @@ describe("StaffDashboard", () => {
       expect(screen.getByTestId("queue-list")).toBeInTheDocument();
       expect(screen.getByTestId("discount-suggestion")).toBeInTheDocument();
     });
-  });
-
-  it("redirects to login when not authenticated", () => {
-    mockIsAuthenticated = false;
-    mockUser = null;
-
-    render(<StaffDashboard />);
-
-    expect(mockNavigate).toHaveBeenCalledWith("/login");
   });
 });

@@ -5,6 +5,7 @@ import com.demeter.backend.shared.dto.response.ApiResponse;
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.exception.AppException;
 import com.demeter.backend.transactions.model.TransactionHistory;
+import com.demeter.backend.wallet.dto.request.StudentTopUpRequest;
 import com.demeter.backend.wallet.dto.request.TopUpRequest;
 import com.demeter.backend.wallet.dto.response.BalanceResponse;
 import com.demeter.backend.wallet.dto.response.TransactionResponse;
@@ -47,6 +48,22 @@ public class KrakensWalletController {
         );
         return new ApiResponse<>(true, "Top-up successful",
                 new BalanceResponse(topUpRequest.getUserId(), newBalance));
+    }
+
+    @PreAuthorize("hasRole('STUDENT')")
+    @PostMapping("/student-topup")
+    public ApiResponse<BalanceResponse> studentTopUp(
+            @Valid @RequestBody StudentTopUpRequest request,
+            HttpServletRequest httpRequest) {
+        Long userId = extractUserId(httpRequest);
+        BigDecimal newBalance = walletService.credit(
+                userId,
+                request.getAmount(),
+                "Payment gateway top-up",
+                null
+        );
+        return new ApiResponse<>(true, "Top-up successful",
+                new BalanceResponse(userId, newBalance));
     }
 
     @GetMapping("/transactions")

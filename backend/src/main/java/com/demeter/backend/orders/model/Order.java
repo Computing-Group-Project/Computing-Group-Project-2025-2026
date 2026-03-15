@@ -16,10 +16,16 @@ public class Order {
     // Getters and Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_id")
     private Long orderId;
 
+    @Column(name = "user_id")
     private Long userId;
+
+    @Column(name = "cafeteria_id")
     private Long cafeteriaId;
+
+    @Column(name = "total_amount")
     private Double totalAmount;
 
     // Discount and promotion fields (not persisted — computed at checkout)

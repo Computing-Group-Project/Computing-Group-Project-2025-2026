@@ -15,11 +15,10 @@ function WalletTable() {
       try {
         const res = await api.get('/api/admin/users?role=STUDENT');
         const users = res.data.data || [];
-        // We need to get balances too - fetch each or use the list
         setAllStudents(users.map(u => ({
           id: u.id,
-          name: u.username,
-          balance: 0, // Will show actual balance when selected
+          name: u.username.charAt(0).toUpperCase() + u.username.slice(1),
+          balance: u.krakensBalance ?? 0,
         })));
       } catch {
         setAllStudents([]);
@@ -111,6 +110,7 @@ function WalletTable() {
                     <p className="text-sm text-light-textMuted dark:text-dark-textMuted">ID: {student.id}</p>
                   </div>
                 </div>
+                <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">GK {Number(student.balance).toFixed(2)}</span>
               </div>
             </button>
           ))}
@@ -130,6 +130,7 @@ function WalletTable() {
                   <div>
                     <h3 className="font-semibold text-light-text dark:text-dark-text text-lg">{selectedStudent.name}</h3>
                     <p className="text-sm text-light-textMuted dark:text-dark-textMuted">User ID: {selectedStudent.id}</p>
+                    <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">Balance: GK {Number(selectedStudent.balance).toFixed(2)}</p>
                   </div>
                 </div>
                 <button onClick={handleClearStudent} className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">

@@ -1,15 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { GraduationCap, Shield, ChefHat } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext.jsx";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Redirect already-authenticated users to their dashboard
+  useEffect(() => {
+    if (isAuthenticated && user?.role) {
+      if (user.role === "ADMIN") navigate("/admin", { replace: true });
+      else if (user.role === "STAFF") navigate("/staff", { replace: true });
+      else navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleLogin = async (overrideUsername, overridePassword) => {
     const u = overrideUsername || username;
@@ -109,7 +118,7 @@ export default function Login() {
         {/* Staff + Admin quick login */}
         <div className="flex gap-4">
           <button
-            onClick={() => handleLogin("swain", "password123")}
+            onClick={() => handleLogin("swain", "pass")}
             disabled={loading}
             className="flex items-center justify-center gap-2 flex-1 border border-gray-300 dark:border-[#334155] text-gray-700 dark:text-white rounded-lg py-3 hover:border-teal-400 transition disabled:opacity-50"
           >
@@ -117,7 +126,7 @@ export default function Login() {
           </button>
 
           <button
-            onClick={() => handleLogin("admin_user", "password123")}
+            onClick={() => handleLogin("admin_user", "pass")}
             disabled={loading}
             className="flex items-center justify-center gap-2 flex-1 border border-gray-300 dark:border-[#334155] text-gray-700 dark:text-white rounded-lg py-3 hover:border-teal-400 transition disabled:opacity-50"
           >

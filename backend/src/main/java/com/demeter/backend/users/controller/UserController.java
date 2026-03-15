@@ -3,8 +3,10 @@ package com.demeter.backend.users.controller;
 import com.demeter.backend.shared.constants.ApiResponseMessages;
 import com.demeter.backend.shared.dto.response.ApiResponse;
 import com.demeter.backend.users.dto.response.UserResponseDTO;
+import com.demeter.backend.users.model.Staff;
 import com.demeter.backend.users.model.User;
 import com.demeter.backend.users.service.UserService;
+import jakarta.persistence.EntityManager;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +18,11 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final EntityManager entityManager;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, EntityManager entityManager) {
         this.userService = userService;
+        this.entityManager = entityManager;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -26,7 +30,19 @@ public class UserController {
     public ApiResponse<List<UserResponseDTO>> getUsersByRole(@RequestParam String role) {
         List<User> users = userService.getUsersByRole(role);
         List<UserResponseDTO> dtos = users.stream()
-                .map(u -> new UserResponseDTO(u.getId(), u.getUsername(), u.getRole()))
+                .map(u -> {
+                    UserResponseDTO dto = new UserResponseDTO(u.getId(), u.getUsername(), u.getRole());
+                    if ("STUDENT".equals(role)) {
+                        dto.setKrakensBalance(u.getKrakensBalance());
+                    }
+                    if ("STAFF".equals(role)) {
+                        Staff staff = entityManager.find(Staff.class, u.getId());
+                        if (staff != null) {
+                            dto.setAssignedCafeteriaId(staff.getAssignedCafeteriaId());
+                        }
+                    }
+                    return dto;
+                })
                 .toList();
         return new ApiResponse<>(true, ApiResponseMessages.USERS_FETCHED, dtos);
     }
@@ -39,8 +55,9 @@ public class UserController {
         Integer cafeteriaId = (Integer) body.get("cafeteriaId");
 
         User created = userService.createStaff(username, password, cafeteriaId);
-        return new ApiResponse<>(true, ApiResponseMessages.STAFF_CREATED,
-                new UserResponseDTO(created.getId(), created.getUsername(), created.getRole()));
+        UserResponseDTO dto = new UserResponseDTO(created.getId(), created.getUsername(), created.getRole());
+        dto.setAssignedCafeteriaId(cafeteriaId);
+        return new ApiResponse<>(true, ApiResponseMessages.STAFF_CREATED, dto);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

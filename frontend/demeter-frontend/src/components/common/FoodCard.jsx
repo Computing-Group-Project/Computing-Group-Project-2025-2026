@@ -3,6 +3,7 @@ import React from "react";
 const FoodCard = ({
   image,
   title = "Food Title",
+  subtitle = null,
   description = "Food description goes here.",
   price = 0,
   badge = null,
@@ -64,6 +65,13 @@ const FoodCard = ({
             </span>
           )}
         </div>
+
+        {/* SUBTITLE (e.g. cafeteria name) */}
+        {!isMenu && subtitle && (
+          <p className="text-xs text-teal-500 dark:text-teal-400 font-medium mb-1">
+            {subtitle}
+          </p>
+        )}
 
         {/* DESCRIPTION */}
         <p className={`text-gray-500 dark:text-slate-400 ${isMenu ? "text-xs mb-2" : "text-sm mb-3"}`}>

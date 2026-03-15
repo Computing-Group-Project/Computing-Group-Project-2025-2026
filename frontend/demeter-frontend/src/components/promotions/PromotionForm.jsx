@@ -16,6 +16,24 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [cafeterias, setCafeterias] = useState([]);
+
+  useEffect(() => {
+    const fetchCafeterias = async () => {
+      try {
+        const res = await api.get('/api/cafeterias');
+        setCafeterias(res.data.data || []);
+      } catch {
+        // Fallback
+        setCafeterias([
+          { cafeteriaId: 1, name: 'The Last Drop' },
+          { cafeteriaId: 2, name: 'Hex Core Cafe' },
+          { cafeteriaId: 3, name: 'Skyline Sips' },
+        ]);
+      }
+    };
+    fetchCafeterias();
+  }, []);
 
   useEffect(() => {
     if (discountId) {
@@ -79,17 +97,20 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
-              Cafeteria ID *
+              Cafeteria *
             </label>
-            <input
-              type="number"
+            <select
               name="cafeteriaId"
               value={formData.cafeteriaId || ''}
               onChange={handleChange}
               required
               className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Cafeteria ID"
-            />
+            >
+              <option value="">Select cafeteria</option>
+              {cafeterias.map(c => (
+                <option key={c.cafeteriaId} value={c.cafeteriaId}>{c.name}</option>
+              ))}
+            </select>
           </div>
 
           <div>

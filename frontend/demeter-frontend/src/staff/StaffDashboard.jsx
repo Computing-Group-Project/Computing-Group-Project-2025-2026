@@ -8,19 +8,27 @@ import api from '../utils/api.js';
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout } = useAuth();
 
   const [stats, setStats] = useState({ pending: 0, completed: 0, revenue: 0 });
+  const [cafeteriaName, setCafeteriaName] = useState(null);
 
   useEffect(() => {
-    if (!isAuthenticated || (user?.role !== 'STAFF' && user?.role !== 'ADMIN')) {
-      navigate('/login');
-      return;
-    }
+    const cafeteriaId = user?.assignedCafeteriaId || 1;
+
+    // Fetch cafeteria name
+    const fetchCafeteria = async () => {
+      try {
+        const res = await api.get(`/api/cafeterias/${cafeteriaId}`);
+        setCafeteriaName(res.data.data?.name || `Cafeteria #${cafeteriaId}`);
+      } catch {
+        setCafeteriaName(`Cafeteria #${cafeteriaId}`);
+      }
+    };
+    fetchCafeteria();
 
     const fetchStats = async () => {
       try {
-        const cafeteriaId = user.assignedCafeteriaId || 1;
         const res = await api.get(`/api/orders/cafeteria/${cafeteriaId}`);
         const orders = res.data.data || [];
 
@@ -36,7 +44,7 @@ const StaffDashboard = () => {
       }
     };
     fetchStats();
-  }, [isAuthenticated, user]);
+  }, [user]);
 
   const handleExitShift = () => {
     logout();
@@ -55,7 +63,7 @@ const StaffDashboard = () => {
             Staff Dashboard
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-            Staff: {user?.username || 'Unknown'} | Cafeteria #{cafeteriaId}
+            Staff: {((user?.username || 'Unknown').charAt(0).toUpperCase() + (user?.username || 'Unknown').slice(1))} | {cafeteriaName || `Cafeteria #${cafeteriaId}`}
           </p>
         </div>
 

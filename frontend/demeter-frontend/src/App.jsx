@@ -3,6 +3,7 @@ import { CartProvider } from "./contexts/CartContext.jsx";
 import { WalletProvider } from "./contexts/WalletContext.jsx";
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
+import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import StudentHome from "./student/StudentHome.jsx";
 import CafeMenu from "./student/CafeMenu.jsx";
 import Wallet from "./student/Wallet.jsx";
@@ -25,18 +26,18 @@ function App() {
                 <Route path="/login" element={<Login />} />
 
                 {/* Student routes */}
-                <Route path="/" element={<StudentHome />} />
-                <Route path="/cafe/:id" element={<CafeMenu />} />
-                <Route path="/wallet" element={<Wallet />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/orders" element={<Orders />} />
+                <Route path="/" element={<ProtectedRoute allowedRoles={["STUDENT"]}><StudentHome /></ProtectedRoute>} />
+                <Route path="/cafe/:id" element={<ProtectedRoute allowedRoles={["STUDENT"]}><CafeMenu /></ProtectedRoute>} />
+                <Route path="/wallet" element={<ProtectedRoute allowedRoles={["STUDENT"]}><Wallet /></ProtectedRoute>} />
+                <Route path="/cart" element={<ProtectedRoute allowedRoles={["STUDENT"]}><Cart /></ProtectedRoute>} />
+                <Route path="/orders" element={<ProtectedRoute allowedRoles={["STUDENT"]}><Orders /></ProtectedRoute>} />
 
                 {/* Admin routes */}
-                <Route path="/admin" element={<AdminConsole />} />
-                <Route path="/admin/promotions" element={<PromotionManagementConsole />} />
+                <Route path="/admin" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminConsole /></ProtectedRoute>} />
+                <Route path="/admin/promotions" element={<ProtectedRoute allowedRoles={["ADMIN", "STAFF"]}><PromotionManagementConsole /></ProtectedRoute>} />
 
                 {/* Staff routes */}
-                <Route path="/staff" element={<StaffLayout><StaffDashboard /></StaffLayout>} />
+                <Route path="/staff" element={<ProtectedRoute allowedRoles={["STAFF", "ADMIN"]}><StaffLayout><StaffDashboard /></StaffLayout></ProtectedRoute>} />
 
                 <Route path="*" element={<Navigate to="/login" />} />
               </Routes>

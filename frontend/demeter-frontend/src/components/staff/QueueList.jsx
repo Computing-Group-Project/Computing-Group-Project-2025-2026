@@ -6,6 +6,23 @@ import { connectWebSocket, subscribe, disconnectWebSocket } from '../../utils/we
 const QueueList = ({ cafeteriaId = 1 }) => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [menuItems, setMenuItems] = useState({});
+
+  // Fetch menu items for this cafeteria to resolve names
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        const res = await api.get(`/api/menus/cafeteria/${cafeteriaId}`);
+        const items = res.data.data || [];
+        const map = {};
+        items.forEach(item => { map[item.itemId] = item.name; });
+        setMenuItems(map);
+      } catch {
+        // Keep empty map
+      }
+    };
+    fetchMenu();
+  }, [cafeteriaId]);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -14,7 +31,7 @@ const QueueList = ({ cafeteriaId = 1 }) => {
       setOrders(data.map(o => ({
         id: o.orderId,
         time: o.createdAt ? new Date(o.createdAt).toLocaleTimeString() : "N/A",
-        items: (o.items || []).map(i => `Item #${i.menuItemId}`),
+        rawItems: o.items || [],
         status: o.status === 'PLACED' ? 'Pending' :
                 o.status === 'CONFIRMED' || o.status === 'PREPARING' ? 'Preparing' :
                 o.status === 'READY' ? 'Ready' : o.status,
@@ -109,7 +126,13 @@ const QueueList = ({ cafeteriaId = 1 }) => {
             orders.map((order) => (
               <QueueItem
                 key={order.id}
-                order={order}
+                order={{
+                  ...order,
+                  items: (order.rawItems || []).map(i => {
+                    const name = menuItems[i.menuItemId] || `Item #${i.menuItemId}`;
+                    return i.quantity > 1 ? `${i.quantity}x ${name}` : name;
+                  }),
+                }}
                 onCancel={() => handleCancel(order.id)}
                 onAccept={() => handleAccept(order.id)}
                 onMarkReady={() => handleMarkReady(order.id)}

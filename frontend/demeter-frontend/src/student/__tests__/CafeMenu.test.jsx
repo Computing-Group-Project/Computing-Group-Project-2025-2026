@@ -34,7 +34,10 @@ vi.mock("../../components/common/FoodModal.jsx", () => ({
   default: ({ food }) => <div data-testid="food-modal">{food.title}</div>,
 }));
 
-vi.mock("../../assets/burger.svg", () => ({ default: "burger.svg" }));
+vi.mock("../../utils/foodImages.js", () => ({
+  getFoodImage: (name) => `mock-image-${name}`,
+  getCafeteriaImage: (id) => `mock-cafe-image-${id}`,
+}));
 
 import api from "../../utils/api.js";
 
@@ -99,7 +102,8 @@ describe("CafeMenu", () => {
     render(<CafeMenu />);
 
     await waitFor(() => {
-      expect(screen.getByText("Skyline Sips")).toBeInTheDocument();
+      const names = screen.getAllByText("Skyline Sips");
+      expect(names.length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText("Rooftop dining")).toBeInTheDocument();
     });
   });

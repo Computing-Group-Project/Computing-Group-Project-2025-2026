@@ -1,5 +1,6 @@
 package com.demeter.backend.menu.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,7 @@ public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "category_id")
     private Long categoryId;
 
     private String name;
@@ -21,6 +23,7 @@ public class Category {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Menu> menus;
 

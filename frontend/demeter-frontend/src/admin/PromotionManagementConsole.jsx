@@ -1,20 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext';
-import { useAuth } from '../contexts/AuthContext.jsx';
 import { PromotionList, DiscountCalculator } from '../components/promotions';
 
 const PromotionManagementConsole = () => {
   const [activeTab, setActiveTab] = useState('discounts');
   const { theme, toggleTheme } = useTheme();
-  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'STAFF')) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, user]);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-dark-bg p-6 transition-colors duration-300">

@@ -9,13 +9,7 @@ import api from '../utils/api.js';
 function AdminConsole() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const { user, logout, isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'ADMIN') {
-      navigate('/login');
-    }
-  }, [isAuthenticated, user]);
+  const { user, logout } = useAuth();
 
   const [activeTab, setActiveTab] = useState('staff');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,14 +21,17 @@ function AdminConsole() {
     if (activeTab === 'staff') fetchStaff();
   }, [activeTab]);
 
+  const CAFETERIA_NAMES = { 1: 'The Last Drop', 2: 'Hex Core Cafe', 3: 'Skyline Sips' };
+
   const fetchStaff = async () => {
     try {
       const res = await api.get('/api/admin/users?role=STAFF');
       setStaffList((res.data.data || []).map(u => ({
         id: u.id,
-        name: u.username,
+        name: u.username.charAt(0).toUpperCase() + u.username.slice(1),
         status: 'Active',
         joinedDate: 'N/A',
+        cafeteria: u.assignedCafeteriaId ? (CAFETERIA_NAMES[u.assignedCafeteriaId] || `Cafeteria #${u.assignedCafeteriaId}`) : 'Unassigned',
       })));
     } catch {
       setStaffList([]);

@@ -28,14 +28,13 @@ vi.mock("../../components/admin/WalletTable", () => ({
 
 // Mock contexts
 let mockUser = { username: "admin_user", userId: 3, role: "ADMIN", token: "tok" };
-let mockIsAuthenticated = true;
 const mockLogout = vi.fn();
 
 vi.mock("../../contexts/AuthContext.jsx", () => ({
   useAuth: () => ({
     user: mockUser,
     logout: mockLogout,
-    isAuthenticated: mockIsAuthenticated,
+    isAuthenticated: true,
   }),
 }));
 
@@ -52,7 +51,6 @@ describe("AdminConsole", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUser = { username: "admin_user", userId: 3, role: "ADMIN", token: "tok" };
-    mockIsAuthenticated = true;
   });
 
   it("renders admin console header and tabs", async () => {
@@ -83,27 +81,18 @@ describe("AdminConsole", () => {
     render(<AdminConsole />);
 
     await waitFor(() => {
-      expect(screen.getByText("swain")).toBeInTheDocument();
-      expect(screen.getByText("chef_mike")).toBeInTheDocument();
+      expect(screen.getByText("Swain")).toBeInTheDocument();
+      expect(screen.getByText("Chef_mike")).toBeInTheDocument();
     });
   });
 
-  it("redirects to login when not authenticated", () => {
-    mockIsAuthenticated = false;
-    mockUser = { role: "STUDENT" };
+  it("navigates to promotions tab", async () => {
     api.get.mockResolvedValueOnce({ data: { data: [] } });
 
     render(<AdminConsole />);
 
-    expect(mockNavigate).toHaveBeenCalledWith("/login");
-  });
-
-  it("redirects to login when user is not ADMIN", () => {
-    mockUser = { username: "student1", role: "STUDENT", userId: 1 };
-    api.get.mockResolvedValueOnce({ data: { data: [] } });
-
-    render(<AdminConsole />);
-
-    expect(mockNavigate).toHaveBeenCalledWith("/login");
+    await waitFor(() => {
+      expect(screen.getByText("Promotions")).toBeInTheDocument();
+    });
   });
 });

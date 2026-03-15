@@ -10,11 +10,12 @@ export default function ProfileModal({
 
   const { user } = useAuth();
 
-  const name = user?.username || "Student";
+  const rawName = user?.username || "Student";
+  const name = rawName.charAt(0).toUpperCase() + rawName.slice(1);
   const studentId = user?.userId || "N/A";
   const batch = "N/A";
 
-  const initials = name
+  const initials = rawName
     .split(" ")
     .map(n => n[0])
     .join("")

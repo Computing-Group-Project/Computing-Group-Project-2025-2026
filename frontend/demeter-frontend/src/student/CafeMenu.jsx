@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import StudentLayout from "../layouts/StudentLayout.jsx";
 import SearchBar from "../components/common/SearchBar.jsx";
 import FoodCard from "../components/common/FoodCard.jsx";
 import FoodModal from "../components/common/FoodModal.jsx";
 import api from "../utils/api.js";
-import burger from "../assets/burger.svg";
+import { getFoodImage, getCafeteriaImage } from "../utils/foodImages.js";
 
 export default function CafeMenu() {
   const { id } = useParams();
@@ -18,8 +19,33 @@ export default function CafeMenu() {
   const [foods, setFoods] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
+  const bannerRef = useRef(null);
+  const dashboardTextRef = useRef(null);
+  const cafeNameTextRef = useRef(null);
+  const [textWidth, setTextWidth] = useState(null);
 
   const filters = ["All", ...categories.map(c => c.name)];
+
+  // Measure text widths and animate pill size
+  useEffect(() => {
+    const target = showStickyHeader ? cafeNameTextRef.current : dashboardTextRef.current;
+    if (target) {
+      setTextWidth(target.scrollWidth);
+    }
+  }, [showStickyHeader, cafe]);
+
+  // Show sticky header when banner scrolls out of view
+  useEffect(() => {
+    const banner = bannerRef.current;
+    if (!banner) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyHeader(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(banner);
+    return () => observer.disconnect();
+  }, [cafe]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,7 +60,7 @@ export default function CafeMenu() {
         setCafe({
           name: cafeData.name,
           description: cafeData.description || "",
-          banner: "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1600&q=60",
+          banner: getCafeteriaImage(cafeData.cafeteriaId || parseInt(id)),
         });
 
         const menuItems = menuRes.data.data || [];
@@ -44,7 +70,7 @@ export default function CafeMenu() {
           title: item.name,
           description: item.description || "",
           price: item.basePrice,
-          image: item.imageUrl || burger,
+          image: getFoodImage(item.name, item.imageUrl),
           category: item.category ? [item.category.name] : [],
           cafeteriaId: item.cafeteriaId,
           extras: (item.customizations || [])
@@ -93,26 +119,59 @@ export default function CafeMenu() {
 
   return (
     <StudentLayout>
+      {/* Floating pill — morphs between "Back to Dashboard" and cafe name */}
+      {createPortal(
+        <div className="fixed top-0 left-1/2 -translate-x-1/2 z-50 h-[70px] flex items-center">
+          <div
+            onClick={() => {
+              if (showStickyHeader) {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              } else {
+                navigate("/");
+              }
+            }}
+            className="relative flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-gray-200 dark:border-slate-700 shadow-lg shadow-black/10 cursor-pointer hover:shadow-xl transition-shadow duration-300"
+          >
+            <button
+              onClick={(e) => { if (showStickyHeader) { e.stopPropagation(); navigate("/"); } }}
+              className="text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors duration-300 text-lg"
+            >
+              &larr;
+            </button>
+            <span
+              className="relative overflow-hidden h-[1.5em]"
+              style={{ width: textWidth ? `${textWidth}px` : "auto", transition: "width 500ms ease-in-out" }}
+            >
+              <span
+                ref={dashboardTextRef}
+                className={`absolute left-0 text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap transition-all duration-500 ease-in-out ${
+                  showStickyHeader
+                    ? "opacity-0 -translate-y-full"
+                    : "opacity-100 translate-y-0"
+                }`}
+              >
+                Back to Dashboard
+              </span>
+              <span
+                ref={cafeNameTextRef}
+                className={`absolute left-0 text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap transition-all duration-500 ease-in-out ${
+                  showStickyHeader
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-full"
+                }`}
+              >
+                {cafe.name}
+              </span>
+            </span>
+          </div>
+        </div>,
+        document.body
+      )}
+
       <div className="w-screen relative left-1/2 -translate-x-1/2 px-6">
 
-        {/* Back button */}
-        <button
-          onClick={() => navigate("/")}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl
-          text-sm font-medium text-gray-700 dark:text-white
-          bg-white/60 dark:bg-slate-800/60 backdrop-blur
-          border border-gray-200 dark:border-slate-700
-          hover:bg-gray-100 dark:hover:bg-slate-700
-          hover:shadow-md hover:shadow-slate-900/40
-          active:scale-95
-          transition-all duration-200 mb-6"
-        >
-          <span className="text-base">&lt;</span>
-          Back to Dashboard
-        </button>
-
         {/* Banner */}
-        <div className="relative w-full h-[180px] sm:h-[260px] rounded-2xl overflow-hidden mb-8">
+        <div ref={bannerRef} className="relative w-full h-[180px] sm:h-[260px] rounded-2xl overflow-hidden mb-8">
           <img src={cafe.banner} alt={cafe.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center px-4">
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white">{cafe.name}</h1>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Navbar from "../components/common/Navbar.jsx";
 import ProfileModal from "../components/common/ProfileModal.jsx";
 import { useNavigate } from "react-router-dom";
@@ -12,14 +12,7 @@ export default function StudentLayout({ children }) {
 
   const navigate = useNavigate();
   const { clearCart } = useCart();
-  const { logout, isAuthenticated } = useAuth();
-
-  /* LOGIN PROTECTION */
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-    }
-  }, [isAuthenticated]);
+  const { logout } = useAuth();
 
   /* LOGOUT */
   const handleLogout = () => {

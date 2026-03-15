@@ -22,7 +22,7 @@ function StaffCard({ staff, onDelete }) {
               {staff.name}
             </h3>
             <p className="text-sm text-light-textMuted dark:text-dark-textMuted">
-              ID: {staff.id}
+              ID: {staff.id}{staff.cafeteria ? ` · ${staff.cafeteria}` : ''}
             </p>
           </div>
         </div>

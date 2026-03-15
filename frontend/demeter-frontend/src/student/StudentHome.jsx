@@ -5,28 +5,30 @@ import CafeteriaCard from "../components/common/CafeteriaCard.jsx";
 import StudentLayout from "../layouts/StudentLayout.jsx";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import api from "../utils/api.js";
-import quinoa from "../assets/submarine.svg";
-import burger from "../assets/burger.svg";
+import { getFoodImage, getCafeteriaImage } from "../utils/foodImages.js";
+
+const CAFETERIA_NAMES = { 1: "The Last Drop", 2: "Hex Core Cafe", 3: "Skyline Sips" };
 
 // Fallback recommended items (used when API not available)
 const fallbackRecommended = [
   {
-    id: 1, cafeId: 1, name: "Neuro-Burger", image: burger, price: 45,
+    id: 1, cafeId: 1, name: "Neuro-Burger", image: getFoodImage("Neuro-Burger"), price: 45,
     description: "Plant-based patty with smart-sauce and crispy sweet potato fries.", tag: "vegetarian",
   },
   {
-    id: 2, cafeId: 1, name: "Quantum Quinoa Bowl", image: quinoa, price: 38,
+    id: 2, cafeId: 1, name: "Quantum Quinoa Bowl", image: getFoodImage("Quantum Quinoa Bowl"), price: 38,
     description: "Fresh quinoa, avocado, kale, and a lemon-tahini dressing.", tag: "vegan",
   },
   {
-    id: 3, cafeId: 3, name: "Sunset Smoothie", image: burger, price: 20,
+    id: 3, cafeId: 3, name: "Sunset Smoothie", image: getFoodImage("Sunset Smoothie"), price: 20,
     description: "Mango, pineapple, and strawberry blend with yogurt.", tag: "drink",
   },
 ];
 
 export default function StudentHome() {
   const { user } = useAuth();
-  const firstName = user?.username?.split("_")[0] || "Student";
+  const rawName = user?.username?.split("_")[0] || "Student";
+  const firstName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
   const navigate = useNavigate();
 
   const [cafeterias, setCafeterias] = useState([]);
@@ -45,15 +47,15 @@ export default function StudentHome() {
           status: c.isActive ? "Open" : "Closed",
           rating: parseFloat(c.averageRating) || 0,
           description: c.description || "",
-          image: "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1600&q=60",
+          image: getCafeteriaImage(c.cafeteriaId),
           popularItems: [],
         })));
       } catch {
         // Fallback if API unavailable
         setCafeterias([
-          { id: 1, name: "The Last Drop", hours: "08:00 – 22:00", status: "Open", rating: 4, description: "Cozy atmosphere for study sessions.", image: "https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=1600&q=60", popularItems: [] },
-          { id: 2, name: "Hex Core Cafe", hours: "07:00 – 20:00", status: "Open", rating: 4, description: "Industrial chic meets molecular gastronomy.", image: "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1600&q=60", popularItems: [] },
-          { id: 3, name: "Skyline Sips", hours: "10:00 – 18:00", status: "Open", rating: 4, description: "Rooftop dining with panoramic view.", image: "https://images.unsplash.com/photo-1444723121867-7a241cacace9?auto=format&fit=crop&w=1600&q=60", popularItems: [] },
+          { id: 1, name: "The Last Drop", hours: "08:00 – 22:00", status: "Open", rating: 4, description: "Cozy atmosphere for study sessions.", image: getCafeteriaImage(1), popularItems: [] },
+          { id: 2, name: "Hex Core Cafe", hours: "07:00 – 20:00", status: "Open", rating: 4, description: "Industrial chic meets molecular gastronomy.", image: getCafeteriaImage(2), popularItems: [] },
+          { id: 3, name: "Skyline Sips", hours: "10:00 – 18:00", status: "Open", rating: 4, description: "Rooftop dining with panoramic view.", image: getCafeteriaImage(3), popularItems: [] },
         ]);
       } finally {
         setLoading(false);
@@ -82,19 +84,24 @@ export default function StudentHome() {
             Recommended for You
           </h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {recommendedItems.map((item) => (
-              <FoodCard
-                key={item.id}
-                image={item.image}
-                title={item.name}
-                description={item.description}
-                price={`${item.price}`}
-                badge={item.tag}
-                buttonText="order now"
-                variant="home"
-                onClick={() => navigate(`/cafe/${item.cafeId}`)}
-              />
-            ))}
+            {recommendedItems.map((item) => {
+              const cafeName = cafeterias.find(c => c.id === item.cafeId)?.name
+                || CAFETERIA_NAMES[item.cafeId] || "";
+              return (
+                <FoodCard
+                  key={item.id}
+                  image={item.image}
+                  title={item.name}
+                  subtitle={cafeName}
+                  description={item.description}
+                  price={`${item.price}`}
+                  badge={item.tag}
+                  buttonText="order now"
+                  variant="home"
+                  onClick={() => navigate(`/cafe/${item.cafeId}`)}
+                />
+              );
+            })}
           </div>
         </section>
 

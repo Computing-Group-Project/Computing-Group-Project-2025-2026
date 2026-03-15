@@ -36,6 +36,7 @@ export default function Orders() {
   const [hover, setHover] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [reviewError, setReviewError] = useState(null);
 
   const fetchOrders = useCallback(async () => {
     if (!user?.userId) return;
@@ -82,6 +83,7 @@ export default function Orders() {
 
   const handleSubmitReview = async () => {
     if (!selectedOrder || rating === 0) return;
+    setReviewError(null);
     try {
       await api.post("/api/reviews", {
         orderId: selectedOrder.orderId,
@@ -90,8 +92,17 @@ export default function Orders() {
         reviewText: reviewText || null,
       });
       setReviewSubmitted(true);
-    } catch {
-      setReviewSubmitted(true); // Show success anyway for UX
+    } catch (err) {
+      setReviewError(err.response?.data?.message || "Failed to submit review. You may have already reviewed this order or the review window has expired.");
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    try {
+      await api.put(`/api/orders/${orderId}/status?status=CANCELLED`);
+      fetchOrders();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to cancel order");
     }
   };
 
@@ -137,7 +148,7 @@ export default function Orders() {
             {orders.slice(0, 5).map(o => (
               <button
                 key={o.orderId}
-                onClick={() => { setSelectedOrder(o); setShowReview(false); setReviewSubmitted(false); setRating(0); }}
+                onClick={() => { setSelectedOrder(o); setShowReview(false); setReviewSubmitted(false); setReviewError(null); setRating(0); }}
                 className={`px-3 py-1 rounded-full text-sm ${
                   selectedOrder?.orderId === o.orderId
                     ? "bg-teal-400 text-black"
@@ -154,7 +165,24 @@ export default function Orders() {
           <>
             <p className="text-center text-gray-500 dark:text-gray-400 mt-2">
               Order #{selectedOrder.orderId}
+              {selectedOrder.placedAt && (
+                <span className="ml-2 text-sm">
+                  — {new Date(selectedOrder.placedAt).toLocaleDateString()} at {new Date(selectedOrder.placedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
             </p>
+
+            {/* Cancel button for PLACED orders */}
+            {selectedOrder.status === "PLACED" && (
+              <div className="flex justify-center mt-3">
+                <button
+                  onClick={() => handleCancelOrder(selectedOrder.orderId)}
+                  className="px-5 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium text-sm transition-colors"
+                >
+                  Cancel Order
+                </button>
+              </div>
+            )}
 
             {/* PROGRESS CARD */}
             {selectedOrder.status !== "CANCELLED" && (
@@ -230,6 +258,11 @@ export default function Orders() {
                   onChange={(e) => setReviewText(e.target.value)}
                   className="w-full bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white p-3 rounded-lg mb-4"
                 />
+                {reviewError && (
+                  <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg mb-4 text-sm">
+                    {reviewError}
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <button type="button" onClick={() => setShowReview(false)} className="text-gray-400">Skip</button>
                   <button type="button" onClick={handleSubmitReview} className="bg-teal-500 px-6 py-2 rounded-lg text-black font-semibold">
