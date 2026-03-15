@@ -66,17 +66,18 @@ jobs:
       - name: Install dependencies
         run: cd ai-service && pip install -r requirements.txt
 
-      - name: Validate imports
+      - name: Download NLTK data
         run: |
           cd ai-service
           python -c "
-          import fastapi
-          import uvicorn
-          import pydantic
           import nltk
-          import pandas
-          import numpy
-          import sklearn
-          import joblib
-          print('All dependencies imported successfully')
+          nltk.download('vader_lexicon', quiet=True)
+          nltk.download('punkt', quiet=True)
+          nltk.download('punkt_tab', quiet=True)
+          nltk.download('stopwords', quiet=True)
+          nltk.download('words', quiet=True)
+          print('NLTK data downloaded successfully')
           "
+
+      - name: Run tests
+        run: cd ai-service && python -m pytest test.py -v

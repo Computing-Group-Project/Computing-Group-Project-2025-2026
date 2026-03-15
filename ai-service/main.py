@@ -25,6 +25,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import os
+import ssl
 
 #global dictionary to safely hold all AI models in memory
 ml_resources = {}
@@ -33,19 +34,28 @@ ml_resources = {}
 async def lifespan(app: FastAPI):
     #startup logic
     print("Starting up: Loading AI models into memory...")
-    
+
     # --loading NLTK models--
     try:
         print("-> Checking NLTK resources...")
         try:
             nltk.data.find('sentiment/vader_lexicon.zip')
             nltk.data.find('tokenizers/punkt')
+            nltk.data.find('tokenizers/punkt_tab')
             nltk.data.find('corpora/stopwords')
             nltk.data.find('corpora/words')
         except LookupError:
             print("-> Downloading missing NLTK resources...")
+            # Workaround for macOS SSL certificate issues
+            try:
+                _create_unverified_https_context = ssl._create_unverified_context
+            except AttributeError:
+                pass
+            else:
+                ssl._create_default_https_context = _create_unverified_https_context
             nltk.download('vader_lexicon', quiet=True)
             nltk.download('punkt', quiet=True)
+            nltk.download('punkt_tab', quiet=True)
             nltk.download('stopwords', quiet=True)
             nltk.download('words', quiet=True)
             
@@ -357,6 +367,8 @@ async def generate_recommendations(
             model_version="v2.0-knn-production"
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -457,6 +469,8 @@ async def generate_discounts(
             generated_at=datetime.now()
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         import traceback
         traceback.print_exc()
