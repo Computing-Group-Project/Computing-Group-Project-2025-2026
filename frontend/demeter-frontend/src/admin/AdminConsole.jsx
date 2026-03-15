@@ -9,7 +9,7 @@ import api from '../utils/api.js';
 function AdminConsole() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   const [activeTab, setActiveTab] = useState('staff');
   const [isModalOpen, setIsModalOpen] = useState(false);
