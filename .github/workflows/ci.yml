@@ -46,6 +46,9 @@ jobs:
       - name: Lint
         run: cd frontend/demeter-frontend && npm run lint
 
+      - name: Run tests
+        run: cd frontend/demeter-frontend && npx vitest run
+
       - name: Build
         run: cd frontend/demeter-frontend && npm run build
 
