@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
 
 from ..config import RATE_LIMIT_REVIEWS
-from ..dependencies import verify_api_key
+from ..dependencies import verify_api_key, limiter
 from ..models.reviews import ReviewAnalysisRequest, ReviewAnalysisResponse
 from ..services import review_service
 
@@ -9,6 +9,7 @@ router = APIRouter(prefix="/api/v1", tags=["Reviews"])
 
 
 @router.post("/reviews/analyze", response_model=ReviewAnalysisResponse)
+@limiter.limit(RATE_LIMIT_REVIEWS)
 async def analyze_review(
     request: Request,
     payload: ReviewAnalysisRequest,

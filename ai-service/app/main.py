@@ -6,11 +6,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
-from slowapi.util import get_remote_address
 
 from .config import CORS_ORIGINS
+from .dependencies import limiter
 from .routers import health, recommendations, discounts, reviews
 from .services.model_loader import load_all, unload_all
 
@@ -20,9 +20,6 @@ async def lifespan(app: FastAPI):
     load_all()
     yield
     unload_all()
-
-
-limiter = Limiter(key_func=get_remote_address)
 
 
 def create_app() -> FastAPI:

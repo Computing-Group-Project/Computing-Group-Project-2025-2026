@@ -3,7 +3,7 @@ import traceback
 from fastapi import APIRouter, HTTPException, Depends, Request
 
 from ..config import RATE_LIMIT_DISCOUNTS
-from ..dependencies import verify_api_key
+from ..dependencies import verify_api_key, limiter
 from ..models.discounts import DiscountRequest, DiscountResponse
 from ..services import discount_service
 
@@ -11,6 +11,7 @@ router = APIRouter(prefix="/api/v1", tags=["Discounts"])
 
 
 @router.post("/discounts", response_model=DiscountResponse)
+@limiter.limit(RATE_LIMIT_DISCOUNTS)
 async def generate_discounts(
     request: Request,
     payload: DiscountRequest,

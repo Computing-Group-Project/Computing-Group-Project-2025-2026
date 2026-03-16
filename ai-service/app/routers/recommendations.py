@@ -3,7 +3,7 @@ import traceback
 from fastapi import APIRouter, HTTPException, Depends, Request
 
 from ..config import RATE_LIMIT_RECOMMENDATIONS
-from ..dependencies import verify_api_key
+from ..dependencies import verify_api_key, limiter
 from ..models.recommendations import RecommendationRequest, RecommendationResponse
 from ..services import recommendation_service
 
@@ -11,6 +11,7 @@ router = APIRouter(prefix="/api/v1", tags=["Recommendations"])
 
 
 @router.post("/recommendations", response_model=RecommendationResponse)
+@limiter.limit(RATE_LIMIT_RECOMMENDATIONS)
 async def generate_recommendations(
     request: Request,
     payload: RecommendationRequest,

@@ -5,7 +5,8 @@ Uses FastAPI TestClient (httpx) — no running server needed.
 
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app, limiter
+from app.main import app
+from app.dependencies import limiter
 
 API_KEY = "demeter-ai-service-key-2024"
 HEADERS = {"X-API-Key": API_KEY, "Content-Type": "application/json"}
