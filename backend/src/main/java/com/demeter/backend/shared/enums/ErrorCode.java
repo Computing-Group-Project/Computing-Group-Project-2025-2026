@@ -20,6 +20,8 @@ public enum ErrorCode {
     REVIEW_ALREADY_EXISTS("Review already submitted for this order", HttpStatus.CONFLICT),
     REVIEW_WINDOW_EXPIRED("Review window has expired (1 hour after completion)", HttpStatus.BAD_REQUEST),
     CAFETERIA_NOT_FOUND("Cafeteria not found", HttpStatus.NOT_FOUND),
+    RATE_LIMITED("Too many requests. Please try again later.", HttpStatus.TOO_MANY_REQUESTS),
+    AI_SERVICE_UNAVAILABLE("AI service is temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE),
     INTERNAL_ERROR("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String message;

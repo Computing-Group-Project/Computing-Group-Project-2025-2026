@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import java.math.BigDecimal;
+
 @Configuration
 @Profile("dev")
 public class DataSeeder {
@@ -62,7 +64,7 @@ public class DataSeeder {
             Menu chickenRice = new Menu(
                     "Chicken Rice",
                     "Sri Lankan chicken rice and curry",
-                    450.0,
+                    BigDecimal.valueOf(450.0),
                     rice
             );
             chickenRice.setCafeteriaId(1L);
@@ -70,7 +72,7 @@ public class DataSeeder {
             Menu icedCoffee = new Menu(
                     "Iced Coffee",
                     "Cold coffee with milk",
-                    250.0,
+                    BigDecimal.valueOf(250.0),
                     beverages
             );
             icedCoffee.setCafeteriaId(1L);
@@ -78,7 +80,7 @@ public class DataSeeder {
             Menu vegRoll = new Menu(
                     "Vegetable Roll",
                     "Crispy vegetable roll",
-                    120.0,
+                    BigDecimal.valueOf(120.0),
                     snacks
             );
             vegRoll.setCafeteriaId(2L);
@@ -89,12 +91,12 @@ public class DataSeeder {
 
             // ---------- Seed Customizations ----------
             MenuItemCustomization spiceLevel = new MenuItemCustomization(
-                    "Spice", "ADD", 0.0, chickenRice
+                    "Spice", "ADD", BigDecimal.ZERO, chickenRice
             );
             customizationRepo.save(spiceLevel);
 
             MenuItemCustomization sugarLevel = new MenuItemCustomization(
-                    "Sugar", "ADD", 0.0, icedCoffee
+                    "Sugar", "ADD", BigDecimal.ZERO, icedCoffee
             );
             customizationRepo.save(sugarLevel);
 

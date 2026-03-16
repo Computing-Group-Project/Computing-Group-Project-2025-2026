@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import StatCard from '../components/staff/StatCard';
 import QueueList from '../components/staff/QueueList';
 import DiscountSuggestion from '../components/staff/DiscountSuggestion';
+import MenuEditor from '../components/staff/MenuEditor';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import api from '../utils/api.js';
 
@@ -12,6 +13,7 @@ const StaffDashboard = () => {
 
   const [stats, setStats] = useState({ pending: 0, completed: 0, revenue: 0 });
   const [cafeteriaName, setCafeteriaName] = useState(null);
+  const [activeTab, setActiveTab] = useState('orders');
 
   useEffect(() => {
     const cafeteriaId = user?.assignedCafeteriaId || 1;
@@ -75,37 +77,61 @@ const StaffDashboard = () => {
         </button>
       </div>
 
-      {/* stat cards row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <StatCard
-          value={String(stats.pending)}
-          title="Pending Orders"
-          isHighlighted={true}
-          valueColor="text-gray-900 dark:text-gray-900"
-        />
-        <StatCard
-          value={String(stats.completed)}
-          title="Completed Today"
-          isHighlighted={false}
-          valueColor="text-emerald-500"
-        />
-        <StatCard
-          value={`GK ${stats.revenue.toFixed(0)}`}
-          title="Today's Revenue"
-          isHighlighted={false}
-          valueColor="text-yellow-500"
-        />
+      {/* tab buttons */}
+      <div className="flex gap-2 mb-8">
+        <button
+          onClick={() => setActiveTab('orders')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'orders' ? 'bg-teal-400 text-gray-900' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600'}`}
+        >
+          Orders
+        </button>
+        <button
+          onClick={() => setActiveTab('menu')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'menu' ? 'bg-teal-400 text-gray-900' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600'}`}
+        >
+          Menu
+        </button>
       </div>
 
-      {/* queue + AI row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="w-full">
-          <QueueList cafeteriaId={cafeteriaId} />
-        </div>
-        <div className="w-full">
-          <DiscountSuggestion />
-        </div>
-      </div>
+      {activeTab === 'orders' && (
+        <>
+          {/* stat cards row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <StatCard
+              value={String(stats.pending)}
+              title="Pending Orders"
+              isHighlighted={true}
+              valueColor="text-gray-900 dark:text-gray-900"
+            />
+            <StatCard
+              value={String(stats.completed)}
+              title="Completed Today"
+              isHighlighted={false}
+              valueColor="text-emerald-500"
+            />
+            <StatCard
+              value={`GK ${stats.revenue.toFixed(0)}`}
+              title="Today's Revenue"
+              isHighlighted={false}
+              valueColor="text-yellow-500"
+            />
+          </div>
+
+          {/* queue + AI row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="w-full">
+              <QueueList cafeteriaId={cafeteriaId} />
+            </div>
+            <div className="w-full">
+              <DiscountSuggestion cafeteriaId={cafeteriaId} />
+            </div>
+          </div>
+        </>
+      )}
+
+      {activeTab === 'menu' && (
+        <MenuEditor cafeteriaId={cafeteriaId} />
+      )}
 
     </div>
   );

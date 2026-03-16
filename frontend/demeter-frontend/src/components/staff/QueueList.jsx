@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import QueueItem from './QueueItem';
+import { useToast } from '../../contexts/ToastContext.jsx';
 import api from '../../utils/api.js';
 import { connectWebSocket, subscribe, disconnectWebSocket } from '../../utils/websocket.js';
 
 const QueueList = ({ cafeteriaId = 1 }) => {
+  const { showToast } = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [menuItems, setMenuItems] = useState({});
+  const fetchTimeoutRef = useRef(null);
 
   // Fetch menu items for this cafeteria to resolve names
   useEffect(() => {
@@ -17,8 +20,8 @@ const QueueList = ({ cafeteriaId = 1 }) => {
         const map = {};
         items.forEach(item => { map[item.menuId] = item.name; });
         setMenuItems(map);
-      } catch {
-        // Keep empty map
+      } catch (err) {
+        console.error("Failed to fetch menu items:", err);
       }
     };
     fetchMenu();
@@ -37,12 +40,20 @@ const QueueList = ({ cafeteriaId = 1 }) => {
                 o.status === 'READY' ? 'Ready' : o.status,
         rawStatus: o.status,
       })));
-    } catch {
+    } catch (err) {
+      console.error("Failed to fetch orders:", err);
       setOrders([]);
     } finally {
       setLoading(false);
     }
   }, [cafeteriaId]);
+
+  const debouncedFetch = useCallback(() => {
+    if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
+    fetchTimeoutRef.current = setTimeout(() => {
+      fetchOrders();
+    }, 500);
+  }, [fetchOrders]);
 
   useEffect(() => {
     fetchOrders();
@@ -52,15 +63,18 @@ const QueueList = ({ cafeteriaId = 1 }) => {
   useEffect(() => {
     connectWebSocket((stompClient) => {
       subscribe(stompClient, "/topic/staff", () => {
-        fetchOrders();
+        debouncedFetch();
       });
       subscribe(stompClient, "/topic/orders", () => {
-        fetchOrders();
+        debouncedFetch();
       });
     });
 
-    return () => disconnectWebSocket();
-  }, [fetchOrders]);
+    return () => {
+      if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
+      disconnectWebSocket();
+    };
+  }, [debouncedFetch]);
 
   const updateStatus = async (id, status, actionLabel) => {
     try {
@@ -68,7 +82,7 @@ const QueueList = ({ cafeteriaId = 1 }) => {
       fetchOrders();
     } catch (err) {
       console.error(`Failed to ${actionLabel}:`, err);
-      alert(`Failed to ${actionLabel}. ${err.response?.data?.message || "Please try again."}`);
+      showToast(`Failed to ${actionLabel}. ${err.response?.data?.message || "Please try again."}`, 'error');
     }
   };
 

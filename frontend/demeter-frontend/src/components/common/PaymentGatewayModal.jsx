@@ -90,7 +90,7 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
 
     setStep("processing");
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     try {
       const res = await api.post("/api/wallet/student-topup", {

@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import { useToast } from '../contexts/ToastContext.jsx';
 import StaffCard from '../components/admin/StaffCard';
 import WalletTable from '../components/admin/WalletTable';
+import AnalyticsDashboard from '../components/admin/AnalyticsDashboard';
 import api from '../utils/api.js';
 
 function AdminConsole() {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState('staff');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -52,7 +55,7 @@ function AdminConsole() {
       setIsModalOpen(false);
       fetchStaff();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to create staff');
+      showToast(err.response?.data?.message || 'Failed to create staff', 'error');
     }
   };
 
@@ -62,7 +65,7 @@ function AdminConsole() {
       await api.delete(`/api/admin/users/${id}`);
       fetchStaff();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete');
+      showToast(err.response?.data?.message || 'Failed to delete', 'error');
     }
   };
 
@@ -96,6 +99,7 @@ function AdminConsole() {
           <div className="inline-flex flex-wrap gap-1 rounded-full bg-gray-200 dark:bg-dark-card p-1">
             <button onClick={() => setActiveTab('staff')} className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'staff' ? 'bg-white dark:bg-white text-gray-900 shadow-sm' : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'}`}>Staff Management</button>
             <button onClick={() => setActiveTab('wallets')} className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'wallets' ? 'bg-white dark:bg-white text-gray-900 shadow-sm' : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'}`}>Student Wallets</button>
+            <button onClick={() => setActiveTab('analytics')} className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'analytics' ? 'bg-white dark:bg-white text-gray-900 shadow-sm' : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'}`}>Analytics</button>
             <button onClick={() => navigate('/admin/promotions')} className="px-6 py-2 rounded-full font-medium transition-all bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text">Promotions</button>
           </div>
         </div>
@@ -158,6 +162,8 @@ function AdminConsole() {
         )}
 
         {activeTab === 'wallets' && <WalletTable />}
+
+        {activeTab === 'analytics' && <AnalyticsDashboard />}
       </main>
     </div>
   );

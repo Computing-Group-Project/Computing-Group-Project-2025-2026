@@ -1,18 +1,19 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useRef, useEffect } from "react";
+import { useToast } from "./ToastContext.jsx";
 
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
+  const { showToast } = useToast();
+  const showToastRef = useRef(showToast);
+  useEffect(() => { showToastRef.current = showToast; }, [showToast]);
 
   const addToCart = (item) => {
     setCart((prev) => {
-      // If cart has items from a different cafeteria, ask to switch
+      // If cart has items from a different cafeteria, auto-clear and notify
       if (prev.length > 0 && prev[0].cafeteriaId !== item.cafeteriaId) {
-        const confirmed = window.confirm(
-          "Your cart has items from a different cafeteria. Clear the cart and add this item instead?"
-        );
-        if (!confirmed) return prev;
+        showToastRef.current("Cart cleared — switched to a different cafeteria.", "info");
         return [item];
       }
       return [...prev, item];

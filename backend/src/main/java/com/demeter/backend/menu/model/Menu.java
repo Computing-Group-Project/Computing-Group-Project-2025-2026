@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,11 +19,14 @@ public class Menu {
     @Column(name = "item_id")
     private Long menuId;
 
+    @Column(name = "name")
     private String name;
+
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "base_price")
-    private Double basePrice;
+    @Column(name = "base_price", precision = 10, scale = 2)
+    private BigDecimal basePrice;
 
     @Column(name = "image_url")
     private String imageUrl;
@@ -40,7 +44,7 @@ public class Menu {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<MenuItemCustomization> customizations;
 
     @Column(name = "created_at")
@@ -51,7 +55,7 @@ public class Menu {
 
     public Menu() {}
 
-    public Menu(String name, String description, Double basePrice, Category category) {
+    public Menu(String name, String description, BigDecimal basePrice, Category category) {
         this.name = name;
         this.description = description;
         this.basePrice = basePrice;

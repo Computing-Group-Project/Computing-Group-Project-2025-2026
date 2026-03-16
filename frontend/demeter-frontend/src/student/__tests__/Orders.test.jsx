@@ -30,6 +30,13 @@ vi.mock("../../layouts/StudentLayout.jsx", () => ({
   default: ({ children }) => <div data-testid="student-layout">{children}</div>,
 }));
 
+// Mock ToastContext
+vi.mock("../../contexts/ToastContext.jsx", () => ({
+  useToast: () => ({
+    showToast: vi.fn(),
+  }),
+}));
+
 // Mock AuthContext
 vi.mock("../../contexts/AuthContext.jsx", () => ({
   useAuth: () => ({

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { FaClock, FaCheckCircle, FaUtensils, FaBox, FaCheck, FaStar } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { useToast } from "../contexts/ToastContext.jsx";
 import api from "../utils/api.js";
 import { connectWebSocket, subscribe, disconnectWebSocket } from "../utils/websocket.js";
 
@@ -19,6 +20,7 @@ export default function Orders() {
   const location = useLocation();
   const passedState = location.state || null;
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   const steps = [
     { label: "Order Placed", icon: <FaClock /> },
@@ -124,7 +126,7 @@ export default function Orders() {
       await api.put(`/api/orders/${orderId}/status?status=CANCELLED`);
       fetchOrders();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to cancel order");
+      showToast(err.response?.data?.message || "Failed to cancel order", "error");
     }
   };
 
@@ -266,6 +268,8 @@ export default function Orders() {
                     <FaStar
                       key={star}
                       size={28}
+                      aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                      role="button"
                       className={`cursor-pointer transition ${(hover || rating) >= star ? "text-yellow-400" : "text-gray-500"}`}
                       onClick={() => setRating(star)}
                       onMouseEnter={() => setHover(star)}
@@ -278,8 +282,11 @@ export default function Orders() {
                   maxLength={200}
                   value={reviewText}
                   onChange={(e) => setReviewText(e.target.value)}
-                  className="w-full bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white p-3 rounded-lg mb-4"
+                  className="w-full bg-gray-100 dark:bg-slate-700 text-gray-900 dark:text-white p-3 rounded-lg mb-1"
                 />
+                <p className="text-xs text-gray-400 dark:text-gray-500 text-right mb-4">
+                  {reviewText.length}/200
+                </p>
                 {reviewError && (
                   <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg mb-4 text-sm">
                     {reviewError}

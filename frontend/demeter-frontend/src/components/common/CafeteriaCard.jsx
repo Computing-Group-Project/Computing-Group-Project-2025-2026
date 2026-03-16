@@ -18,7 +18,7 @@ function Stars({ value = 4 }) {
   );
 }
 
-export default function CafeteriaCard({ cafe }) {
+function CafeteriaCard({ cafe }) {
   const navigate = useNavigate();
 
   if (!cafe) return null;
@@ -146,3 +146,5 @@ export default function CafeteriaCard({ cafe }) {
     </div>
   );
 }
+
+export default React.memo(CafeteriaCard);

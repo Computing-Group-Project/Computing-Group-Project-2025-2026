@@ -52,4 +52,4 @@ function StaffCard({ staff, onDelete }) {
   );
 }
 
-export default StaffCard;
+export default React.memo(StaffCard);

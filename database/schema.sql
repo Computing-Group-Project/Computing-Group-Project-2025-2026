@@ -205,3 +205,16 @@ CREATE TABLE OrderCustomization (
                                     price_adjustment DECIMAL(10,2),
                                     FOREIGN KEY (order_item_id) REFERENCES OrderItem(order_item_id)
 );
+
+-- Performance indexes
+CREATE INDEX idx_transaction_history_user_created ON TransactionHistory(user_id, created_at);
+CREATE INDEX idx_order_status ON `Order`(order_status);
+CREATE INDEX idx_order_user_id ON `Order`(user_id);
+CREATE INDEX idx_order_cafeteria_id ON `Order`(cafeteria_id);
+CREATE INDEX idx_order_placed_at ON `Order`(placed_at);
+CREATE INDEX idx_recommendation_user_id ON Recommendation(user_id);
+CREATE INDEX idx_review_cafeteria_id ON Review(cafeteria_id);
+CREATE INDEX idx_order_item_order_id ON OrderItem(order_id);
+CREATE INDEX idx_order_item_item_id ON OrderItem(item_id);
+CREATE INDEX idx_menu_item_cafeteria ON MenuItem(cafeteria_id);
+CREATE INDEX idx_discount_cafeteria_active ON Discount(cafeteria_id, is_active);

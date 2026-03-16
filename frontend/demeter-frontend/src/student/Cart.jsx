@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import StudentLayout from "../layouts/StudentLayout.jsx";
 import { useCart } from "../contexts/CartContext.jsx";
 import { useWallet } from "../contexts/WalletContext.jsx";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { useToast } from "../contexts/ToastContext.jsx";
 import { Trash2, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/api.js";
@@ -12,22 +13,50 @@ export default function Cart() {
   const { cart, removeFromCart, clearCart } = useCart();
   const { balance, refreshBalance } = useWallet();
   const { user } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [checkingOut, setCheckingOut] = useState(false);
+  const [discounts, setDiscounts] = useState([]);
+  const [selectedDiscount, setSelectedDiscount] = useState(null);
 
   const subtotal = useMemo(
     () => cart.reduce((sum, item) => sum + item.total, 0),
     [cart]
   );
 
+  const discountAmount = useMemo(() => {
+    if (!selectedDiscount) return 0;
+    const d = selectedDiscount;
+    if (d.discountType === 'PERCENTAGE') {
+      return subtotal * (Number(d.discountValue) / 100);
+    } else if (d.discountType === 'FIXED_AMOUNT') {
+      return Math.min(Number(d.discountValue), subtotal);
+    }
+    return 0;
+  }, [selectedDiscount, subtotal]);
+
+  const total = subtotal - discountAmount;
+
+  useEffect(() => {
+    if (cart.length > 0) {
+      const cafeteriaId = cart[0].cafeteriaId;
+      api.get(`/api/discounts/cafeteria/${cafeteriaId}/active`)
+        .then(res => setDiscounts(res.data || []))
+        .catch(() => setDiscounts([]));
+    } else {
+      setDiscounts([]);
+      setSelectedDiscount(null);
+    }
+  }, [cart]);
+
   const handleCheckout = async () => {
     if (cart.length === 0) {
-      alert("Your cart is empty!");
+      showToast("Your cart is empty!", "warning");
       return;
     }
 
-    if (balance < subtotal) {
-      alert("Not enough GK in your wallet!");
+    if (balance < total) {
+      showToast("Not enough GK in your wallet!", "error");
       return;
     }
 
@@ -40,7 +69,8 @@ export default function Cart() {
       const orderData = {
         userId: user.userId,
         cafeteriaId: cafeteriaId,
-        totalAmount: subtotal,
+        totalAmount: total,
+        appliedDiscountId: selectedDiscount?.discountId || null,
         items: cart.map(item => ({
           menuItemId: item.menuItemId || item.id,
           quantity: item.qty,
@@ -55,9 +85,9 @@ export default function Cart() {
       clearCart();
       await refreshBalance();
 
-      navigate("/orders", { state: { orderId: savedOrder.orderId, items: cart, total: subtotal } });
+      navigate("/orders", { state: { orderId: savedOrder.orderId, items: cart, total: total } });
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to place order. Please try again.");
+      showToast(err.response?.data?.message || "Failed to place order. Please try again.", "error");
     } finally {
       setCheckingOut(false);
     }
@@ -181,12 +211,44 @@ export default function Cart() {
                   <span>GK {subtotal}</span>
                 </div>
 
+                {discounts.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Available Discounts</p>
+                    <div className="space-y-2">
+                      {discounts.map(d => (
+                        <label key={d.discountId} className="flex items-center gap-2 cursor-pointer text-sm text-gray-600 dark:text-slate-400">
+                          <input
+                            type="radio"
+                            name="discount"
+                            checked={selectedDiscount?.discountId === d.discountId}
+                            onChange={() => setSelectedDiscount(d)}
+                            className="accent-teal-400"
+                          />
+                          {d.discountType === 'PERCENTAGE' ? `${d.discountValue}% off` : `GK ${d.discountValue} off`}
+                        </label>
+                      ))}
+                      {selectedDiscount && (
+                        <button onClick={() => setSelectedDiscount(null)} className="text-xs text-red-400 hover:text-red-500">
+                          Remove discount
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {selectedDiscount && (
+                  <div className="flex justify-between text-green-500 mb-4">
+                    <span>Discount</span>
+                    <span>-GK {discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
+
                 <div className="border-t border-gray-200 dark:border-slate-700 my-4"></div>
 
                 <div className="flex justify-between text-xl font-bold text-gray-900 dark:text-white mb-6">
                   <span>Total</span>
                   <span className="text-yellow-400">
-                    GK {subtotal}
+                    GK {total.toFixed(2)}
                   </span>
                 </div>
 

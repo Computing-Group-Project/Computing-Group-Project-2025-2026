@@ -1,9 +1,12 @@
 package com.demeter.backend.shared.exception;
 
+import com.demeter.backend.ai.exception.AIServiceException;
+import com.demeter.backend.ai.exception.AIServiceUnavailableException;
 import com.demeter.backend.shared.dto.response.ErrorResponse;
 import com.demeter.backend.shared.enums.ErrorCode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,6 +59,36 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT.value()
         );
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(AIServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleAIUnavailable(AIServiceUnavailableException ex) {
+        ErrorResponse response = new ErrorResponse(
+                "AI_SERVICE_UNAVAILABLE",
+                "AI service is temporarily unavailable. Please try again later.",
+                HttpStatus.SERVICE_UNAVAILABLE.value()
+        );
+        return new ResponseEntity<>(response, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @ExceptionHandler(AIServiceException.class)
+    public ResponseEntity<ErrorResponse> handleAIServiceError(AIServiceException ex) {
+        ErrorResponse response = new ErrorResponse(
+                "AI_SERVICE_ERROR",
+                "AI service error: " + ex.getMessage(),
+                HttpStatus.BAD_GATEWAY.value()
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_GATEWAY);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
+        ErrorResponse response = new ErrorResponse(
+                ErrorCode.UNAUTHORIZED_ACCESS.name(),
+                ErrorCode.UNAUTHORIZED_ACCESS.getMessage(),
+                HttpStatus.FORBIDDEN.value()
+        );
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(Exception.class)

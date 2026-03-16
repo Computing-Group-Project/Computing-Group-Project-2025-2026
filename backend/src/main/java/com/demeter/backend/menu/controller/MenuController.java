@@ -1,5 +1,6 @@
 package com.demeter.backend.menu.controller;
 
+import com.demeter.backend.menu.dto.MenuRequestDTO;
 import com.demeter.backend.menu.model.Menu;
 import com.demeter.backend.menu.service.MenuService;
 import com.demeter.backend.shared.dto.response.ApiResponse;
@@ -20,10 +21,18 @@ public class MenuController {
         this.service = service;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     @PostMapping("/{categoryId}")
-    public ApiResponse<Menu> createMenu(@Valid @RequestBody Menu menu,
+    public ApiResponse<Menu> createMenu(@Valid @RequestBody MenuRequestDTO dto,
                                         @PathVariable Long categoryId) {
+        Menu menu = new Menu();
+        menu.setName(dto.getName());
+        menu.setDescription(dto.getDescription());
+        menu.setBasePrice(dto.getBasePrice());
+        menu.setImageUrl(dto.getImageUrl());
+        menu.setPreparationTime(dto.getPreparationTime());
+        menu.setAvailable(dto.isAvailable());
+        menu.setCafeteriaId(dto.getCafeteriaId());
         return new ApiResponse<>(true,
                 ApiResponseMessages.MENU_CREATED,
                 service.createMenu(menu, categoryId));
@@ -50,7 +59,30 @@ public class MenuController {
                 service.getMenusByCafeteria(cafeteriaId));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PutMapping("/{id}")
+    public ApiResponse<Menu> updateMenu(@PathVariable Long id, @Valid @RequestBody MenuRequestDTO dto) {
+        Menu menu = new Menu();
+        menu.setName(dto.getName());
+        menu.setDescription(dto.getDescription());
+        menu.setBasePrice(dto.getBasePrice());
+        menu.setImageUrl(dto.getImageUrl());
+        menu.setPreparationTime(dto.getPreparationTime());
+        menu.setAvailable(dto.isAvailable());
+        return new ApiResponse<>(true,
+                ApiResponseMessages.MENU_UPDATED,
+                service.updateMenu(id, menu));
+    }
+
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PutMapping("/{id}/availability")
+    public ApiResponse<Menu> toggleAvailability(@PathVariable Long id) {
+        return new ApiResponse<>(true,
+                ApiResponseMessages.MENU_UPDATED,
+                service.toggleAvailability(id));
+    }
+
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     @DeleteMapping("/{id}")
     public ApiResponse<String> deleteMenu(@PathVariable Long id) {
         service.deleteMenu(id);

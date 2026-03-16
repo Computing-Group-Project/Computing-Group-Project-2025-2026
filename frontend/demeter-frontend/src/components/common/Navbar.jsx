@@ -40,7 +40,7 @@ const Navbar = ({
   return (
     <nav
       className={`
-        sticky top-0 z-50
+        sticky top-0 z-40
         w-full ${height}
         bg-white/80 dark:bg-gray-900/60
         backdrop-blur-md
@@ -99,7 +99,7 @@ const Navbar = ({
 
         {/* CART */}
         {showCart && (
-          <Link to="/cart">
+          <Link to="/cart" aria-label="Shopping cart">
             <div className="relative w-6 h-6 flex items-center justify-center">
               <ShoppingBag
                 size={20}
@@ -128,6 +128,8 @@ const Navbar = ({
         {showProfile && (
           <div
             onClick={onProfileClick}
+            role="button"
+            aria-label="User profile"
             className={`w-8 h-8 rounded-full bg-gray-300 dark:bg-slate-600 flex items-center justify-center overflow-hidden cursor-pointer text-gray-700 dark:text-white text-xs font-semibold ${profileClassName}`}
           >
             {profilePhoto ? (
@@ -143,6 +145,8 @@ const Navbar = ({
           <LogOut
             size={20}
             onClick={onExitClick}
+            role="button"
+            aria-label="Logout"
             className={`cursor-pointer text-red-400 hover:text-red-500 transition ${exitClassName}`}
           />
         )}

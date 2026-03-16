@@ -2,8 +2,11 @@ package com.demeter.backend.orders.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 
 @Setter
 @Getter
@@ -19,12 +22,15 @@ public class OrderItem {
     @Column(name = "item_id")
     private Long menuItemId;
 
-    private int quantity;
+    @Min(value = 1, message = "Quantity must be at least 1")
+    @Column(name = "quantity")
+    private Integer quantity;
 
-    @Column(name = "unit_price")
-    private Double unitPrice;
+    @Column(name = "unit_price", precision = 10, scale = 2)
+    private BigDecimal unitPrice;
 
-    private Double subtotal;
+    @Column(name = "subtotal", precision = 10, scale = 2)
+    private BigDecimal subtotal;
 
     @JsonIgnore
     @ManyToOne
@@ -34,11 +40,11 @@ public class OrderItem {
     // Constructors
     public OrderItem() {}
 
-    public OrderItem(Long menuItemId, int quantity, Double unitPrice, Order order) {
+    public OrderItem(Long menuItemId, int quantity, BigDecimal unitPrice, Order order) {
         this.menuItemId = menuItemId;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
-        this.subtotal = unitPrice * quantity;
+        this.subtotal = unitPrice.multiply(BigDecimal.valueOf(quantity));
         this.order = order;
     }
 

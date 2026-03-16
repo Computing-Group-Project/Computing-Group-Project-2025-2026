@@ -2,16 +2,17 @@ package com.demeter.backend.users.controller;
 
 import com.demeter.backend.shared.constants.ApiResponseMessages;
 import com.demeter.backend.shared.dto.response.ApiResponse;
+import com.demeter.backend.users.dto.StaffCreateDTO;
 import com.demeter.backend.users.dto.response.UserResponseDTO;
 import com.demeter.backend.users.model.Staff;
 import com.demeter.backend.users.model.User;
 import com.demeter.backend.users.service.UserService;
 import jakarta.persistence.EntityManager;
+import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -49,14 +50,10 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/staff")
-    public ApiResponse<UserResponseDTO> createStaff(@RequestBody Map<String, Object> body) {
-        String username = (String) body.get("username");
-        String password = (String) body.get("password");
-        Integer cafeteriaId = (Integer) body.get("cafeteriaId");
-
-        User created = userService.createStaff(username, password, cafeteriaId);
+    public ApiResponse<UserResponseDTO> createStaff(@Valid @RequestBody StaffCreateDTO staffDto) {
+        User created = userService.createStaff(staffDto.getUsername(), staffDto.getPassword(), staffDto.getCafeteriaId());
         UserResponseDTO dto = new UserResponseDTO(created.getId(), created.getUsername(), created.getRole());
-        dto.setAssignedCafeteriaId(cafeteriaId);
+        dto.setAssignedCafeteriaId(staffDto.getCafeteriaId());
         return new ApiResponse<>(true, ApiResponseMessages.STAFF_CREATED, dto);
     }
 

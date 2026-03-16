@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../../contexts/ToastContext.jsx';
 import api from '../../utils/api.js';
 
 function WalletTable() {
+  const { showToast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [topUpAmount, setTopUpAmount] = useState('500');
@@ -56,10 +58,10 @@ function WalletTable() {
         userId: selectedStudent.id,
         amount: amount,
       });
-      alert(`Successfully added ${amount} GK to ${selectedStudent.name}'s wallet`);
+      showToast(`Successfully added ${amount} GK to ${selectedStudent.name}'s wallet`, 'success');
       handleClearStudent();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to top up');
+      showToast(err.response?.data?.message || 'Failed to top up', 'error');
     }
   };
 

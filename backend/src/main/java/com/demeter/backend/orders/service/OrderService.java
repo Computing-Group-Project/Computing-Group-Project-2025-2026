@@ -2,6 +2,7 @@ package com.demeter.backend.orders.service;
 
 import com.demeter.backend.orders.model.Order;
 import com.demeter.backend.orders.model.OrderItem;
+import com.demeter.backend.promotions.service.DiscountApplicationService;
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.enums.OrderStatus;
 import com.demeter.backend.shared.exception.AppException;
@@ -22,12 +23,15 @@ public class OrderService {
     private final OrderRepository repo;
     private final KrakensWalletService walletService;
     private final NotificationService notificationService;
+    private final DiscountApplicationService discountApplicationService;
 
     public OrderService(OrderRepository repo, KrakensWalletService walletService,
-                        NotificationService notificationService) {
+                        NotificationService notificationService,
+                        DiscountApplicationService discountApplicationService) {
         this.repo = repo;
         this.walletService = walletService;
         this.notificationService = notificationService;
+        this.discountApplicationService = discountApplicationService;
     }
 
     @Transactional
@@ -40,23 +44,42 @@ public class OrderService {
         if (order.getItems() != null) {
             for (OrderItem item : order.getItems()) {
                 item.setOrder(order);
-                if (item.getSubtotal() == null) {
-                    item.setSubtotal(item.getUnitPrice() * item.getQuantity());
+                if (item.getSubtotal() == null && item.getUnitPrice() != null && item.getQuantity() != null) {
+                    item.setSubtotal(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
                 }
             }
         }
 
-        // Debit wallet
-        if (order.getTotalAmount() != null && order.getUserId() != null) {
-            walletService.debit(
-                    order.getUserId(),
-                    BigDecimal.valueOf(order.getTotalAmount()),
-                    "Payment for order",
-                    null
-            );
+        // Apply discount if provided
+        BigDecimal chargeAmount = order.getTotalAmount();
+        if (order.getAppliedDiscountId() != null && chargeAmount != null) {
+            try {
+                BigDecimal discountAmt = discountApplicationService.calculateDiscount(
+                        order.getAppliedDiscountId(), chargeAmount);
+                order.setDiscountAmount(discountAmt);
+                chargeAmount = chargeAmount.subtract(discountAmt);
+                order.setFinalAmount(chargeAmount);
+            } catch (AppException e) {
+                // If discount is invalid, proceed without discount
+                order.setDiscountAmount(BigDecimal.ZERO);
+                order.setFinalAmount(chargeAmount);
+            }
+        } else {
+            order.setFinalAmount(chargeAmount);
         }
 
+        // Save order first to get the orderId for reference
         Order saved = repo.save(order);
+
+        // Then debit wallet with the final (discounted) amount
+        if (chargeAmount != null && saved.getUserId() != null) {
+            walletService.debit(
+                    saved.getUserId(),
+                    chargeAmount,
+                    "Payment for order #" + saved.getOrderId(),
+                    saved.getOrderId() != null ? saved.getOrderId().intValue() : null
+            );
+        }
 
         // Notify staff
         notificationService.sendToStaff(new NotificationMessage(
@@ -80,7 +103,7 @@ public class OrderService {
             if (order.getTotalAmount() != null && order.getUserId() != null) {
                 walletService.credit(
                         order.getUserId(),
-                        BigDecimal.valueOf(order.getTotalAmount()),
+                        order.getTotalAmount(),
                         "Refund for cancelled order #" + order.getOrderId(),
                         order.getOrderId() != null ? order.getOrderId().intValue() : null
                 );

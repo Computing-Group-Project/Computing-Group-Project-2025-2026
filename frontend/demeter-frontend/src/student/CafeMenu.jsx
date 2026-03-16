@@ -73,6 +73,7 @@ export default function CafeMenu() {
           image: getFoodImage(item.name, item.imageUrl),
           category: item.category ? [item.category.name] : [],
           cafeteriaId: item.cafeteriaId,
+          preparationTime: item.preparationTime,
           extras: (item.customizations || [])
             .filter(c => c.available)
             .map(c => ({
@@ -211,6 +212,7 @@ export default function CafeMenu() {
               description={food.description}
               price={food.price}
               badge={food.category}
+              preparationTime={food.preparationTime}
               buttonText="Add"
               variant="menu"
               onClick={() => setSelectedFood(food)}

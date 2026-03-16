@@ -7,6 +7,7 @@ const WalletContext = createContext();
 export const WalletProvider = ({ children }) => {
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const fetchBalance = useCallback(async () => {
     try {
@@ -17,10 +18,12 @@ export const WalletProvider = ({ children }) => {
       if (role !== "STUDENT") return;
 
       setLoading(true);
+      setError(null);
       const response = await api.get("/api/wallet/balance");
       setBalance(parseFloat(response.data.data.balance) || 0);
-    } catch {
-      // Silently fail if not authenticated or API unavailable
+    } catch (err) {
+      console.error("Failed to fetch wallet balance:", err);
+      setError("Failed to load balance");
     } finally {
       setLoading(false);
     }
@@ -59,7 +62,7 @@ export const WalletProvider = ({ children }) => {
   };
 
   return (
-    <WalletContext.Provider value={{ balance, addFunds, deductFunds, refreshBalance, loading }}>
+    <WalletContext.Provider value={{ balance, addFunds, deductFunds, refreshBalance, loading, error }}>
       {children}
     </WalletContext.Provider>
   );

@@ -1,5 +1,6 @@
 package com.demeter.backend.orders.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +21,7 @@ public class OrderCustomization {
     @Column(name = "price_adjustment", precision = 10, scale = 2)
     private BigDecimal priceAdjustment;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "order_item_id", nullable = false)
     private OrderItem orderItem;

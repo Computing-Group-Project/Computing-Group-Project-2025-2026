@@ -1,13 +1,41 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import api from "../utils/api.js";
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
+
+function isTokenExpired(token) {
+  if (!token) return true;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
 
 export function AuthProvider({ children }) {
   const [authData, setAuthData] = useState(() => {
     const stored = localStorage.getItem("authData");
-    return stored ? JSON.parse(stored) : null;
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    if (isTokenExpired(parsed?.token)) {
+      localStorage.removeItem("authData");
+      return null;
+    }
+    return parsed;
   });
+
+  // Periodically check token expiry
+  useEffect(() => {
+    if (!authData?.token) return;
+    const interval = setInterval(() => {
+      if (isTokenExpired(authData.token)) {
+        localStorage.removeItem("authData");
+        setAuthData(null);
+      }
+    }, 60000); // check every minute
+    return () => clearInterval(interval);
+  }, [authData?.token]);
 
   const login = useCallback(async (username, password) => {
     const response = await api.post("/api/auth/login", { username, password });
@@ -18,6 +46,7 @@ export function AuthProvider({ children }) {
       username: data.username,
       role: data.role,
       assignedCafeteriaId: data.assignedCafeteriaId,
+      loginAt: Date.now(),
     };
     localStorage.setItem("authData", JSON.stringify(auth));
     setAuthData(auth);

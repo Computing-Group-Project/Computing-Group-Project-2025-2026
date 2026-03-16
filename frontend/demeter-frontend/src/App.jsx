@@ -1,8 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./contexts/CartContext.jsx";
 import { WalletProvider } from "./contexts/WalletContext.jsx";
 import { ThemeProvider } from "./contexts/ThemeContext.jsx";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
+import { ToastProvider } from "./contexts/ToastContext.jsx";
+import ErrorBoundary from "./components/common/ErrorBoundary.jsx";
 import ProtectedRoute from "./components/common/ProtectedRoute.jsx";
 import StudentHome from "./student/StudentHome.jsx";
 import CafeMenu from "./student/CafeMenu.jsx";
@@ -15,10 +17,13 @@ import PromotionManagementConsole from "./admin/PromotionManagementConsole.jsx";
 import StaffDashboard from "./staff/StaffDashboard.jsx";
 import StaffLayout from "./layouts/StaffLayout.jsx";
 import ThemeToggle from "./components/common/ThemeToggle.jsx";
+import NotFound from "./components/common/NotFound.jsx";
 
 function App() {
   return (
+    <ErrorBoundary>
     <ThemeProvider>
+      <ToastProvider>
       <AuthProvider>
         <WalletProvider>
           <CartProvider>
@@ -41,13 +46,15 @@ function App() {
                 {/* Staff routes */}
                 <Route path="/staff" element={<ProtectedRoute allowedRoles={["STAFF", "ADMIN"]}><StaffLayout><StaffDashboard /></StaffLayout></ProtectedRoute>} />
 
-                <Route path="*" element={<Navigate to="/login" />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
           </CartProvider>
         </WalletProvider>
       </AuthProvider>
+      </ToastProvider>
     </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

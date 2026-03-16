@@ -42,6 +42,25 @@ public class MenuService {
                 .orElseThrow(() -> new AppException(ErrorCode.MENU_NOT_FOUND));
     }
 
+    @LogActivity(action = "UPDATE_MENU_ITEM", targetTable = "MENU_ITEM")
+    public Menu updateMenu(Long id, Menu updated) {
+        Menu existing = getMenuById(id);
+        if (updated.getName() != null) existing.setName(updated.getName());
+        if (updated.getDescription() != null) existing.setDescription(updated.getDescription());
+        if (updated.getBasePrice() != null) existing.setBasePrice(updated.getBasePrice());
+        if (updated.getImageUrl() != null) existing.setImageUrl(updated.getImageUrl());
+        if (updated.getPreparationTime() != null) existing.setPreparationTime(updated.getPreparationTime());
+        existing.setAvailable(updated.isAvailable());
+        return menuRepo.save(existing);
+    }
+
+    @LogActivity(action = "TOGGLE_MENU_AVAILABILITY", targetTable = "MENU_ITEM")
+    public Menu toggleAvailability(Long id) {
+        Menu menu = getMenuById(id);
+        menu.setAvailable(!menu.isAvailable());
+        return menuRepo.save(menu);
+    }
+
     @LogActivity(action = "DELETE_MENU_ITEM", targetTable = "MENU_ITEM")
     public void deleteMenu(Long id) {
         Menu menu = getMenuById(id);

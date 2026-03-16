@@ -26,6 +26,13 @@ vi.mock("../../components/admin/WalletTable", () => ({
   default: () => <div data-testid="wallet-table">Wallet Table</div>,
 }));
 
+// Mock ToastContext
+vi.mock("../../contexts/ToastContext.jsx", () => ({
+  useToast: () => ({
+    showToast: vi.fn(),
+  }),
+}));
+
 // Mock contexts
 let mockUser = { username: "admin_user", userId: 3, role: "ADMIN", token: "tok" };
 const mockLogout = vi.fn();

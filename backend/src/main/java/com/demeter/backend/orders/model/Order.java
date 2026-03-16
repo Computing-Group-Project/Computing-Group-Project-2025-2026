@@ -2,9 +2,11 @@ package com.demeter.backend.orders.model;
 
 import com.demeter.backend.shared.enums.OrderStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,22 +21,26 @@ public class Order {
     @Column(name = "order_id")
     private Long orderId;
 
+    @NotNull(message = "User ID is required")
     @Column(name = "user_id")
     private Long userId;
 
+    @NotNull(message = "Cafeteria ID is required")
     @Column(name = "cafeteria_id")
     private Long cafeteriaId;
 
-    @Column(name = "total_amount")
-    private Double totalAmount;
+    @Column(name = "total_amount", precision = 10, scale = 2)
+    private BigDecimal totalAmount;
 
     // Discount and promotion fields (not persisted — computed at checkout)
     @Transient
+    private Integer appliedDiscountId;
+    @Transient
     private String appliedPromoCode;
     @Transient
-    private Double discountAmount = 0.0;
+    private BigDecimal discountAmount = BigDecimal.ZERO;
     @Transient
-    private Double finalAmount;
+    private BigDecimal finalAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status")
@@ -52,13 +58,13 @@ public class Order {
     @Column(name = "special_instructions", columnDefinition = "TEXT")
     private String specialInstructions;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderItem> items;
 
     // Constructors
     public Order() {}
 
-    public Order(Long userId, Long cafeteriaId, Double totalAmount) {
+    public Order(Long userId, Long cafeteriaId, BigDecimal totalAmount) {
         this.userId = userId;
         this.cafeteriaId = cafeteriaId;
         this.totalAmount = totalAmount;

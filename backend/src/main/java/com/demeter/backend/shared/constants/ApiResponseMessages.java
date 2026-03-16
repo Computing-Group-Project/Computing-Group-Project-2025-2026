@@ -9,6 +9,7 @@ public class ApiResponseMessages {
     public static final String MENU_CREATED = "Menu item created successfully";
     public static final String MENUS_FETCHED = "Menu items fetched successfully";
     public static final String MENU_FETCHED = "Menu item fetched successfully";
+    public static final String MENU_UPDATED = "Menu item updated successfully";
     public static final String MENU_DELETED = "Menu item deleted successfully";
 
     public static final String CAFETERIAS_FETCHED = "Cafeterias fetched successfully";
@@ -20,4 +21,7 @@ public class ApiResponseMessages {
     public static final String STAFF_CREATED = "Staff member created successfully";
     public static final String USER_DELETED = "User deleted successfully";
     public static final String LOGIN_SUCCESS = "Login successful";
+    public static final String ANALYTICS_FETCHED = "Analytics data fetched successfully";
+    public static final String RECOMMENDATIONS_FETCHED = "Recommendations fetched successfully";
+    public static final String AI_DISCOUNTS_GENERATED = "AI discount suggestions generated successfully";
 }

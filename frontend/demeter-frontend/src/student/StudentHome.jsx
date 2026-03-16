@@ -32,9 +32,44 @@ export default function StudentHome() {
   const firstName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
 
   const [cafeterias, setCafeterias] = useState([]);
-  const [recommendedItems] = useState(fallbackRecommended);
+  const [recommendedItems, setRecommendedItems] = useState(fallbackRecommended);
   const [loading, setLoading] = useState(true);
   const [selectedFood, setSelectedFood] = useState(null);
+  const [fetchError, setFetchError] = useState(false);
+
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      try {
+        const res = await api.get('/api/recommendations?context=homepage&limit=3');
+        const recs = res.data?.data?.recommendations || [];
+        if (recs.length > 0) {
+          const items = await Promise.all(recs.map(async (rec) => {
+            try {
+              const menuRes = await api.get(`/api/menus/${rec.itemId}`);
+              const item = menuRes.data?.data;
+              if (item) {
+                return {
+                  id: item.menuId,
+                  cafeId: item.cafeteriaId,
+                  name: item.name,
+                  image: getFoodImage(item.name, item.imageUrl),
+                  price: item.basePrice,
+                  description: item.description || '',
+                  tag: rec.recommendationType?.toLowerCase() || 'recommended',
+                };
+              }
+            } catch { /* skip failed items */ }
+            return null;
+          }));
+          const validItems = items.filter(Boolean);
+          if (validItems.length > 0) setRecommendedItems(validItems);
+        }
+      } catch {
+        // Keep fallback
+      }
+    };
+    if (user) fetchRecommendations();
+  }, [user]);
 
   useEffect(() => {
     const fetchCafeterias = async () => {
@@ -52,6 +87,7 @@ export default function StudentHome() {
           popularItems: [],
         })));
       } catch {
+        setFetchError(true);
         // Fallback if API unavailable
         setCafeterias([
           { id: 1, name: "The Last Drop", hours: "08:00 – 22:00", status: "Open", rating: 4, description: "Cozy atmosphere for study sessions.", image: getCafeteriaImage(1), popularItems: [] },
@@ -119,6 +155,9 @@ export default function StudentHome() {
           <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">
             Campus Cafeterias
           </h2>
+          {fetchError && (
+            <p className="text-sm text-yellow-500 mb-2">Using cached data - couldn't reach server</p>
+          )}
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin h-10 w-10 border-4 border-teal-400 border-t-transparent rounded-full mx-auto"></div>

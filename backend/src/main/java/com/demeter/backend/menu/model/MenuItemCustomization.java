@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Setter
 @Getter
 @Entity
@@ -22,8 +24,8 @@ public class MenuItemCustomization {
     @Column(name = "modification_type")
     private String modificationType;
 
-    @Column(name = "price_adjustment")
-    private Double priceAdjustment;
+    @Column(name = "price_adjustment", precision = 10, scale = 2)
+    private BigDecimal priceAdjustment;
 
     @Column(name = "is_available")
     private boolean available = true;
@@ -35,7 +37,7 @@ public class MenuItemCustomization {
 
     public MenuItemCustomization() {}
 
-    public MenuItemCustomization(String ingredientName, String modificationType, Double priceAdjustment, Menu menu) {
+    public MenuItemCustomization(String ingredientName, String modificationType, BigDecimal priceAdjustment, Menu menu) {
         this.ingredientName = ingredientName;
         this.modificationType = modificationType;
         this.priceAdjustment = priceAdjustment;

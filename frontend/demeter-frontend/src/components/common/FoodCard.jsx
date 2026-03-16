@@ -7,6 +7,7 @@ const FoodCard = ({
   description = "Food description goes here.",
   price = 0,
   badge = null,
+  preparationTime = null,
   buttonText = "Order Now",
   onClick,
   showButton = true,
@@ -78,6 +79,11 @@ const FoodCard = ({
           {description}
         </p>
 
+        {/* PREP TIME */}
+        {isMenu && preparationTime && (
+          <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">⏱ {preparationTime} min</p>
+        )}
+
         {/* TAGS */}
         {isMenu && badge && (
           <div className="flex gap-2 mb-2 flex-wrap">
@@ -105,6 +111,7 @@ const FoodCard = ({
                   e.stopPropagation();
                   onClick();
                 }}
+                aria-label={`Order ${title}`}
                 className="text-sm text-gray-700 dark:text-white hover:text-cyan-500 dark:hover:text-cyan-400 flex items-center gap-2"
               >
                 {buttonText}
@@ -123,6 +130,7 @@ const FoodCard = ({
               e.stopPropagation();
               onClick();
             }}
+            aria-label={`Add ${title} to cart`}
             className="mt-1 w-full py-1.5 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-cyan-500 hover:text-white dark:hover:text-slate-900 transition text-sm font-medium"
           >
             {buttonText}
@@ -134,4 +142,4 @@ const FoodCard = ({
   );
 };
 
-export default FoodCard;
+export default React.memo(FoodCard);

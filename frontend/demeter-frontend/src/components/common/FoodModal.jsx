@@ -63,7 +63,7 @@ export default function FoodModal({ food, onClose }) {
       <div
         onClick={(e) => e.stopPropagation()}
         className={`
-        w-full max-w-lg
+        w-full max-w-lg mx-4
         bg-white dark:bg-slate-800
         rounded-t-3xl
         shadow-2xl
@@ -104,6 +104,12 @@ export default function FoodModal({ food, onClose }) {
               <p className="text-yellow-400 font-semibold text-lg">
                 GK {food.price}
               </p>
+
+              {food.preparationTime && (
+                <p className="text-xs text-gray-500 dark:text-slate-400">
+                  ⏱ {food.preparationTime} min
+                </p>
+              )}
 
               {food.kcal && (
                 <p className="text-xs text-gray-500 dark:text-slate-400">

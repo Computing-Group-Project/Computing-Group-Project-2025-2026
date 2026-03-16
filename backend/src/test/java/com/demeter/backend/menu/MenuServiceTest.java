@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +36,7 @@ class MenuServiceTest {
     @Test
     void createMenu_withValidCategory_shouldSave() {
         Category category = new Category();
-        Menu menu = new Menu("Burger", "A tasty burger", 45.0, null);
+        Menu menu = new Menu("Burger", "A tasty burger", new BigDecimal("45.00"), null);
 
         when(categoryRepo.findById(1L)).thenReturn(Optional.of(category));
         when(menuRepo.save(any(Menu.class))).thenAnswer(invocation -> {
@@ -53,7 +54,7 @@ class MenuServiceTest {
 
     @Test
     void createMenu_withInvalidCategory_shouldThrow() {
-        Menu menu = new Menu("Burger", "A tasty burger", 45.0, null);
+        Menu menu = new Menu("Burger", "A tasty burger", new BigDecimal("45.00"), null);
         when(categoryRepo.findById(999L)).thenReturn(Optional.empty());
 
         AppException ex = assertThrows(AppException.class,
@@ -63,7 +64,7 @@ class MenuServiceTest {
 
     @Test
     void getMenuById_withValidId_shouldReturn() {
-        Menu menu = new Menu("Burger", "A tasty burger", 45.0, null);
+        Menu menu = new Menu("Burger", "A tasty burger", new BigDecimal("45.00"), null);
         menu.setMenuId(1L);
 
         when(menuRepo.findById(1L)).thenReturn(Optional.of(menu));
@@ -93,7 +94,7 @@ class MenuServiceTest {
 
     @Test
     void deleteMenu_withValidId_shouldDelete() {
-        Menu menu = new Menu("Burger", "A tasty burger", 45.0, null);
+        Menu menu = new Menu("Burger", "A tasty burger", new BigDecimal("45.00"), null);
         menu.setMenuId(1L);
 
         when(menuRepo.findById(1L)).thenReturn(Optional.of(menu));

@@ -39,7 +39,7 @@ class OrderServiceTest {
 
     @Test
     void placeOrder_shouldSetStatusToPlacedAndSave() {
-        Order order = new Order(1L, 1L, 45.0);
+        Order order = new Order(1L, 1L, new BigDecimal("45.00"));
 
         when(walletService.debit(eq(1L), any(BigDecimal.class), anyString(), any()))
                 .thenReturn(new BigDecimal("55.00"));
@@ -60,7 +60,7 @@ class OrderServiceTest {
 
     @Test
     void updateStatus_withValidId_shouldUpdateAndSave() {
-        Order existing = new Order(1L, 1L, 45.0);
+        Order existing = new Order(1L, 1L, new BigDecimal("45.00"));
         existing.setOrderId(1L);
         existing.setStatus(OrderStatus.PLACED);
 
@@ -85,8 +85,8 @@ class OrderServiceTest {
 
     @Test
     void getOrdersByUser_shouldReturnUserOrders() {
-        Order o1 = new Order(1L, 1L, 45.0);
-        Order o2 = new Order(1L, 2L, 20.0);
+        Order o1 = new Order(1L, 1L, new BigDecimal("45.00"));
+        Order o2 = new Order(1L, 2L, new BigDecimal("20.00"));
 
         when(repo.findByUserId(1L)).thenReturn(List.of(o1, o2));
 

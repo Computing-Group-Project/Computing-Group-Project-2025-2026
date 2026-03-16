@@ -14,12 +14,20 @@ vi.mock("react-router-dom", () => ({
 vi.mock("../../utils/api.js", () => ({
   default: {
     post: vi.fn(),
+    get: vi.fn().mockResolvedValue({ data: [] }),
   },
 }));
 
 // Mock StudentLayout
 vi.mock("../../layouts/StudentLayout.jsx", () => ({
   default: ({ children }) => <div data-testid="student-layout">{children}</div>,
+}));
+
+// Mock ToastContext
+vi.mock("../../contexts/ToastContext.jsx", () => ({
+  useToast: () => ({
+    showToast: vi.fn(),
+  }),
 }));
 
 // Mock contexts

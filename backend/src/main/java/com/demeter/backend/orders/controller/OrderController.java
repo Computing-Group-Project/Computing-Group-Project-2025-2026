@@ -1,6 +1,8 @@
 package com.demeter.backend.orders.controller;
 
+import com.demeter.backend.orders.dto.OrderRequestDTO;
 import com.demeter.backend.orders.model.Order;
+import com.demeter.backend.orders.model.OrderItem;
 import com.demeter.backend.orders.service.OrderService;
 import com.demeter.backend.shared.dto.response.ApiResponse;
 import com.demeter.backend.shared.enums.ErrorCode;
@@ -27,7 +29,24 @@ public class OrderController {
     }
 
     @PostMapping
-    public ApiResponse<Order> placeOrder(@Valid @RequestBody Order order) {
+    public ApiResponse<Order> placeOrder(@Valid @RequestBody OrderRequestDTO dto) {
+        Order order = new Order();
+        order.setUserId(dto.getUserId());
+        order.setCafeteriaId(dto.getCafeteriaId());
+        order.setTotalAmount(dto.getTotalAmount());
+        order.setSpecialInstructions(dto.getSpecialInstructions());
+        order.setAppliedDiscountId(dto.getAppliedDiscountId());
+
+        List<OrderItem> items = dto.getItems().stream().map(itemDto -> {
+            OrderItem item = new OrderItem();
+            item.setMenuItemId(itemDto.getMenuItemId());
+            item.setQuantity(itemDto.getQuantity());
+            item.setUnitPrice(itemDto.getUnitPrice());
+            item.setSubtotal(itemDto.getSubtotal());
+            return item;
+        }).toList();
+        order.setItems(items);
+
         return new ApiResponse<>(true, ApiResponseMessages.ORDER_PLACED, service.placeOrder(order));
     }
 
