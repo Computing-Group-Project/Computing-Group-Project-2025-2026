@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
         localStorage.removeItem("authData");
         setAuthData(null);
       }
-    }, 60000); // check every minute
+    }, 10000); // check every 10 seconds
     return () => clearInterval(interval);
   }, [authData?.token]);
 

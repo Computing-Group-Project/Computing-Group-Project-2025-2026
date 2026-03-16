@@ -8,6 +8,7 @@ import com.demeter.backend.shared.enums.OrderStatus;
 import com.demeter.backend.shared.exception.AppException;
 import com.demeter.backend.orders.repo.OrderRepository;
 import com.demeter.backend.shared.util.LogActivity;
+import com.demeter.backend.transactions.repo.TransactionHistoryRepository;
 import com.demeter.backend.wallet.service.KrakensWalletService;
 import com.demeter.backend.ws.NotificationMessage;
 import com.demeter.backend.ws.NotificationService;
@@ -24,14 +25,17 @@ public class OrderService {
     private final KrakensWalletService walletService;
     private final NotificationService notificationService;
     private final DiscountApplicationService discountApplicationService;
+    private final TransactionHistoryRepository transactionHistoryRepository;
 
     public OrderService(OrderRepository repo, KrakensWalletService walletService,
                         NotificationService notificationService,
-                        DiscountApplicationService discountApplicationService) {
+                        DiscountApplicationService discountApplicationService,
+                        TransactionHistoryRepository transactionHistoryRepository) {
         this.repo = repo;
         this.walletService = walletService;
         this.notificationService = notificationService;
         this.discountApplicationService = discountApplicationService;
+        this.transactionHistoryRepository = transactionHistoryRepository;
     }
 
     @Transactional
@@ -98,14 +102,23 @@ public class OrderService {
         Order order = repo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        // If cancelling and was PLACED, refund
-        if (status == OrderStatus.CANCELLED && order.getStatus() == OrderStatus.PLACED) {
-            if (order.getTotalAmount() != null && order.getUserId() != null) {
+        // Only allow cancellation from PLACED state (FR6)
+        if (status == OrderStatus.CANCELLED) {
+            if (order.getStatus() != OrderStatus.PLACED) {
+                throw new AppException(ErrorCode.ORDER_CANNOT_BE_CANCELLED);
+            }
+            // Refund the actual charged amount by looking up the original debit transaction,
+            // since finalAmount is @Transient and not persisted
+            if (order.getUserId() != null && order.getOrderId() != null) {
+                BigDecimal refundAmount = transactionHistoryRepository
+                        .findByReferenceIdAndTransactionType(order.getOrderId().intValue(), "DEBIT")
+                        .map(tx -> tx.getAmount())
+                        .orElse(order.getTotalAmount());
                 walletService.credit(
                         order.getUserId(),
-                        order.getTotalAmount(),
+                        refundAmount,
                         "Refund for cancelled order #" + order.getOrderId(),
-                        order.getOrderId() != null ? order.getOrderId().intValue() : null
+                        order.getOrderId().intValue()
                 );
             }
         }

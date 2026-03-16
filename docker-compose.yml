@@ -2,7 +2,7 @@ services:
   mysql:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: Password123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: demeter_db
     volumes:
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
@@ -17,7 +17,7 @@ services:
   ai-service:
     build: ./ai-service
     environment:
-      DEMETER_AI_API_KEY: demeter-ai-service-key-2024
+      DEMETER_AI_API_KEY: ${DEMETER_AI_API_KEY}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
       interval: 15s
@@ -34,7 +34,9 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/demeter_db
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: Password123
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      DEMETER_AI_API_KEY: ${DEMETER_AI_API_KEY}
       DEMETER_AI_BASE_URL: http://ai-service:8001
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/cafeterias"]
@@ -46,7 +48,10 @@ services:
   frontend:
     build: ./frontend/demeter-frontend
     ports:
-      - "3000:80"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./ssl:/etc/nginx/ssl:ro
     depends_on:
       backend:
         condition: service_healthy

@@ -31,7 +31,7 @@ class TestHealthEndpoints:
         data = resp.json()
         assert data["service"] == "Demeter AI Service"
         assert data["status"] == "running"
-        assert "endpoints" in data
+        assert "version" in data
 
     def test_health_check(self, client):
         resp = client.get("/health")

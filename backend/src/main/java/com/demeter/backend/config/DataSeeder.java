@@ -32,6 +32,10 @@ public class DataSeeder {
             }
 
             // ---------- Seed Users ----------
+            // WARNING: Passwords are saved in plaintext here because this seeder
+            // bypasses AuthService (which hashes via BCrypt). This is dev-only
+            // (@Profile("dev")) and should NEVER run in production.
+            // Production seed data uses pre-hashed passwords in data.sql.
             User admin = new User();
             admin.setUsername("admin_user");
             admin.setPassword("admin123");

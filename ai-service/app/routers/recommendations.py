@@ -1,4 +1,4 @@
-import traceback
+import logging
 
 from fastapi import APIRouter, HTTPException, Depends, Request
 
@@ -6,6 +6,8 @@ from ..config import RATE_LIMIT_RECOMMENDATIONS
 from ..dependencies import verify_api_key, limiter
 from ..models.recommendations import RecommendationRequest, RecommendationResponse
 from ..services import recommendation_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1", tags=["Recommendations"])
 
@@ -23,5 +25,5 @@ async def generate_recommendations(
     except HTTPException:
         raise
     except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Recommendation pipeline failed: {str(e)}")
+        logger.exception("Recommendation pipeline failed")
+        raise HTTPException(status_code=500, detail="Recommendation pipeline failed")

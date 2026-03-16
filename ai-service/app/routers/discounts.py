@@ -1,4 +1,4 @@
-import traceback
+import logging
 
 from fastapi import APIRouter, HTTPException, Depends, Request
 
@@ -6,6 +6,8 @@ from ..config import RATE_LIMIT_DISCOUNTS
 from ..dependencies import verify_api_key, limiter
 from ..models.discounts import DiscountRequest, DiscountResponse
 from ..services import discount_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1", tags=["Discounts"])
 
@@ -23,5 +25,5 @@ async def generate_discounts(
     except HTTPException:
         raise
     except Exception as e:
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Discount pipeline failed: {str(e)}")
+        logger.exception("Discount pipeline failed")
+        raise HTTPException(status_code=500, detail="Discount pipeline failed")

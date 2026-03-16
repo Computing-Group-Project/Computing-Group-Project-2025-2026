@@ -4,6 +4,8 @@ import com.demeter.backend.ai.exception.AIServiceException;
 import com.demeter.backend.ai.exception.AIServiceUnavailableException;
 import com.demeter.backend.shared.dto.response.ErrorResponse;
 import com.demeter.backend.shared.enums.ErrorCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ErrorResponse> handleAppException(AppException ex) {
@@ -93,6 +97,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
+        log.error("Unhandled exception", ex);
         ErrorCode code = ErrorCode.INTERNAL_ERROR;
 
         ErrorResponse response = new ErrorResponse(

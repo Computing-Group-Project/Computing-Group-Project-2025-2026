@@ -3,9 +3,12 @@ package com.demeter.backend.orders;
 import com.demeter.backend.orders.model.Order;
 import com.demeter.backend.orders.repo.OrderRepository;
 import com.demeter.backend.orders.service.OrderService;
+import com.demeter.backend.promotions.service.DiscountApplicationService;
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.enums.OrderStatus;
 import com.demeter.backend.shared.exception.AppException;
+import com.demeter.backend.transactions.model.TransactionHistory;
+import com.demeter.backend.transactions.repo.TransactionHistoryRepository;
 import com.demeter.backend.wallet.service.KrakensWalletService;
 import com.demeter.backend.ws.NotificationService;
 import org.junit.jupiter.api.Test;
@@ -33,6 +36,12 @@ class OrderServiceTest {
 
     @Mock
     private NotificationService notificationService;
+
+    @Mock
+    private DiscountApplicationService discountApplicationService;
+
+    @Mock
+    private TransactionHistoryRepository transactionHistoryRepository;
 
     @InjectMocks
     private OrderService orderService;
@@ -81,6 +90,70 @@ class OrderServiceTest {
         AppException ex = assertThrows(AppException.class,
                 () -> orderService.updateStatus(999L, OrderStatus.PREPARING));
         assertEquals(ErrorCode.ORDER_NOT_FOUND, ex.getErrorCode());
+    }
+
+    @Test
+    void cancelOrder_fromPlacedState_shouldRefundAndCancel() {
+        Order existing = new Order(1L, 1L, new BigDecimal("100.00"));
+        existing.setOrderId(5L);
+        existing.setStatus(OrderStatus.PLACED);
+
+        TransactionHistory debitTx = new TransactionHistory();
+        debitTx.setAmount(new BigDecimal("90.00")); // discounted amount actually charged
+
+        when(repo.findById(5L)).thenReturn(Optional.of(existing));
+        when(transactionHistoryRepository.findByReferenceIdAndTransactionType(5, "DEBIT"))
+                .thenReturn(Optional.of(debitTx));
+        when(repo.save(any(Order.class))).thenReturn(existing);
+
+        Order result = orderService.updateStatus(5L, OrderStatus.CANCELLED);
+
+        assertEquals(OrderStatus.CANCELLED, result.getStatus());
+        verify(walletService).credit(eq(1L), eq(new BigDecimal("90.00")), anyString(), eq(5));
+        verify(notificationService).sendOrderUpdate(any());
+    }
+
+    @Test
+    void cancelOrder_fromConfirmedState_shouldThrow() {
+        Order existing = new Order(1L, 1L, new BigDecimal("45.00"));
+        existing.setOrderId(1L);
+        existing.setStatus(OrderStatus.CONFIRMED);
+
+        when(repo.findById(1L)).thenReturn(Optional.of(existing));
+
+        AppException ex = assertThrows(AppException.class,
+                () -> orderService.updateStatus(1L, OrderStatus.CANCELLED));
+        assertEquals(ErrorCode.ORDER_CANNOT_BE_CANCELLED, ex.getErrorCode());
+        verify(walletService, never()).credit(any(), any(), any(), any());
+    }
+
+    @Test
+    void cancelOrder_fromPreparingState_shouldThrow() {
+        Order existing = new Order(1L, 1L, new BigDecimal("45.00"));
+        existing.setOrderId(1L);
+        existing.setStatus(OrderStatus.PREPARING);
+
+        when(repo.findById(1L)).thenReturn(Optional.of(existing));
+
+        AppException ex = assertThrows(AppException.class,
+                () -> orderService.updateStatus(1L, OrderStatus.CANCELLED));
+        assertEquals(ErrorCode.ORDER_CANNOT_BE_CANCELLED, ex.getErrorCode());
+    }
+
+    @Test
+    void cancelOrder_refundsFallbackToTotalAmount_whenNoTransactionFound() {
+        Order existing = new Order(1L, 1L, new BigDecimal("50.00"));
+        existing.setOrderId(7L);
+        existing.setStatus(OrderStatus.PLACED);
+
+        when(repo.findById(7L)).thenReturn(Optional.of(existing));
+        when(transactionHistoryRepository.findByReferenceIdAndTransactionType(7, "DEBIT"))
+                .thenReturn(Optional.empty());
+        when(repo.save(any(Order.class))).thenReturn(existing);
+
+        orderService.updateStatus(7L, OrderStatus.CANCELLED);
+
+        verify(walletService).credit(eq(1L), eq(new BigDecimal("50.00")), anyString(), eq(7));
     }
 
     @Test

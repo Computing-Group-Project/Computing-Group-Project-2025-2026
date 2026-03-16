@@ -8,7 +8,7 @@ spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/demeter_db}
     username: ${SPRING_DATASOURCE_USERNAME:root}
-    password: ${SPRING_DATASOURCE_PASSWORD:Password123}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -16,10 +16,10 @@ spring:
       ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
   servlet:
@@ -28,7 +28,7 @@ spring:
       max-request-size: 5MB
 
 jwt:
-  secret: ${JWT_SECRET:CHANGE_ME_TO_A_LONG_RANDOM_SECRET_KEY_32+_CHARS}
+  secret: ${JWT_SECRET}
   expiration-ms: 7200000
 
 wallet:
@@ -41,9 +41,16 @@ app:
   uploads-dir: uploads
   max-file-bytes: 5242880
 
+# Swagger (disable in production via SPRINGDOC_API_DOCS_ENABLED=false)
+springdoc:
+  api-docs:
+    enabled: ${SPRINGDOC_API_DOCS_ENABLED:true}
+  swagger-ui:
+    enabled: ${SPRINGDOC_API_DOCS_ENABLED:true}
+
 # AI Service Configuration
 demeter:
   ai-service:
     base-url: ${DEMETER_AI_BASE_URL:http://localhost:8001}
-    api-key: ${DEMETER_AI_API_KEY:demeter-ai-service-key-2024}
+    api-key: ${DEMETER_AI_API_KEY}
 

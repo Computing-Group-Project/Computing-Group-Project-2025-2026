@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -18,6 +20,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Aspect
 @Component
 public class AuditLogAspect {
+
+    private static final Logger log = LoggerFactory.getLogger(AuditLogAspect.class);
 
     @Autowired private AuditLogRepository auditLogRepository;
     @Autowired private ObjectMapper objectMapper;
@@ -33,8 +37,8 @@ public class AuditLogAspect {
             if (args.length > 1) {
                 oldValue = objectMapper.writeValueAsString(args[1]);
             }
-        } catch (Exception ignored) {
-            // Don't let audit serialization prevent the main operation
+        } catch (Exception e) {
+            log.warn("Audit: failed to serialize old value for {}: {}", logActivity.action(), e.getMessage());
         }
 
         Object result;
@@ -47,7 +51,7 @@ public class AuditLogAspect {
                 Long userId = extractUserId(null);
                 saveLog(logActivity, oldValue, "N/A", "FAILURE", userId);
             } catch (Exception logEx) {
-                // Audit logging must never mask the original exception
+                log.error("Audit: failed to save FAILURE log for {}: {}", logActivity.action(), logEx.getMessage());
             }
             throw e;
         }
@@ -57,8 +61,8 @@ public class AuditLogAspect {
             String newValue = objectMapper.writeValueAsString(result);
             Long userId = extractUserId(result);
             saveLog(logActivity, oldValue, newValue, "SUCCESS", userId);
-        } catch (Exception ignored) {
-            // Audit logging failure must not affect the successful operation
+        } catch (Exception e) {
+            log.error("Audit: failed to save SUCCESS log for {}: {}", logActivity.action(), e.getMessage());
         }
 
         return result;
@@ -76,7 +80,8 @@ public class AuditLogAspect {
                     return jwtUtil.extractUserId(token);
                 }
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            log.warn("Audit: failed to extract userId from JWT: {}", e.getMessage());
         }
 
         // For login: extract userId from the result (LoginResponseDTO)
@@ -87,14 +92,32 @@ public class AuditLogAspect {
         return 0L;
     }
 
-    private void saveLog(LogActivity log, String oldVal, String newVal, String status, Long userId) {
+    private String extractClientIp() {
+        try {
+            ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs != null) {
+                HttpServletRequest request = attrs.getRequest();
+                String forwarded = request.getHeader("X-Forwarded-For");
+                if (forwarded != null && !forwarded.isBlank()) {
+                    return forwarded.split(",")[0].trim();
+                }
+                return request.getRemoteAddr();
+            }
+        } catch (Exception e) {
+            log.warn("Audit: failed to extract client IP: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    private void saveLog(LogActivity logActivity, String oldVal, String newVal, String status, Long userId) {
         AuditLog auditLog = new AuditLog();
         auditLog.setUserId(userId);
-        auditLog.setAction(log.action());
-        auditLog.setTargetTable(log.targetTable());
+        auditLog.setAction(logActivity.action());
+        auditLog.setTargetTable(logActivity.targetTable());
         auditLog.setOldValue(oldVal);
         auditLog.setNewValue(newVal);
         auditLog.setStatus(status);
+        auditLog.setIpAddress(extractClientIp());
         auditLog.setCreatedAt(java.time.LocalDateTime.now());
         auditLogRepository.save(auditLog);
     }

@@ -1,9 +1,13 @@
+import logging
+
 from fastapi import APIRouter, HTTPException, Depends, Request
 
 from ..config import RATE_LIMIT_REVIEWS
 from ..dependencies import verify_api_key, limiter
 from ..models.reviews import ReviewAnalysisRequest, ReviewAnalysisResponse
 from ..services import review_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1", tags=["Reviews"])
 
@@ -19,4 +23,5 @@ async def analyze_review(
     try:
         return review_service.analyze_review(payload)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        logger.exception("Review analysis failed")
+        raise HTTPException(status_code=500, detail="Analysis failed")

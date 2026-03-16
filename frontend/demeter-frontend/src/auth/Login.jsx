@@ -189,6 +189,7 @@ export default function Login() {
         <input
           type="password"
           placeholder="Enter your password"
+          autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleLogin()}

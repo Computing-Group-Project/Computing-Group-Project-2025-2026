@@ -4,9 +4,11 @@ import { useCart } from "../contexts/CartContext.jsx";
 import { useWallet } from "../contexts/WalletContext.jsx";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useToast } from "../contexts/ToastContext.jsx";
-import { Trash2, Sparkles } from "lucide-react";
+import { Trash2, Sparkles, Plus } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/api.js";
+import FoodModal from "../components/common/FoodModal.jsx";
+import { getFoodImage } from "../utils/foodImages.js";
 
 export default function Cart() {
 
@@ -18,6 +20,8 @@ export default function Cart() {
   const [checkingOut, setCheckingOut] = useState(false);
   const [discounts, setDiscounts] = useState([]);
   const [selectedDiscount, setSelectedDiscount] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+  const [selectedFood, setSelectedFood] = useState(null);
 
   const subtotal = useMemo(
     () => cart.reduce((sum, item) => sum + item.total, 0),
@@ -49,6 +53,46 @@ export default function Cart() {
     }
   }, [cart]);
 
+  useEffect(() => {
+    if (!user || cart.length === 0) return;
+    const fetchRecs = async () => {
+      try {
+        const res = await api.get('/api/recommendations?context=cart&limit=3');
+        const recs = res.data?.data?.recommendations || [];
+        if (recs.length > 0) {
+          const cafeteriaId = cart[0].cafeteriaId;
+          const cartItemIds = new Set(cart.map(i => i.menuItemId || i.id));
+          const items = await Promise.all(recs
+            .filter(rec => !cartItemIds.has(rec.itemId))
+            .slice(0, 3)
+            .map(async (rec) => {
+              try {
+                const menuRes = await api.get(`/api/menus/${rec.itemId}`);
+                const item = menuRes.data?.data;
+                if (item && item.cafeteriaId === cafeteriaId) {
+                  return {
+                    id: item.menuId,
+                    cafeteriaId: item.cafeteriaId,
+                    name: item.name,
+                    image: getFoodImage(item.name, item.imageUrl),
+                    price: item.basePrice,
+                    description: item.description || '',
+                    preparationTime: item.preparationTime,
+                  };
+                }
+              } catch { /* skip */ }
+              return null;
+            }));
+          setRecommendations(items.filter(Boolean));
+        }
+      } catch {
+        // Recommendations are non-critical
+      }
+    };
+    fetchRecs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, cart.length]);
+
   const handleCheckout = async () => {
     if (cart.length === 0) {
       showToast("Your cart is empty!", "warning");
@@ -69,7 +113,7 @@ export default function Cart() {
       const orderData = {
         userId: user.userId,
         cafeteriaId: cafeteriaId,
-        totalAmount: total,
+        totalAmount: subtotal,
         appliedDiscountId: selectedDiscount?.discountId || null,
         items: cart.map(item => ({
           menuItemId: item.menuItemId || item.id,
@@ -267,6 +311,49 @@ export default function Cart() {
               </div>
 
             </div>
+
+            {recommendations.length > 0 && (
+              <section className="mt-10">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <Sparkles size={18} className="text-yellow-400" />
+                  You might also like
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {recommendations.map(item => (
+                    <div
+                      key={item.id}
+                      className="bg-white dark:bg-slate-800/90 border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-md flex flex-col cursor-pointer hover:shadow-lg transition-shadow"
+                      onClick={() => setSelectedFood({
+                        menuItemId: item.id,
+                        cafeteriaId: item.cafeteriaId,
+                        title: item.name,
+                        image: item.image,
+                        price: item.price,
+                        description: item.description,
+                        preparationTime: item.preparationTime,
+                        extras: [],
+                      })}
+                    >
+                      <img src={item.image} alt={item.name} className="h-32 w-full object-cover" />
+                      <div className="p-4 flex-1 flex flex-col justify-between">
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-sm">{item.name}</h3>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 line-clamp-2">{item.description}</p>
+                        <div className="flex items-center justify-between mt-3">
+                          <span className="text-yellow-500 font-bold text-sm">GK {item.price}</span>
+                          <span className="text-xs text-teal-500 font-medium flex items-center gap-1">
+                            <Plus size={12} /> Add
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {selectedFood && (
+              <FoodModal food={selectedFood} onClose={() => setSelectedFood(null)} />
+            )}
 
           </>
         )}
