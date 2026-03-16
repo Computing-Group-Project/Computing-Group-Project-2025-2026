@@ -9,7 +9,7 @@ The system is composed of three independently running services and a MySQL datab
 | Service | Tech | Port |
 |---------|------|------|
 | **Backend** | Java 17, Spring Boot 3.5.10, Maven | 8080 |
-| **Frontend** | React 19, Vite 7, Tailwind CSS 3 | 5173 (dev) / 3000 (Docker) |
+| **Frontend** | React 19, Vite 7, Tailwind CSS 3 | 5173 (dev) / 3000 HTTP, 3443 HTTPS (Docker) |
 | **AI Service** | Python 3.11+, FastAPI | 8001 |
 | **Database** | MySQL 8 | 3306 |
 
@@ -22,7 +22,21 @@ The system is composed of three independently running services and a MySQL datab
 
 The fastest way to run the full application. Requires only [Docker](https://www.docker.com/products/docker-desktop/) installed on your machine.
 
-### 1. Start everything
+### 1. Create environment file and SSL certs
+
+```bash
+cp .env.example .env
+# Edit .env with your values (or use defaults below for local testing):
+#   MYSQL_ROOT_PASSWORD=demeter_root_2026
+#   JWT_SECRET=demeter_jwt_secret_key_at_least_32_characters_long
+#   DEMETER_AI_API_KEY=demeter-ai-service-key-2024
+
+# Generate self-signed TLS certificates
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout ssl/key.pem -out ssl/cert.pem -subj "/CN=localhost"
+```
+
+### 2. Start everything
 
 ```bash
 docker compose up --build
@@ -30,15 +44,15 @@ docker compose up --build
 
 This builds and starts all four containers (MySQL, backend, AI service, frontend). The first build takes a few minutes to download dependencies. Subsequent runs are much faster.
 
-### 2. Wait for services to be ready
+### 3. Wait for services to be ready
 
 The backend waits for MySQL to pass its health check before starting. You'll see log output from all services. Once you see the Spring Boot banner and `Started DemeterBackendApplication`, the system is ready.
 
-### 3. Open the app
+### 4. Open the app
 
-Go to **http://localhost:3000** in your browser.
+Go to **http://localhost:3000** or **https://localhost:3443** in your browser. If using HTTPS with self-signed certs, your browser will show a certificate warning — proceed past it.
 
-### 4. Log in
+### 5. Log in
 
 All seed accounts use the password **`pass`**.
 
@@ -50,7 +64,9 @@ All seed accounts use the password **`pass`**.
 | Staff | `viktor` | Skyline Sips order queue |
 | Admin | `admin_user` | User management, analytics, wallet top-ups |
 
-### 5. Stop the application
+Students can also log in using their **university ID** instead of username.
+
+### 6. Stop the application
 
 ```bash
 docker compose down
@@ -64,12 +80,12 @@ docker compose down -v
 
 ### How it works
 
-An nginx reverse proxy serves the React frontend and proxies API and WebSocket requests to the backend. The browser only communicates with nginx on port 3000, eliminating CORS issues.
+An nginx reverse proxy serves the React frontend and proxies API and WebSocket requests to the backend. The browser only communicates with nginx on ports 3000 (HTTP) / 3443 (HTTPS), eliminating CORS issues.
 
 ```
-Browser → http://localhost:3000
+Browser → http://localhost:3000 (or https://localhost:3443)
                ↓
-         [nginx :80]  ← static files + reverse proxy
+         [nginx :80/:443]  ← static files + reverse proxy + TLS termination
                ↓ /api/* and /ws/*
          [backend :8080]
                ↓            ↓
@@ -116,6 +132,6 @@ cd ai-service
 python3 -m venv venv           # Create virtual environment
 source venv/bin/activate       # Activate it
 pip install -r requirements.txt
-python main.py                 # Starts on port 8001
-python -m pytest test.py -v    # Run all tests
+python run.py                  # Starts on port 8001
+python -m pytest tests/ -v    # Run all tests (49 tests)
 ```

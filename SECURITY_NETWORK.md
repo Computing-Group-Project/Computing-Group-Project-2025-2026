@@ -24,7 +24,7 @@ Demeter has **three separate services** that work together:
                     ┌───────────────────────┐
                     │  Frontend (React)      │  ← What users see in their browser
                     │  Runs on port 5173     │
-                    │  (or 443 in Docker)    │
+                    │  (or 3000/3443 Docker) │
                     └───────────┬───────────┘
                                 │
                       Encrypted (HTTPS)
@@ -64,7 +64,7 @@ Each service has a **health check** so Docker knows when it's ready before start
 
 When a student places an order or staff updates its status, the other side gets notified instantly through **WebSocket** — a persistent connection between the browser and the backend.
 
-- Students receive updates on `/topic/orders`
+- Students receive updates on `/topic/orders` and personal notifications on `/user/queue/notifications`
 - Staff receive updates on `/topic/staff`
 - The connection requires a valid login token (JWT) — you can't eavesdrop without being logged in
 - If the connection drops, the browser automatically retries (up to 10 times, waiting longer each time)
@@ -75,7 +75,7 @@ When a student places an order or staff updates its status, the other side gets 
 
 ### Login Flow
 
-1. User enters username + password on the login page
+1. User enters username (or university ID for students) + password on the login page
 2. Backend checks the password against a stored **hash** (a one-way fingerprint — the real password is never stored)
 3. If correct, the backend creates a **JWT token** — a digitally signed pass containing the user's ID, username, and role
 4. The token is valid for **2 hours**, then the user must log in again
@@ -176,7 +176,9 @@ To prevent abuse (like bots sending thousands of requests):
 
 CORS controls which websites can talk to our backend. Only these are allowed:
 - `http://localhost:5173` (development server)
-- `http://localhost:3000` (Docker deployment)
+- `http://localhost:3000` (Docker HTTP)
+- `https://localhost` and `https://localhost:3443` (Docker HTTPS)
+- `http://localhost` (Docker HTTP direct)
 
 Any other website trying to send requests to our API will be blocked by the browser. For production, these need to be updated to the real domain name.
 
@@ -186,7 +188,7 @@ Swagger UI (interactive API documentation) is available for development. In prod
 
 ### Audit Logging
 
-Every important action (placing orders, updating statuses, managing users) is recorded in an audit log with:
+Every important action is recorded in an audit log via `@LogActivity` annotations (19 methods covered across 7 services: auth, menu, orders, discounts, users, wallet, reviews). Each entry records:
 - Who did it (user ID)
 - What they did
 - When they did it
@@ -279,7 +281,7 @@ A cafeteria ordering system for Bastion University. Students browse menus, place
 
 6. **No secrets are stored in the code.** Database passwords, signing keys, and API keys are all loaded from environment variables that are never committed to Git.
 
-7. **Everything important is logged.** Order placements, status changes, user management — all recorded with who, what, when, and from where (IP address).
+7. **Everything important is logged.** 19 audited operations across 7 services — order placements, status changes, user management, wallet transactions, reviews, discounts — all recorded with who, what, when, and from where (IP address).
 
 8. **The AI service is locked down.** It only accepts requests from the backend (via API key), runs as a non-root user, and never exposes internal error details to users.
 
