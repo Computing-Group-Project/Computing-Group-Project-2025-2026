@@ -13,6 +13,8 @@ import com.demeter.backend.reviews.repo.ReviewRepository;
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.enums.OrderStatus;
 import com.demeter.backend.shared.exception.AppException;
+import com.demeter.backend.shared.util.LogActivity;
+import com.demeter.backend.wallet.service.KrakensWalletService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,18 +32,22 @@ public class ReviewService {
     private final OrderRepository orderRepository;
     private final CafeteriaRepository cafeteriaRepository;
     private final AIServiceClient aiServiceClient;
+    private final KrakensWalletService walletService;
 
     public ReviewService(ReviewRepository reviewRepository,
                          OrderRepository orderRepository,
                          CafeteriaRepository cafeteriaRepository,
-                         AIServiceClient aiServiceClient) {
+                         AIServiceClient aiServiceClient,
+                         KrakensWalletService walletService) {
         this.reviewRepository = reviewRepository;
         this.orderRepository = orderRepository;
         this.cafeteriaRepository = cafeteriaRepository;
         this.aiServiceClient = aiServiceClient;
+        this.walletService = walletService;
     }
 
     @Transactional
+    @LogActivity(action = "SUBMIT_REVIEW", targetTable = "REVIEW")
     public Review submitReview(ReviewRequestDTO request, Long userId) {
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
@@ -71,6 +77,15 @@ public class ReviewService {
                 : LocalDateTime.now().plusHours(1));
 
         Review saved = reviewRepository.save(review);
+
+        // Credit review reward (5 GK)
+        try {
+            walletService.credit(userId, new BigDecimal("5"),
+                    "Review reward for order #" + saved.getOrderId(),
+                    saved.getReviewId().intValue());
+        } catch (Exception e) {
+            log.warn("Failed to credit review reward for user {}: {}", userId, e.getMessage());
+        }
 
         // Asynchronously analyze sentiment via AI service
         try {

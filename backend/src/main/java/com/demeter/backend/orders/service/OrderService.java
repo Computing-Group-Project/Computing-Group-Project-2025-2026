@@ -2,6 +2,8 @@ package com.demeter.backend.orders.service;
 
 import com.demeter.backend.orders.model.Order;
 import com.demeter.backend.orders.model.OrderItem;
+import com.demeter.backend.payments.model.Payment;
+import com.demeter.backend.payments.repo.PaymentRepository;
 import com.demeter.backend.promotions.service.DiscountApplicationService;
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.enums.OrderStatus;
@@ -9,9 +11,12 @@ import com.demeter.backend.shared.exception.AppException;
 import com.demeter.backend.orders.repo.OrderRepository;
 import com.demeter.backend.shared.util.LogActivity;
 import com.demeter.backend.transactions.repo.TransactionHistoryRepository;
+import com.demeter.backend.users.model.User;
+import com.demeter.backend.users.repo.UserRepository;
 import com.demeter.backend.wallet.service.KrakensWalletService;
 import com.demeter.backend.ws.NotificationMessage;
 import com.demeter.backend.ws.NotificationService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +24,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 public class OrderService {
     private final OrderRepository repo;
@@ -26,16 +32,22 @@ public class OrderService {
     private final NotificationService notificationService;
     private final DiscountApplicationService discountApplicationService;
     private final TransactionHistoryRepository transactionHistoryRepository;
+    private final PaymentRepository paymentRepository;
+    private final UserRepository userRepository;
 
     public OrderService(OrderRepository repo, KrakensWalletService walletService,
                         NotificationService notificationService,
                         DiscountApplicationService discountApplicationService,
-                        TransactionHistoryRepository transactionHistoryRepository) {
+                        TransactionHistoryRepository transactionHistoryRepository,
+                        PaymentRepository paymentRepository,
+                        UserRepository userRepository) {
         this.repo = repo;
         this.walletService = walletService;
         this.notificationService = notificationService;
         this.discountApplicationService = discountApplicationService;
         this.transactionHistoryRepository = transactionHistoryRepository;
+        this.paymentRepository = paymentRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional
@@ -83,6 +95,16 @@ public class OrderService {
                     "Payment for order #" + saved.getOrderId(),
                     saved.getOrderId() != null ? saved.getOrderId().intValue() : null
             );
+
+            // Record payment
+            Payment payment = new Payment();
+            payment.setUserId(saved.getUserId());
+            payment.setOrderId(saved.getOrderId());
+            payment.setTransactionType("PURCHASE");
+            payment.setAmount(chargeAmount);
+            payment.setPaymentMethod("GOLD_KRAKENS");
+            payment.setTransactionStatus("COMPLETED");
+            paymentRepository.save(payment);
         }
 
         // Notify staff
@@ -102,11 +124,16 @@ public class OrderService {
         Order order = repo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        // Only allow cancellation from PLACED state (FR6)
-        if (status == OrderStatus.CANCELLED) {
-            if (order.getStatus() != OrderStatus.PLACED) {
+        // Validate state transition
+        if (!OrderStatus.isValidTransition(order.getStatus(), status)) {
+            if (status == OrderStatus.CANCELLED) {
                 throw new AppException(ErrorCode.ORDER_CANNOT_BE_CANCELLED);
             }
+            throw new AppException(ErrorCode.INVALID_ORDER_TRANSITION);
+        }
+
+        // Handle cancellation refund
+        if (status == OrderStatus.CANCELLED) {
             // Refund the actual charged amount by looking up the original debit transaction,
             // since finalAmount is @Transient and not persisted
             if (order.getUserId() != null && order.getOrderId() != null) {
@@ -120,6 +147,16 @@ public class OrderService {
                         "Refund for cancelled order #" + order.getOrderId(),
                         order.getOrderId().intValue()
                 );
+
+                // Record refund payment
+                Payment refundPayment = new Payment();
+                refundPayment.setUserId(order.getUserId());
+                refundPayment.setOrderId(order.getOrderId());
+                refundPayment.setTransactionType("REFUND");
+                refundPayment.setAmount(refundAmount);
+                refundPayment.setPaymentMethod("GOLD_KRAKENS");
+                refundPayment.setTransactionStatus("COMPLETED");
+                paymentRepository.save(refundPayment);
             }
         }
 
@@ -140,6 +177,19 @@ public class OrderService {
                 String.valueOf(updated.getOrderId()),
                 status.name()
         ));
+
+        // Send user-specific notification
+        try {
+            User orderUser = userRepository.findById(order.getUserId()).orElse(null);
+            if (orderUser != null) {
+                notificationService.sendToUser(orderUser.getUsername(),
+                        new NotificationMessage("ORDER_STATUS", "Order Updated",
+                                "Your order #" + order.getOrderId() + " is now " + status.name(),
+                                String.valueOf(order.getOrderId()), status.name()));
+            }
+        } catch (Exception e) {
+            log.warn("Failed to send user notification: {}", e.getMessage());
+        }
 
         return updated;
     }

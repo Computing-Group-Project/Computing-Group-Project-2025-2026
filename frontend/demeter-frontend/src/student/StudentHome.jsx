@@ -5,6 +5,8 @@ import FoodModal from "../components/common/FoodModal.jsx";
 import CafeteriaCard from "../components/common/CafeteriaCard.jsx";
 import StudentLayout from "../layouts/StudentLayout.jsx";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { useCart } from "../contexts/CartContext.jsx";
+import { useToast } from "../contexts/ToastContext.jsx";
 import api from "../utils/api.js";
 import { getFoodImage, getCafeteriaImage } from "../utils/foodImages.js";
 
@@ -28,6 +30,8 @@ const fallbackRecommended = [
 
 export default function StudentHome() {
   const { user } = useAuth();
+  const { addToCart } = useCart();
+  const { showToast } = useToast();
   const rawName = user?.username?.split("_")[0] || "Student";
   const firstName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
 
@@ -39,6 +43,18 @@ export default function StudentHome() {
 
   useEffect(() => {
     const fetchRecommendations = async () => {
+      // Enforce 3-per-session limit
+      const cached = sessionStorage.getItem('recs_shown');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed.length > 0) {
+            setRecommendedItems(parsed);
+            return;
+          }
+        } catch { /* fall through to fetch */ }
+      }
+
       try {
         const res = await api.get('/api/recommendations?context=homepage&limit=3');
         const recs = res.data?.data?.recommendations || [];
@@ -62,7 +78,10 @@ export default function StudentHome() {
             return null;
           }));
           const validItems = items.filter(Boolean);
-          if (validItems.length > 0) setRecommendedItems(validItems);
+          if (validItems.length > 0) {
+            setRecommendedItems(validItems);
+            sessionStorage.setItem('recs_shown', JSON.stringify(validItems));
+          }
         }
       } catch {
         // Keep fallback
@@ -133,17 +152,21 @@ export default function StudentHome() {
                   description={item.description}
                   price={`${item.price}`}
                   badge={item.tag}
-                  buttonText="order now"
+                  buttonText="Add to Cart"
                   variant="home"
-                  onClick={() => setSelectedFood({
-                    menuItemId: item.id,
-                    cafeteriaId: item.cafeId,
-                    title: item.name,
-                    image: item.image,
-                    price: item.price,
-                    description: item.description,
-                    extras: [],
-                  })}
+                  onClick={() => {
+                    addToCart({
+                      menuItemId: item.id,
+                      cafeteriaId: item.cafeId,
+                      title: item.name,
+                      image: item.image,
+                      price: item.price,
+                      total: item.price,
+                      extras: [],
+                      quantity: 1,
+                    });
+                    showToast(`${item.name} added to cart!`, "success");
+                  }}
                 />
               );
             })}

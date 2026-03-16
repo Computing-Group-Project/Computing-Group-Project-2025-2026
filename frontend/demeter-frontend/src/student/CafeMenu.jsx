@@ -72,6 +72,7 @@ export default function CafeMenu() {
           price: item.basePrice,
           image: getFoodImage(item.name, item.imageUrl),
           category: item.category ? [item.category.name] : [],
+          tags: (item.tags || []).map(t => t.tag?.name).filter(Boolean),
           cafeteriaId: item.cafeteriaId,
           preparationTime: item.preparationTime,
           extras: (item.customizations || [])
@@ -211,7 +212,7 @@ export default function CafeMenu() {
               title={food.title}
               description={food.description}
               price={food.price}
-              badge={food.category}
+              badge={[...food.category, ...food.tags]}
               preparationTime={food.preparationTime}
               buttonText="Add"
               variant="menu"

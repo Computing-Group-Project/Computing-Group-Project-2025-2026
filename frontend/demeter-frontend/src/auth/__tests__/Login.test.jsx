@@ -36,7 +36,7 @@ describe("Login", () => {
 
     await user.click(screen.getByText("Student"));
 
-    expect(screen.getByPlaceholderText("Enter your username")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Enter your username or university ID")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Enter your password")).toBeInTheDocument();
     expect(screen.getByText("Login")).toBeInTheDocument();
     expect(screen.getByText("Student Portal")).toBeInTheDocument();
@@ -71,7 +71,7 @@ describe("Login", () => {
 
     render(<Login />);
     await user.click(screen.getByText("Student"));
-    await user.type(screen.getByPlaceholderText("Enter your username"), "student1");
+    await user.type(screen.getByPlaceholderText("Enter your username or university ID"), "student1");
     await user.type(screen.getByPlaceholderText("Enter your password"), "password123");
     await user.click(screen.getByText("Login"));
 
@@ -120,7 +120,7 @@ describe("Login", () => {
 
     render(<Login />);
     await user.click(screen.getByText("Student"));
-    await user.type(screen.getByPlaceholderText("Enter your username"), "bad_user");
+    await user.type(screen.getByPlaceholderText("Enter your username or university ID"), "bad_user");
     await user.type(screen.getByPlaceholderText("Enter your password"), "wrong");
     await user.click(screen.getByText("Login"));
 

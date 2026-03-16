@@ -6,7 +6,9 @@ import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.exception.AppException;
 import com.demeter.backend.shared.util.LogActivity;
 import com.demeter.backend.users.model.Staff;
+import com.demeter.backend.users.model.Student;
 import com.demeter.backend.users.model.User;
+import com.demeter.backend.users.repo.StudentRepository;
 import com.demeter.backend.users.repo.UserRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,13 +18,15 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EntityManager entityManager;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                       JwtUtil jwtUtil, EntityManager entityManager) {
+    public AuthService(UserRepository userRepository, StudentRepository studentRepository,
+                       PasswordEncoder passwordEncoder, JwtUtil jwtUtil, EntityManager entityManager) {
         this.userRepository = userRepository;
+        this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.entityManager = entityManager;
@@ -38,7 +42,10 @@ public class AuthService {
     @LogActivity(action = "USER_LOGIN", targetTable = "USER")
     public LoginResponseDTO login(String username, String password) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
+                .orElseGet(() -> studentRepository.findByUniversityId(username)
+                        .map(Student::getUser)
+                        .filter(u -> "STUDENT".equals(u.getRole()))
+                        .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS)));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new AppException(ErrorCode.INVALID_CREDENTIALS);

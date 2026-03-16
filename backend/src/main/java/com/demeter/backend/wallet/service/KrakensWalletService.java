@@ -2,6 +2,7 @@ package com.demeter.backend.wallet.service;
 
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.exception.AppException;
+import com.demeter.backend.shared.util.LogActivity;
 import com.demeter.backend.transactions.model.TransactionHistory;
 import com.demeter.backend.transactions.repo.TransactionHistoryRepository;
 import com.demeter.backend.users.model.User;
@@ -30,6 +31,7 @@ public class KrakensWalletService {
         return user.getKrakensBalance();
     }
 
+    @LogActivity(action = "WALLET_DEBIT", targetTable = "TRANSACTION_HISTORY")
     @Transactional
     public BigDecimal debit(Long userId, BigDecimal amount, String description, Integer referenceId) {
         User user = userRepository.findByIdForUpdate(userId)
@@ -56,6 +58,7 @@ public class KrakensWalletService {
         return user.getKrakensBalance();
     }
 
+    @LogActivity(action = "WALLET_CREDIT", targetTable = "TRANSACTION_HISTORY")
     @Transactional
     public BigDecimal credit(Long userId, BigDecimal amount, String description, Integer referenceId) {
         User user = userRepository.findByIdForUpdate(userId)

@@ -35,8 +35,8 @@ def generate_recommendations(payload: RecommendationRequest) -> RecommendationRe
     if payload.context.lower() == "cart":
         if payload.cafeteria_id is None:
             raise HTTPException(status_code=400, detail="You must provide a cafeteria_id when the context is 'cart'.")
-        if payload.cafeteria_id not in [1, 2, 3]:
-            raise HTTPException(status_code=400, detail="Invalid cafeteria_id. Must be 1, 2, or 3.")
+        if payload.cafeteria_id < 1:
+            raise HTTPException(status_code=400, detail="Invalid cafeteria_id. Must be a positive integer.")
 
     time_bucket = get_time_bucket(payload.current_time.hour)
     raw_item_suggestions = []

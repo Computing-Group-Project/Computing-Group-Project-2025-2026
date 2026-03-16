@@ -175,10 +175,12 @@ export default function Login() {
         )}
 
         {/* Username */}
-        <label className="text-sm text-gray-600 dark:text-gray-300 mb-2 block">Username</label>
+        <label className="text-sm text-gray-600 dark:text-gray-300 mb-2 block">
+          {selectedPortal === "STUDENT" ? "Username or University ID" : "Username"}
+        </label>
         <input
           type="text"
-          placeholder="Enter your username"
+          placeholder={selectedPortal === "STUDENT" ? "Enter your username or university ID" : "Enter your username"}
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className={`w-full p-3 rounded-lg border border-gray-300 dark:border-[#334155] bg-gray-50 dark:bg-[#0f172a] text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none ${portal.focusRing} mb-4`}

@@ -47,6 +47,9 @@ public class Menu {
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<MenuItemCustomization> customizations;
 
+    @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
+    private List<MenuItemTag> tags;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

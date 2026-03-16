@@ -13,21 +13,44 @@ function AnalyticsDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => {
     fetchAnalytics();
-  }, [period]);
+  }, [period, startDate, endDate]);
 
   const fetchAnalytics = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get(`/api/admin/analytics/dashboard?period=${period}`);
+      let url = `/api/admin/analytics/dashboard?period=${period}`;
+      if (startDate) url += `&startDate=${startDate}`;
+      if (endDate) url += `&endDate=${endDate}`;
+      const res = await api.get(url);
       setData(res.data.data);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load analytics data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const res = await api.get(`/api/admin/analytics/export?period=${period}`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `analytics-${period}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      // silently fail
     }
   };
 
@@ -88,9 +111,17 @@ function AnalyticsDashboard() {
   return (
     <div>
       {/* Period Selector */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">Analytics Overview</h2>
-        <div className="inline-flex gap-1 rounded-full bg-gray-200 dark:bg-dark-card p-1">
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">Analytics Overview</h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExport}
+              className="px-4 py-1.5 rounded-full text-sm font-medium bg-light-accent dark:bg-dark-accent text-gray-800 dark:text-white hover:opacity-90 transition-colors"
+            >
+              Export CSV
+            </button>
+            <div className="inline-flex gap-1 rounded-full bg-gray-200 dark:bg-dark-card p-1">
           {PERIODS.map((p) => (
             <button
               key={p.key}
@@ -104,6 +135,20 @@ function AnalyticsDashboard() {
               {p.label}
             </button>
           ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <label className="text-sm text-light-textMuted dark:text-dark-textMuted">From:</label>
+          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
+            className="px-3 py-1.5 rounded-lg text-sm border border-light-border dark:border-dark-border bg-white dark:bg-dark-card text-light-text dark:text-dark-text" />
+          <label className="text-sm text-light-textMuted dark:text-dark-textMuted">To:</label>
+          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
+            className="px-3 py-1.5 rounded-lg text-sm border border-light-border dark:border-dark-border bg-white dark:bg-dark-card text-light-text dark:text-dark-text" />
+          {(startDate || endDate) && (
+            <button onClick={() => { setStartDate(''); setEndDate(''); }}
+              className="text-sm text-red-500 hover:text-red-400">Clear</button>
+          )}
         </div>
       </div>
 

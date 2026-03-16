@@ -50,6 +50,24 @@ vi.mock("../../contexts/AuthContext.jsx", () => ({
   }),
 }));
 
+// Mock CartContext
+vi.mock("../../contexts/CartContext.jsx", () => ({
+  useCart: () => ({
+    cart: [],
+    addToCart: vi.fn(),
+    removeFromCart: vi.fn(),
+    clearCart: vi.fn(),
+    total: 0,
+  }),
+}));
+
+// Mock ToastContext
+vi.mock("../../contexts/ToastContext.jsx", () => ({
+  useToast: () => ({
+    showToast: vi.fn(),
+  }),
+}));
+
 // Mock foodImages utility
 vi.mock("../../utils/foodImages.js", () => ({
   getFoodImage: (name) => `mock-image-${name}`,
@@ -115,7 +133,7 @@ describe("StudentHome", () => {
     });
   });
 
-  it("opens FoodModal when clicking a recommended item", async () => {
+  it("adds to cart when clicking a recommended item", async () => {
     const user = userEvent.setup();
     api.get.mockResolvedValueOnce({ data: { data: [] } });
 
@@ -125,13 +143,8 @@ describe("StudentHome", () => {
       expect(screen.getByText("Neuro-Burger")).toBeInTheDocument();
     });
 
-    // Click the first recommended food card
+    // Click the first recommended food card — now adds to cart directly
     const foodCards = screen.getAllByTestId("food-card");
     await user.click(foodCards[0]);
-
-    // FoodModal should appear (rendered via portal)
-    await waitFor(() => {
-      expect(screen.getByTestId("food-modal")).toBeInTheDocument();
-    });
   });
 });

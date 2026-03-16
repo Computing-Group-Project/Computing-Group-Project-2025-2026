@@ -44,6 +44,27 @@ vi.mock("../../contexts/AuthContext.jsx", () => ({
   }),
 }));
 
+// Mock WalletContext
+vi.mock("../../contexts/WalletContext.jsx", () => ({
+  useWallet: () => ({
+    balance: 100,
+    refreshBalance: vi.fn(),
+    loading: false,
+    error: null,
+  }),
+}));
+
+// Mock CartContext
+vi.mock("../../contexts/CartContext.jsx", () => ({
+  useCart: () => ({
+    cart: [],
+    addToCart: vi.fn(),
+    removeFromCart: vi.fn(),
+    clearCart: vi.fn(),
+    total: 0,
+  }),
+}));
+
 import api from "../../utils/api.js";
 
 describe("Orders", () => {

@@ -7,8 +7,11 @@ import com.demeter.backend.promotions.service.DiscountApplicationService;
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.enums.OrderStatus;
 import com.demeter.backend.shared.exception.AppException;
+import com.demeter.backend.payments.model.Payment;
+import com.demeter.backend.payments.repo.PaymentRepository;
 import com.demeter.backend.transactions.model.TransactionHistory;
 import com.demeter.backend.transactions.repo.TransactionHistoryRepository;
+import com.demeter.backend.users.repo.UserRepository;
 import com.demeter.backend.wallet.service.KrakensWalletService;
 import com.demeter.backend.ws.NotificationService;
 import org.junit.jupiter.api.Test;
@@ -43,6 +46,12 @@ class OrderServiceTest {
     @Mock
     private TransactionHistoryRepository transactionHistoryRepository;
 
+    @Mock
+    private PaymentRepository paymentRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private OrderService orderService;
 
@@ -76,9 +85,9 @@ class OrderServiceTest {
         when(repo.findById(1L)).thenReturn(Optional.of(existing));
         when(repo.save(any(Order.class))).thenReturn(existing);
 
-        Order result = orderService.updateStatus(1L, OrderStatus.PREPARING);
+        Order result = orderService.updateStatus(1L, OrderStatus.CONFIRMED);
 
-        assertEquals(OrderStatus.PREPARING, result.getStatus());
+        assertEquals(OrderStatus.CONFIRMED, result.getStatus());
         verify(repo).save(existing);
         verify(notificationService).sendOrderUpdate(any());
     }
@@ -114,17 +123,23 @@ class OrderServiceTest {
     }
 
     @Test
-    void cancelOrder_fromConfirmedState_shouldThrow() {
+    void cancelOrder_fromConfirmedState_shouldRefundAndCancel() {
         Order existing = new Order(1L, 1L, new BigDecimal("45.00"));
         existing.setOrderId(1L);
         existing.setStatus(OrderStatus.CONFIRMED);
 
-        when(repo.findById(1L)).thenReturn(Optional.of(existing));
+        TransactionHistory debitTx = new TransactionHistory();
+        debitTx.setAmount(new BigDecimal("45.00"));
 
-        AppException ex = assertThrows(AppException.class,
-                () -> orderService.updateStatus(1L, OrderStatus.CANCELLED));
-        assertEquals(ErrorCode.ORDER_CANNOT_BE_CANCELLED, ex.getErrorCode());
-        verify(walletService, never()).credit(any(), any(), any(), any());
+        when(repo.findById(1L)).thenReturn(Optional.of(existing));
+        when(transactionHistoryRepository.findByReferenceIdAndTransactionType(1, "DEBIT"))
+                .thenReturn(Optional.of(debitTx));
+        when(repo.save(any(Order.class))).thenReturn(existing);
+
+        Order result = orderService.updateStatus(1L, OrderStatus.CANCELLED);
+
+        assertEquals(OrderStatus.CANCELLED, result.getStatus());
+        verify(walletService).credit(eq(1L), eq(new BigDecimal("45.00")), anyString(), eq(1));
     }
 
     @Test
@@ -176,5 +191,40 @@ class OrderServiceTest {
         List<Order> result = orderService.getAllOrders();
 
         assertEquals(3, result.size());
+    }
+
+    @Test
+    void updateStatus_invalidTransition_shouldThrow() {
+        Order existing = new Order(1L, 1L, new BigDecimal("45.00"));
+        existing.setOrderId(1L);
+        existing.setStatus(OrderStatus.PLACED);
+
+        when(repo.findById(1L)).thenReturn(Optional.of(existing));
+
+        AppException ex = assertThrows(AppException.class,
+                () -> orderService.updateStatus(1L, OrderStatus.READY));
+        assertEquals(ErrorCode.INVALID_ORDER_TRANSITION, ex.getErrorCode());
+    }
+
+    @Test
+    void updateStatus_fullLifecycle_succeeds() {
+        Order order = new Order(1L, 1L, new BigDecimal("45.00"));
+        order.setOrderId(1L);
+        order.setStatus(OrderStatus.PLACED);
+
+        when(repo.findById(1L)).thenReturn(Optional.of(order));
+        when(repo.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        orderService.updateStatus(1L, OrderStatus.CONFIRMED);
+        assertEquals(OrderStatus.CONFIRMED, order.getStatus());
+
+        orderService.updateStatus(1L, OrderStatus.PREPARING);
+        assertEquals(OrderStatus.PREPARING, order.getStatus());
+
+        orderService.updateStatus(1L, OrderStatus.READY);
+        assertEquals(OrderStatus.READY, order.getStatus());
+
+        orderService.updateStatus(1L, OrderStatus.COMPLETED);
+        assertEquals(OrderStatus.COMPLETED, order.getStatus());
     }
 }

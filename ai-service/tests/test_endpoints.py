@@ -137,7 +137,7 @@ class TestRecommendations:
         resp = client.post(
             "/api/v1/recommendations",
             headers=HEADERS,
-            json={"user_id": 1, "current_time": "2026-03-15T12:00:00", "context": "cart", "cafeteria_id": 99, "limit": 3},
+            json={"user_id": 1, "current_time": "2026-03-15T12:00:00", "context": "cart", "cafeteria_id": -1, "limit": 3},
         )
         assert resp.status_code == 400
         assert "Invalid cafeteria_id" in resp.json()["detail"]
@@ -310,7 +310,7 @@ class TestDiscounts:
         resp = client.post(
             "/api/v1/discounts",
             headers=HEADERS,
-            json={"cafeteria_id": 99, "limit": 5},
+            json={"cafeteria_id": -1, "limit": 5},
         )
         assert resp.status_code == 400
         assert "Invalid Cafeteria ID" in resp.json()["detail"]
@@ -346,6 +346,19 @@ class TestDiscounts:
         priority = {"BOGO": 0, "COMBO": 1, "PERCENTAGE": 2, "FIXED_AMOUNT": 3}
         priorities = [priority[t] for t in types]
         assert priorities == sorted(priorities)
+
+    def test_no_discount_exceeds_10_percent(self, client):
+        """Percentage and combo discounts should not exceed 10%."""
+        for cid in [1, 2, 3]:
+            resp = client.post(
+                "/api/v1/discounts",
+                headers=HEADERS,
+                json={"cafeteria_id": cid, "limit": 10},
+            )
+            assert resp.status_code == 200
+            for d in resp.json()["proposed_discounts"]:
+                if d["discount_type"] in ("PERCENTAGE", "COMBO"):
+                    assert d["suggested_value"] <= 10.0, f"Discount {d['discount_type']} value {d['suggested_value']} exceeds 10%"
 
     def test_cafeteria_0_returns_400(self, client):
         resp = client.post(

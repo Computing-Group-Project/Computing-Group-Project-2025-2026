@@ -4,6 +4,7 @@ import com.demeter.backend.promotions.model.Discount;
 import com.demeter.backend.promotions.repo.DiscountRepository;
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.exception.AppException;
+import com.demeter.backend.shared.util.LogActivity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class DiscountService {
         this.discountRepository = discountRepository;
     }
 
+    @LogActivity(action = "CREATE_DISCOUNT", targetTable = "DISCOUNT")
     public Discount createDiscount(Discount discount) {
         return discountRepository.save(discount);
     }
@@ -49,6 +51,7 @@ public class DiscountService {
         return discountRepository.findByCafeteriaIdAndAiGeneratedAndApprovedByIsNull(cafeteriaId, true);
     }
 
+    @LogActivity(action = "APPROVE_DISCOUNT", targetTable = "DISCOUNT")
     public Discount approveDiscount(Integer discountId, Integer staffUserId) {
         return discountRepository.findById(discountId).map(discount -> {
             discount.setApprovedBy(staffUserId);
@@ -57,6 +60,7 @@ public class DiscountService {
         }).orElseThrow(() -> new AppException(ErrorCode.DISCOUNT_NOT_FOUND));
     }
 
+    @LogActivity(action = "REJECT_DISCOUNT", targetTable = "DISCOUNT")
     public Discount rejectDiscount(Integer discountId) {
         return discountRepository.findById(discountId).map(discount -> {
             discount.setIsActive(false);
@@ -64,6 +68,7 @@ public class DiscountService {
         }).orElseThrow(() -> new AppException(ErrorCode.DISCOUNT_NOT_FOUND));
     }
 
+    @LogActivity(action = "UPDATE_DISCOUNT", targetTable = "DISCOUNT")
     public Discount updateDiscount(Integer id, Discount discount) {
         return discountRepository.findById(id).map(existing -> {
             existing.setCafeteriaId(discount.getCafeteriaId());
@@ -79,10 +84,12 @@ public class DiscountService {
         }).orElseThrow(() -> new AppException(ErrorCode.DISCOUNT_NOT_FOUND));
     }
 
+    @LogActivity(action = "DELETE_DISCOUNT", targetTable = "DISCOUNT")
     public void deleteDiscount(Integer id) {
         discountRepository.deleteById(id);
     }
 
+    @LogActivity(action = "DEACTIVATE_DISCOUNT", targetTable = "DISCOUNT")
     public Discount deactivateDiscount(Integer id) {
         return discountRepository.findById(id).map(discount -> {
             discount.setIsActive(false);

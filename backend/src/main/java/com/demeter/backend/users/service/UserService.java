@@ -2,6 +2,7 @@ package com.demeter.backend.users.service;
 
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.exception.AppException;
+import com.demeter.backend.shared.util.LogActivity;
 import com.demeter.backend.users.model.Staff;
 import com.demeter.backend.users.model.Student;
 import com.demeter.backend.users.model.User;
@@ -31,6 +32,7 @@ public class UserService {
         return userRepository.findByRole(role);
     }
 
+    @LogActivity(action = "CREATE_STAFF", targetTable = "USER")
     @Transactional
     public User createStaff(String username, String password, Integer cafeteriaId) {
         User user = new User();
@@ -45,6 +47,7 @@ public class UserService {
         return saved;
     }
 
+    @LogActivity(action = "DELETE_USER", targetTable = "USER")
     @Transactional
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)

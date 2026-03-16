@@ -23,6 +23,7 @@ public enum ErrorCode {
     RATE_LIMITED("Too many requests. Please try again later.", HttpStatus.TOO_MANY_REQUESTS),
     AI_SERVICE_UNAVAILABLE("AI service is temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE),
     ORDER_CANNOT_BE_CANCELLED("Order can only be cancelled before staff confirmation", HttpStatus.BAD_REQUEST),
+    INVALID_ORDER_TRANSITION("Invalid order status transition", HttpStatus.BAD_REQUEST),
     INTERNAL_ERROR("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String message;

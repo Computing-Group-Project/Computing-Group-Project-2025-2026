@@ -1,9 +1,11 @@
 import StudentLayout from "../layouts/StudentLayout.jsx";
 import { useState, useEffect, useCallback } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { FaClock, FaCheckCircle, FaUtensils, FaBox, FaCheck, FaStar } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { useToast } from "../contexts/ToastContext.jsx";
+import { useWallet } from "../contexts/WalletContext.jsx";
+import { useCart } from "../contexts/CartContext.jsx";
 import api from "../utils/api.js";
 import { connectWebSocket, subscribe, disconnectWebSocket } from "../utils/websocket.js";
 
@@ -17,10 +19,13 @@ const statusToStep = {
 };
 
 export default function Orders() {
+  const navigate = useNavigate();
   const location = useLocation();
   const passedState = location.state || null;
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { refreshBalance } = useWallet();
+  const { addToCart } = useCart();
 
   const steps = [
     { label: "Order Placed", icon: <FaClock /> },
@@ -116,6 +121,7 @@ export default function Orders() {
         reviewText: reviewText || null,
       });
       setReviewSubmitted(true);
+      refreshBalance();
     } catch (err) {
       setReviewError(err.response?.data?.message || "Failed to submit review. You may have already reviewed this order or the review window has expired.");
     }
@@ -128,6 +134,23 @@ export default function Orders() {
     } catch (err) {
       showToast(err.response?.data?.message || "Failed to cancel order", "error");
     }
+  };
+
+  const handleReorder = (order) => {
+    if (!order.items || order.items.length === 0) return;
+    order.items.forEach(item => {
+      addToCart({
+        menuItemId: item.menuItemId,
+        cafeteriaId: order.cafeteriaId,
+        title: menuNames[item.menuItemId] || "Food Item",
+        price: item.unitPrice,
+        total: item.subtotal || item.unitPrice * (item.quantity || 1),
+        extras: [],
+        quantity: item.quantity || 1,
+      });
+    });
+    showToast("Items added to cart!", "success");
+    navigate("/cart");
   };
 
   const currentStep = selectedOrder ? (statusToStep[selectedOrder.status] ?? 0) : 0;
@@ -204,6 +227,18 @@ export default function Orders() {
                   className="px-5 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium text-sm transition-colors"
                 >
                   Cancel Order
+                </button>
+              </div>
+            )}
+
+            {/* Reorder button for COMPLETED orders */}
+            {selectedOrder.status === "COMPLETED" && (
+              <div className="flex justify-center mt-3">
+                <button
+                  onClick={() => handleReorder(selectedOrder)}
+                  className="px-5 py-2 rounded-lg bg-teal-500 hover:bg-teal-600 text-white font-medium text-sm transition-colors"
+                >
+                  Reorder
                 </button>
               </div>
             )}

@@ -12,8 +12,8 @@ from .model_loader import ml_resources
 def generate_discounts(payload: DiscountRequest) -> DiscountResponse:
     """Generate discount proposals for a cafeteria based on sales analysis."""
 
-    if payload.cafeteria_id is None or not (1 <= payload.cafeteria_id <= 3):
-        raise HTTPException(status_code=400, detail="Invalid Cafeteria ID. Must be between 1 and 3.")
+    if payload.cafeteria_id is None or payload.cafeteria_id < 1:
+        raise HTTPException(status_code=400, detail="Invalid Cafeteria ID. Must be a positive integer.")
 
     cid = str(payload.cafeteria_id)
     combo_rules = ml_resources.get("combo_rules", {})
@@ -52,7 +52,7 @@ def generate_discounts(payload: DiscountRequest) -> DiscountResponse:
         confidence = combo.get("confidence", 0.5)
 
         if item_a not in used_items and item_b not in used_items:
-            dynamic_discount = round(5.0 + ((1.0 - confidence) * 10.0), 1)
+            dynamic_discount = min(round(5.0 + ((1.0 - confidence) * 10.0), 1), 10.0)
             proposed_discounts.append(ProposedDiscount(
                 discount_type=DiscountType.COMBO,
                 target_item_id=item_a,
@@ -75,7 +75,7 @@ def generate_discounts(payload: DiscountRequest) -> DiscountResponse:
             severity = 0.5
 
         if item_id not in used_items:
-            dynamic_discount = round(10.0 + (severity * 25.0), 1)
+            dynamic_discount = min(round(10.0 + (severity * 25.0), 1), 10.0)
             proposed_discounts.append(ProposedDiscount(
                 discount_type=DiscountType.PERCENTAGE,
                 target_item_id=item_id,

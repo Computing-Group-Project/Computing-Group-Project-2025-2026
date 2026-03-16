@@ -5,7 +5,9 @@ import com.demeter.backend.auth.service.AuthService;
 import com.demeter.backend.config.security.JwtUtil;
 import com.demeter.backend.shared.enums.ErrorCode;
 import com.demeter.backend.shared.exception.AppException;
+import com.demeter.backend.users.model.Student;
 import com.demeter.backend.users.model.User;
+import com.demeter.backend.users.repo.StudentRepository;
 import com.demeter.backend.users.repo.UserRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +31,9 @@ class AuthServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private StudentRepository studentRepository;
+
+    @Mock
     private JwtUtil jwtUtil;
 
     @Mock
@@ -40,7 +45,7 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(userRepository, passwordEncoder, jwtUtil, entityManager);
+        authService = new AuthService(userRepository, studentRepository, passwordEncoder, jwtUtil, entityManager);
     }
 
     // ── Registration Tests ──
@@ -135,6 +140,7 @@ class AuthServiceTest {
     @Test
     void login_withNonExistentUsername_shouldThrow() {
         when(userRepository.findByUsername("unknown_user")).thenReturn(Optional.empty());
+        when(studentRepository.findByUniversityId("unknown_user")).thenReturn(Optional.empty());
 
         AppException ex = assertThrows(AppException.class,
                 () -> authService.login("unknown_user", "password1"));
@@ -152,5 +158,26 @@ class AuthServiceTest {
         AppException ex = assertThrows(AppException.class,
                 () -> authService.login("test_student", "wrongpass1"));
         assertEquals(ErrorCode.INVALID_CREDENTIALS, ex.getErrorCode());
+    }
+
+    @Test
+    void login_withUniversityId_shouldSucceed() {
+        User user = new User();
+        user.setId(2L);
+        user.setUsername("lux");
+        user.setPassword(passwordEncoder.encode("secure123"));
+        user.setRole("STUDENT");
+
+        Student student = new Student(user, "UNI001");
+
+        when(userRepository.findByUsername("UNI001")).thenReturn(Optional.empty());
+        when(studentRepository.findByUniversityId("UNI001")).thenReturn(Optional.of(student));
+        when(jwtUtil.generateToken("lux", "STUDENT", 2L)).thenReturn("mock-jwt-token");
+
+        LoginResponseDTO result = authService.login("UNI001", "secure123");
+
+        assertEquals("mock-jwt-token", result.getToken());
+        assertEquals(2L, result.getUserId());
+        assertEquals("lux", result.getUsername());
     }
 }

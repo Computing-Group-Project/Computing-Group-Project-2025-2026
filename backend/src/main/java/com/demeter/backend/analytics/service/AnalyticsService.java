@@ -18,6 +18,7 @@ import com.demeter.backend.users.repo.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.IsoFields;
@@ -42,11 +43,14 @@ public class AnalyticsService {
         this.menuRepository = menuRepository;
     }
 
-    public AnalyticsDTO getDashboardAnalytics(String period) {
-        LocalDateTime startDate = getStartDate(period);
+    public AnalyticsDTO getDashboardAnalytics(String period, LocalDate customStart, LocalDate customEnd) {
+        LocalDateTime startDate = customStart != null ? customStart.atStartOfDay() : getStartDate(period);
+        LocalDateTime endDate = customEnd != null ? customEnd.plusDays(1).atStartOfDay() : null;
         List<Order> allOrders = orderRepository.findAll();
+        final LocalDateTime filterEnd = endDate;
         List<Order> filteredOrders = allOrders.stream()
                 .filter(o -> o.getCreatedAt() != null && o.getCreatedAt().isAfter(startDate))
+                .filter(o -> filterEnd == null || o.getCreatedAt().isBefore(filterEnd))
                 .toList();
 
         long totalOrders = filteredOrders.size();
@@ -87,11 +91,14 @@ public class AnalyticsService {
                 .build();
     }
 
-    public List<PeriodRevenue> getRevenueByPeriod(String period) {
-        LocalDateTime startDate = getStartDate(period);
+    public List<PeriodRevenue> getRevenueByPeriod(String period, LocalDate customStart, LocalDate customEnd) {
+        LocalDateTime startDate = customStart != null ? customStart.atStartOfDay() : getStartDate(period);
+        LocalDateTime endDate = customEnd != null ? customEnd.plusDays(1).atStartOfDay() : null;
         List<Order> allOrders = orderRepository.findAll();
+        final LocalDateTime filterEnd = endDate;
         List<Order> filteredOrders = allOrders.stream()
                 .filter(o -> o.getCreatedAt() != null && o.getCreatedAt().isAfter(startDate))
+                .filter(o -> filterEnd == null || o.getCreatedAt().isBefore(filterEnd))
                 .toList();
         return computeRevenueByPeriod(filteredOrders, period);
     }
@@ -207,5 +214,46 @@ public class AnalyticsService {
                         .placedAt(o.getCreatedAt())
                         .build())
                 .toList();
+    }
+
+    public String exportDashboardAsCsv(String period) {
+        AnalyticsDTO data = getDashboardAnalytics(period, null, null);
+        StringBuilder csv = new StringBuilder();
+
+        csv.append("Metric,Value\n");
+        csv.append("Total Orders,").append(data.getTotalOrders()).append("\n");
+        csv.append("Total Revenue,").append(String.format("%.2f", data.getTotalRevenue())).append("\n");
+        csv.append("Average Order Value,").append(String.format("%.2f", data.getAverageOrderValue())).append("\n");
+        csv.append("Total Students,").append(data.getTotalStudents()).append("\n");
+        csv.append("Total Staff,").append(data.getTotalStaff()).append("\n");
+        csv.append("\n");
+
+        if (data.getOrdersByStatus() != null) {
+            csv.append("Order Status,Count\n");
+            data.getOrdersByStatus().forEach((status, count) ->
+                    csv.append(status).append(",").append(count).append("\n"));
+            csv.append("\n");
+        }
+
+        if (data.getTopSellingItems() != null) {
+            csv.append("Top Item,Quantity,Revenue\n");
+            data.getTopSellingItems().forEach(item ->
+                    csv.append(item.getItemName()).append(",")
+                            .append(item.getTotalQuantity()).append(",")
+                            .append(String.format("%.2f", item.getTotalRevenue())).append("\n"));
+            csv.append("\n");
+        }
+
+        if (data.getCafeteriaStats() != null) {
+            csv.append("Cafeteria,Orders,Revenue,Rating,Reviews\n");
+            data.getCafeteriaStats().forEach(cafe ->
+                    csv.append(cafe.getCafeteriaName()).append(",")
+                            .append(cafe.getOrderCount()).append(",")
+                            .append(String.format("%.2f", cafe.getRevenue())).append(",")
+                            .append(String.format("%.1f", cafe.getAverageRating())).append(",")
+                            .append(cafe.getTotalReviews()).append("\n"));
+        }
+
+        return csv.toString();
     }
 }
