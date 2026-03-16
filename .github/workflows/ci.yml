@@ -80,4 +80,4 @@ jobs:
           "
 
       - name: Run tests
-        run: cd ai-service && python -m pytest test.py -v
+        run: cd ai-service && python -m pytest tests/test_endpoints.py -v

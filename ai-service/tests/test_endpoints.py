@@ -5,7 +5,7 @@ Uses FastAPI TestClient (httpx) — no running server needed.
 
 import pytest
 from fastapi.testclient import TestClient
-from main import app, limiter
+from app.main import app, limiter
 
 API_KEY = "demeter-ai-service-key-2024"
 HEADERS = {"X-API-Key": API_KEY, "Content-Type": "application/json"}
@@ -394,7 +394,6 @@ class TestReviewAnalysis:
         )
         assert resp.status_code == 200
         data = resp.json()
-        # VADER may lean slightly positive or negative; just check it's near zero
         assert -0.3 <= data["sentiment_score"] <= 0.3
 
     def test_nonsense_review_flagged(self, client):
@@ -445,7 +444,6 @@ class TestReviewAnalysis:
         assert resp.status_code == 200
         keywords = resp.json()["keywords"]
         assert len(keywords) > 0
-        # Keywords should not contain stopwords
         common_stopwords = {"the", "was", "and", "is", "a", "an"}
         for kw in keywords:
             assert kw not in common_stopwords

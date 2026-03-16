@@ -2,8 +2,8 @@
     "1": [
         {
             "bogo_type": "clearance",
-            "buy_item": 3,
-            "get_item": 3
+            "buy_item": 11,
+            "get_item": 11
         },
         {
             "bogo_type": "clearance",
@@ -11,46 +11,19 @@
             "get_item": 13
         },
         {
+            "bogo_type": "clearance",
+            "buy_item": 15,
+            "get_item": 15
+        },
+        {
             "bogo_type": "cross_sell",
             "buy_item": 17,
-            "get_item": 3
+            "get_item": 11
         },
         {
             "bogo_type": "cross_sell",
             "buy_item": 16,
             "get_item": 13
-        }
-    ],
-    "3": [
-        {
-            "bogo_type": "clearance",
-            "buy_item": 45,
-            "get_item": 45
-        },
-        {
-            "bogo_type": "clearance",
-            "buy_item": 38,
-            "get_item": 38
-        },
-        {
-            "bogo_type": "clearance",
-            "buy_item": 43,
-            "get_item": 43
-        },
-        {
-            "bogo_type": "cross_sell",
-            "buy_item": 54,
-            "get_item": 45
-        },
-        {
-            "bogo_type": "cross_sell",
-            "buy_item": 53,
-            "get_item": 38
-        },
-        {
-            "bogo_type": "cross_sell",
-            "buy_item": 52,
-            "get_item": 43
         }
     ],
     "2": [
@@ -61,8 +34,13 @@
         },
         {
             "bogo_type": "clearance",
-            "buy_item": 31,
-            "get_item": 31
+            "buy_item": 23,
+            "get_item": 23
+        },
+        {
+            "bogo_type": "clearance",
+            "buy_item": 33,
+            "get_item": 33
         },
         {
             "bogo_type": "cross_sell",
@@ -72,7 +50,29 @@
         {
             "bogo_type": "cross_sell",
             "buy_item": 34,
-            "get_item": 31
+            "get_item": 23
+        }
+    ],
+    "3": [
+        {
+            "bogo_type": "clearance",
+            "buy_item": 51,
+            "get_item": 51
+        },
+        {
+            "bogo_type": "clearance",
+            "buy_item": 49,
+            "get_item": 49
+        },
+        {
+            "bogo_type": "cross_sell",
+            "buy_item": 53,
+            "get_item": 51
+        },
+        {
+            "bogo_type": "cross_sell",
+            "buy_item": 52,
+            "get_item": 49
         }
     ]
 }
