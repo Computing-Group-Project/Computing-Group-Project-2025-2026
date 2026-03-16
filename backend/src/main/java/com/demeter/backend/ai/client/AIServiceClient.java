@@ -1,8 +1,12 @@
 package com.demeter.backend.ai.client;
 
 import com.demeter.backend.ai.config.AIServiceConfig;
+import com.demeter.backend.ai.dto.Discount.DiscountGenerationRequest;
+import com.demeter.backend.ai.dto.Discount.DiscountGenerationResponse;
 import com.demeter.backend.ai.dto.Recommendation.RecommendationRequest;
 import com.demeter.backend.ai.dto.Recommendation.RecommendationResponse;
+import com.demeter.backend.ai.dto.Review.ReviewAnalysisRequest;
+import com.demeter.backend.ai.dto.Review.ReviewAnalysisResponse;
 import com.demeter.backend.ai.exception.AIServiceException;
 import com.demeter.backend.ai.exception.AIServiceUnavailableException;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +65,70 @@ public class AIServiceClient {
                 );
             }
         }, "getRecommendations");
+    }
+
+    public DiscountGenerationResponse generateDiscounts(DiscountGenerationRequest request) {
+        return executeWithRetry(() -> {
+            try {
+                log.info("Calling AI Service for discount generation - Cafeteria: {}", request.getCafeteriaId());
+
+                HttpEntity<DiscountGenerationRequest> entity = new HttpEntity<>(request, buildHeaders());
+                ResponseEntity<DiscountGenerationResponse> response = restTemplate.exchange(
+                        config.getBaseUrl() + config.getDiscountsEndpoint(),
+                        HttpMethod.POST,
+                        entity,
+                        DiscountGenerationResponse.class
+                );
+
+                return response.getBody();
+
+            } catch (HttpClientErrorException | HttpServerErrorException e) {
+                throw new AIServiceException(
+                        "Failed to generate discounts: " + e.getMessage(),
+                        e,
+                        "DiscountGenerationService",
+                        e.getStatusCode().value()
+                );
+            } catch (ResourceAccessException e) {
+                throw new AIServiceUnavailableException(
+                        "Cannot connect to AI Service",
+                        e,
+                        "DiscountGenerationService"
+                );
+            }
+        }, "generateDiscounts");
+    }
+
+    public ReviewAnalysisResponse analyzeReview(ReviewAnalysisRequest request) {
+        return executeWithRetry(() -> {
+            try {
+                log.info("Calling AI Service for review analysis - Review: {}", request.getReviewId());
+
+                HttpEntity<ReviewAnalysisRequest> entity = new HttpEntity<>(request, buildHeaders());
+                ResponseEntity<ReviewAnalysisResponse> response = restTemplate.exchange(
+                        config.getBaseUrl() + config.getReviewAnalysisEndpoint(),
+                        HttpMethod.POST,
+                        entity,
+                        ReviewAnalysisResponse.class
+                );
+
+                return response.getBody();
+
+            } catch (HttpClientErrorException | HttpServerErrorException e) {
+                throw new AIServiceException(
+                        "Failed to analyze review: " + e.getMessage(),
+                        e,
+                        "ReviewAnalysisService",
+                        e.getStatusCode().value()
+                );
+            } catch (ResourceAccessException e) {
+                throw new AIServiceUnavailableException(
+                        "Cannot connect to AI Service",
+                        e,
+                        "ReviewAnalysisService"
+                );
+            }
+        }, "analyzeReview");
     }
 
     private <T> T executeWithRetry(SupplierWithException<T> operation, String opName) {

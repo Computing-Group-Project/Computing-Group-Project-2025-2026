@@ -1,8 +1,5 @@
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-
 function StaffCard({ staff, onDelete }) {
-  const { theme } = useTheme();
 
   return (
     <div className="bg-white dark:bg-dark-card rounded-2xl border border-light-border dark:border-dark-border overflow-hidden shadow-sm">
@@ -22,7 +19,7 @@ function StaffCard({ staff, onDelete }) {
               {staff.name}
             </h3>
             <p className="text-sm text-light-textMuted dark:text-dark-textMuted">
-              ID: {staff.id}
+              ID: {staff.id}{staff.cafeteria ? ` · ${staff.cafeteria}` : ''}
             </p>
           </div>
         </div>
@@ -40,11 +37,7 @@ function StaffCard({ staff, onDelete }) {
 
       {/* Bottom Section - Status */}
       <div className="bg-gray-50 dark:bg-dark-bg px-5 py-3 flex items-center justify-between border-t border-light-border dark:border-dark-border">
-        <span className={`inline-flex items-center text-sm font-medium ${
-          theme === 'light'
-            ? 'text-emerald-700'
-            : 'text-teal-400'
-        }`}>
+        <span className="inline-flex items-center text-sm font-medium text-emerald-700 dark:text-teal-400">
           <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
@@ -59,4 +52,4 @@ function StaffCard({ staff, onDelete }) {
   );
 }
 
-export default StaffCard;
+export default React.memo(StaffCard);

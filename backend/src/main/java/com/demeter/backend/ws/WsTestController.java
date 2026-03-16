@@ -1,9 +1,11 @@
 package com.demeter.backend.ws;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/ws-test")
+@PreAuthorize("hasRole('ADMIN')")
 public class WsTestController {
 
     private final NotificationService notificationService;

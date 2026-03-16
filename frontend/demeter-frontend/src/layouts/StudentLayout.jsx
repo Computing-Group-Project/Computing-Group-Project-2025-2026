@@ -1,24 +1,47 @@
-import React, { useState, useEffect } from "react";
-import Navbar from "../components/commen/Navbar";
+import React, { useState } from "react";
+import Navbar from "../components/common/Navbar.jsx";
+import ProfileModal from "../components/common/ProfileModal.jsx";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../contexts/CartContext.jsx";
+import { useAuth } from "../contexts/AuthContext.jsx";
 
 export default function StudentLayout({ children }) {
-  const [darkMode, setDarkMode] = useState(false);
 
-  useEffect(() => {
-    const root = window.document.documentElement;
-    if (darkMode) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  }, [darkMode]);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profilePhoto, setProfilePhoto] = useState(null);
+
+  const navigate = useNavigate();
+  const { clearCart } = useCart();
+  const { logout } = useAuth();
+
+  /* LOGOUT */
+  const handleLogout = () => {
+    clearCart();
+    logout();
+    navigate("/login");
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+
+      <Navbar
+        onAddBalance={() => navigate("/wallet")}
+        onProfileClick={() => setProfileOpen(!profileOpen)}
+        onExitClick={handleLogout}
+        profilePhoto={profilePhoto}
+      />
+
       <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-8">
         {children}
       </main>
+
+      <ProfileModal
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        setProfilePhoto={setProfilePhoto}
+        profilePhoto={profilePhoto}
+      />
+
     </div>
   );
 }

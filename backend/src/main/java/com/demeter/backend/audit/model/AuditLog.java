@@ -6,26 +6,37 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name = "audit_log")
+@Table(name = "AuditLog")
 public class AuditLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "log_id")
     private Long auditLogId;
 
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "action_type")
     private String action;
-    private String targetTable;
-    private String targetId;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "target_table")
+    private String targetTable;
+
+    @Column(name = "target_id")
+    private Integer targetId;
+
+    @Column(name = "old_value", columnDefinition = "TEXT")
     private String oldValue;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "new_value", columnDefinition = "TEXT")
     private String newValue;
 
+    @Column(name = "ip_address")
     private String ipAddress;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "status")
     private String status;
 }

@@ -1,47 +1,64 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../utils/api.js';
 
-const PromotionForm = ({ promotionId, onSave, onCancel }) => {
+const PromotionForm = ({ discountId, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+    cafeteriaId: 1,
     discountType: 'PERCENTAGE',
     discountValue: 0,
-    minOrderAmount: 0,
-    maxUsageCount: null,
-    status: 'ACTIVE',
+    applicableItems: '',
+    requirements: '',
+    aiGenerated: false,
     startDate: '',
     endDate: '',
-    cafeteriaId: null,
+    isActive: true,
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [cafeterias, setCafeterias] = useState([]);
 
   useEffect(() => {
-    if (promotionId) {
-      fetchPromotion(promotionId);
-    }
-  }, [promotionId]);
+    const fetchCafeterias = async () => {
+      try {
+        const res = await api.get('/api/cafeterias');
+        setCafeterias(res.data.data || []);
+      } catch {
+        // Fallback
+        setCafeterias([
+          { cafeteriaId: 1, name: 'The Last Drop' },
+          { cafeteriaId: 2, name: 'Hex Core Cafe' },
+          { cafeteriaId: 3, name: 'Skyline Sips' },
+        ]);
+      }
+    };
+    fetchCafeterias();
+  }, []);
 
-  const fetchPromotion = async (id) => {
+  useEffect(() => {
+    if (discountId) {
+      fetchDiscount(discountId);
+    }
+  }, [discountId]);
+
+  const fetchDiscount = async (id) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/promotions/${id}`);
-      const data = await response.json();
-      setFormData(data);
+      const res = await api.get(`/api/discounts/${id}`);
+      setFormData(res.data);
     } catch (err) {
-      setError('Failed to load promotion');
-      console.error(err);
+      setError('Failed to load discount');
+      if (import.meta.env.DEV) console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: value === '' ? null : value,
+      [name]: type === 'checkbox' ? checked : value === '' ? null : value,
     });
   };
 
@@ -51,37 +68,23 @@ const PromotionForm = ({ promotionId, onSave, onCancel }) => {
     setError(null);
 
     try {
-      const method = promotionId ? 'PUT' : 'POST';
-      const url = promotionId
-        ? `http://localhost:8080/api/promotions/${promotionId}`
-        : 'http://localhost:8080/api/promotions';
+      const res = discountId
+        ? await api.put(`/api/discounts/${discountId}`, formData)
+        : await api.post('/api/discounts', formData);
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save promotion');
-      }
-
-      const savedPromotion = await response.json();
-      onSave?.(savedPromotion);
+      onSave?.(res.data);
     } catch (err) {
-      setError(err.message);
-      console.error(err);
+      setError(err.response?.data?.message || 'Failed to save discount');
+      if (import.meta.env.DEV) console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-lg font-semibold mb-4">
-        {promotionId ? 'Edit Promotion' : 'Create Promotion'}
+    <div className="bg-white dark:bg-dark-card rounded-lg shadow-md p-6">
+      <h3 className="text-lg font-semibold mb-4 dark:text-dark-text">
+        {discountId ? 'Edit Discount' : 'Create Discount'}
       </h3>
 
       {error && (
@@ -93,53 +96,44 @@ const PromotionForm = ({ promotionId, onSave, onCancel }) => {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Name *
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
+              Cafeteria *
             </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
+            <select
+              name="cafeteriaId"
+              value={formData.cafeteriaId || ''}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Promotion name"
-            />
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select cafeteria</option>
+              {cafeterias.map(c => (
+                <option key={c.cafeteriaId} value={c.cafeteriaId}>{c.name}</option>
+              ))}
+            </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
               Discount Type *
             </label>
             <select
               name="discountType"
               value={formData.discountType}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="PERCENTAGE">Percentage (%)</option>
-              <option value="FIXED_AMOUNT">Fixed Amount (Rs.)</option>
+              <option value="FIXED_AMOUNT">Fixed Amount (GK)</option>
+              <option value="BOGO">Buy One Get One Free</option>
+              <option value="COMBO_FIXED_PRICE">Combo Fixed Price</option>
             </select>
           </div>
         </div>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Promotion description"
-            rows="3"
-          />
-        </div>
-
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
               Discount Value *
             </label>
             <input
@@ -149,92 +143,86 @@ const PromotionForm = ({ promotionId, onSave, onCancel }) => {
               onChange={handleChange}
               required
               step="0.01"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Value"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Min Order Amount (Rs.)
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
+              Applicable Items
             </label>
             <input
-              type="number"
-              name="minOrderAmount"
-              value={formData.minOrderAmount}
+              type="text"
+              name="applicableItems"
+              value={formData.applicableItems || ''}
               onChange={handleChange}
-              step="0.01"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Minimum amount"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="e.g., [1, 2, 3] or ALL"
             />
           </div>
         </div>
 
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
+            Requirements
+          </label>
+          <textarea
+            name="requirements"
+            value={formData.requirements || ''}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., Min Order Value: 50 GK"
+            rows="2"
+          />
+        </div>
+
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
               Start Date
             </label>
             <input
-              type="datetime-local"
+              type="date"
               name="startDate"
-              value={formData.startDate}
+              value={formData.startDate || ''}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
               End Date
             </label>
             <input
-              type="datetime-local"
+              type="date"
               name="endDate"
-              value={formData.endDate}
+              value={formData.endDate || ''}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Max Usage Count
-            </label>
+        <div className="mb-4">
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-dark-textMuted">
             <input
-              type="number"
-              name="maxUsageCount"
-              value={formData.maxUsageCount || ''}
+              type="checkbox"
+              name="isActive"
+              checked={formData.isActive}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Unlimited if empty"
+              className="rounded"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
-            </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-              <option value="EXPIRED">Expired</option>
-            </select>
-          </div>
+            Active
+          </label>
         </div>
 
         <div className="flex gap-3 justify-end">
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+            className="px-4 py-2 text-gray-600 dark:text-dark-textMuted bg-gray-100 dark:bg-dark-bg rounded-lg hover:bg-gray-200 dark:hover:bg-dark-border"
           >
             Cancel
           </button>

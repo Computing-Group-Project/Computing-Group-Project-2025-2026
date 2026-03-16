@@ -1,26 +1,26 @@
 package com.demeter.backend.users.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+
+@Getter
+@Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponseDTO {
 
     private Long id;
-    private String email;
+    private String username;
     private String role;
+    private BigDecimal krakensBalance;
+    private Integer assignedCafeteriaId;
 
-    public UserResponseDTO(Long id, String email, String role) {
+    public UserResponseDTO(Long id, String username, String role) {
         this.id = id;
-        this.email = email;
+        this.username = username;
         this.role = role;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getRole() {
-        return role;
-    }
 }

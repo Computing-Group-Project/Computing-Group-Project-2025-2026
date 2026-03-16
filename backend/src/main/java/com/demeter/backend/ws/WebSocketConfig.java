@@ -10,21 +10,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        // Clients SUBSCRIBE to these
         config.enableSimpleBroker("/topic", "/queue");
-
-        // Clients SEND messages to /app/...
         config.setApplicationDestinationPrefixes("/app");
-
-        // For user-specific messaging: /user/queue/...
         config.setUserDestinationPrefix("/user");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // WebSocket handshake endpoint
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*") // dev only
+                .setAllowedOriginPatterns("http://localhost:5173", "http://localhost:3000")
                 .withSockJS();
     }
 }
