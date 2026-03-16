@@ -29,9 +29,6 @@ public class SecurityConfig {
         this.rateLimitingFilter = rateLimitingFilter;
     }
 
-    @Autowired
-    private RateLimitFilter rateLimitFilter;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
@@ -57,7 +54,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    //Password Hashing
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
