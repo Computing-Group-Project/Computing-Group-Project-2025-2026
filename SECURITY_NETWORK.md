@@ -1,4 +1,4 @@
-# Security & Network Architecture — Demeter Smart Cafeteria System
+# Security & Network Architecture — Demeter Smart Cafeteria System (v2)
 
 > **Purpose:** This document explains how Demeter protects user data and how the different parts of the system talk to each other. Written for team members who need to understand and explain these topics — no deep security background required.
 

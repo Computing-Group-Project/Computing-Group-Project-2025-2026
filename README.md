@@ -1,6 +1,6 @@
 # Demeter Smart Cafeteria System
 
-A full-stack application for managing cafeteria operations at Bastion University. Students can browse menus, place orders, and pay with Gold Krakens (virtual currency). Staff manage orders in real time via WebSocket-powered dashboards. An AI service provides personalized recommendations, smart discount generation, and review sentiment analysis.
+A full-stack application for managing cafeteria operations at Bastion University. Built with Java Spring Boot, React, and Python FastAPI. Students can browse menus, place orders, and pay with Gold Krakens (virtual currency). Staff manage orders in real time via WebSocket-powered dashboards. An AI service provides personalized recommendations, smart discount generation, and review sentiment analysis.
 
 ## Architecture
 

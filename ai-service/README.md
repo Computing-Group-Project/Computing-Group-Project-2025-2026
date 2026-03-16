@@ -1,4 +1,4 @@
-# Demeter AI Service
+# Demeter AI Service (v2)
 
 Personalized food recommendations, smart discount generation, and review sentiment analysis for the Demeter Smart Cafeteria System.
 
