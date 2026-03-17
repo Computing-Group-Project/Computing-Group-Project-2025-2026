@@ -42,7 +42,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 docker compose up --build
 ```
 
-This builds and starts all four containers (MySQL, backend, AI service, frontend). The first build takes a few minutes to download dependencies. Subsequent runs are much faster.
+This builds and starts all five containers (MySQL, backend, AI service, frontend, and database backup). The first build takes a few minutes to download dependencies. Subsequent runs are much faster.
 
 ### 3. Wait for services to be ready
 
@@ -62,11 +62,22 @@ All seed accounts use the password **`pass`**.
 | Staff | `swain` | The Last Drop order queue |
 | Staff | `jayce`, `heimerdinger` | Hex Core Cafe order queue |
 | Staff | `viktor` | Skyline Sips order queue |
-| Admin | `admin_user` | User management, analytics, wallet top-ups |
+| Admin | `admin_user` | User management, analytics, wallet top-ups, audit log |
 
 Students can also log in using their **university ID** instead of username.
 
-### 6. Stop the application
+### 6. Database backups
+
+Backups run automatically every 5 minutes via the `db-backup` Docker Compose service. Backups are gzip-compressed and saved to `./backups/`, retaining the last 288 (24 hours).
+
+For manual backup/restore without Docker:
+```bash
+./scripts/backup.sh                      # One-time backup
+./scripts/backup.sh --install-cron       # Install 5-minute cron job
+./scripts/backup.sh --restore <file>     # Restore from backup
+```
+
+### 7. Stop the application
 
 ```bash
 docker compose down
@@ -91,6 +102,23 @@ Browser → http://localhost:3000 (or https://localhost:3443)
                ↓            ↓
       [mysql :3306]   [ai-service :8001]
 ```
+
+## Load Testing
+
+k6 load testing scripts validate NFR performance targets (menu < 2s, order < 3s, WebSocket < 1s, AI < 2s at p95).
+
+```bash
+# Install k6
+brew install k6
+
+# Run load tests (default: 200 browse + 50 order + 30 WebSocket VUs)
+k6 run load-testing/k6-load-test.js
+
+# Quick smoke test
+k6 run load-testing/k6-load-test.js --vus 10 --duration 30s
+```
+
+See `load-testing/README.md` for full documentation and scaling to 35,000 concurrent users.
 
 ## Local Development (without Docker)
 

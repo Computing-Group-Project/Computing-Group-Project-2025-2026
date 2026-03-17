@@ -28,7 +28,7 @@ Three things changed:
 
 3. **Regenerated training data** — The CSVs had a 10x price discrepancy with `data.sql` (they used LKR values while the database uses Gold Krakens). A new `regenerate_and_retrain.py` script was created to keep training data in sync with the seed data, and all models were retrained with correct prices.
 
-**Nothing changed in the API itself.** All endpoints, request/response schemas, business logic, and test assertions are identical. The 48 tests pass without modification.
+**Nothing changed in the API itself.** All endpoints, request/response schemas, business logic, and test assertions are identical. The 49 tests pass without modification.
 
 ---
 
@@ -92,7 +92,7 @@ ai-service/
 │
 ├── tests/                            # Test suite
 │   ├── __init__.py
-│   └── test_endpoints.py            # 48 tests across 6 test classes
+│   └── test_endpoints.py            # 49 tests across 6 test classes
 │
 ├── training/                         # Training pipeline (not needed at runtime)
 │   ├── orders.csv                    # Synthetic order data (generated from data.sql logic)
@@ -267,7 +267,7 @@ The app import path is now `app.main:app` (not `main:app`).
 ```bash
 cd ai-service
 source venv/bin/activate
-python -m pytest tests/ -v       # 48 tests
+python -m pytest tests/ -v       # 49 tests
 ```
 
 ### Docker
@@ -317,7 +317,7 @@ After retraining, run the tests to verify nothing broke: `python -m pytest tests
 
 - **All API endpoints** — Same paths, same methods, same request/response schemas
 - **All business logic** — KNN recommendation algorithm, discount priority ordering, VADER sentiment analysis, nonsense detection, keyword extraction, approval logic
-- **All 48 tests** — Identical assertions, just importing from `app.main` instead of `main`
+- **All 49 tests** — Identical assertions, just importing from `app.main` instead of `main`
 - **Rate limiting** — Same limits (10/min recommendations, 5/min discounts, 10/min reviews)
 - **API key authentication** — Same header (`X-API-Key`), same env var (`DEMETER_AI_API_KEY`)
 - **Model artifacts** — Same pkl and json files, just moved to `data/` (and retrained with correct prices)

@@ -51,12 +51,13 @@ Demeter has **three separate services** that work together:
 
 ### How Docker Runs It
 
-Docker Compose starts four containers in order:
+Docker Compose starts five containers in order:
 
 1. **MySQL** (database) starts first
 2. **AI Service** starts after the database is ready
 3. **Backend** starts after both MySQL and AI Service are healthy
 4. **Frontend (Nginx)** starts last, once the backend is ready
+5. **DB Backup** starts after MySQL is healthy — runs mysqldump every 5 minutes, gzip-compressed, retains 288 backups (24 hours) in `./backups/`
 
 Each service has a **health check** so Docker knows when it's ready before starting the next one.
 
@@ -64,7 +65,7 @@ Each service has a **health check** so Docker knows when it's ready before start
 
 When a student places an order or staff updates its status, the other side gets notified instantly through **WebSocket** — a persistent connection between the browser and the backend.
 
-- Students receive updates on `/topic/orders` and personal notifications on `/user/queue/notifications`
+- Students receive updates on `/topic/orders` and personal notifications on `/user/queue/notifications` — displayed via the NotificationBell component (bell icon with unread count badge and scrollable notification history dropdown)
 - Staff receive updates on `/topic/staff`
 - The connection requires a valid login token (JWT) — you can't eavesdrop without being logged in
 - If the connection drops, the browser automatically retries (up to 10 times, waiting longer each time)
@@ -195,17 +196,20 @@ Every important action is recorded in an audit log via `@LogActivity` annotation
 - Their IP address
 - Whether it succeeded or failed
 
+Admins can view the full audit log via the **Audit Log** tab in the Admin Console, with search by action/table/user/IP and action-type filtering.
+
 If the audit logging itself fails, the error is written to the server log so it doesn't go unnoticed.
 
 ---
 
 ## 5. Remaining Risks & Design Decisions
 
-### One Remaining Issue
+### Remaining Considerations
 
-| Issue | What It Means | When to Fix |
+| Item | What It Means | When to Address |
 |---|---|---|
 | **Rate limiter resets on restart** | The request counter is stored in memory, so it resets if the server restarts. In a multi-server setup, each server tracks limits separately. | If deploying multiple backend instances, switch to a Redis-backed rate limiter. |
+| **Database backups are local** | The `db-backup` Docker service saves mysqldump backups to `./backups/` every 5 minutes (288 retained = 24 hours). Backups stay on the same host. | For production, replicate backups to off-site storage (S3, GCS) or use a managed database. |
 
 ### Intentional Design Decisions
 
@@ -293,3 +297,4 @@ A cafeteria ordering system for Bastion University. Students browse menus, place
 | **Environment variables** | Copy `.env.example` to `.env` and fill in strong, random values for all secrets |
 | **CORS origins** | Update `localhost` URLs to the real production domain in `SecurityConfig.java` and `WebSocketConfig.java` |
 | **Swagger** | Set `SPRINGDOC_API_DOCS_ENABLED=false` to hide API documentation |
+| **Backups** | Verify `./backups/` directory has sufficient disk space; consider off-site replication for disaster recovery |
