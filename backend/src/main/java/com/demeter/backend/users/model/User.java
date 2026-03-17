@@ -30,6 +30,7 @@ public class User {
 
     @NotBlank(message = "Role is required")
     @Pattern(regexp = "ADMIN|STUDENT|STAFF", message = "Role must be ADMIN, STUDENT, or STAFF")
+    @Column(name = "role")
     private String role;
 
     @Column(name = "krakens_balance")

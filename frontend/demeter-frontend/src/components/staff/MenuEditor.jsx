@@ -117,6 +117,17 @@ const MenuEditor = ({ cafeteriaId }) => {
     }
   };
 
+  const deleteItem = async (item) => {
+    if (!window.confirm(`Delete "${item.name}"? This cannot be undone.`)) return;
+    try {
+      await api.delete('/api/menus/' + item.menuId);
+      await fetchMenu();
+      showToast(`"${item.name}" deleted.`, 'success');
+    } catch (err) {
+      showToast('Failed to delete: ' + (err.response?.data?.message || err.message), 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
@@ -292,12 +303,20 @@ const MenuEditor = ({ cafeteriaId }) => {
                     </button>
                   </td>
                   <td className="py-3 px-2 text-right">
-                    <button
-                      onClick={() => startEdit(item)}
-                      className="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg text-xs font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      Edit
-                    </button>
+                    <div className="flex justify-end gap-1">
+                      <button
+                        onClick={() => startEdit(item)}
+                        className="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg text-xs font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteItem(item)}
+                        className="px-3 py-1 bg-white dark:bg-gray-800 border border-red-300 dark:border-red-600 text-red-600 dark:text-red-400 rounded-lg text-xs font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -5,6 +5,7 @@ import { useToast } from '../contexts/ToastContext.jsx';
 import StaffCard from '../components/admin/StaffCard';
 import WalletTable from '../components/admin/WalletTable';
 import AnalyticsDashboard from '../components/admin/AnalyticsDashboard';
+import AuditLogTable from '../components/admin/AuditLogTable';
 import api from '../utils/api.js';
 
 function AdminConsole() {
@@ -17,12 +18,28 @@ function AdminConsole() {
   const [newStaffData, setNewStaffData] = useState({ username: '', password: '', cafeteriaId: 1 });
   const [staffList, setStaffList] = useState([]);
   const [loadingStaff, setLoadingStaff] = useState(true);
+  const [cafeterias, setCafeterias] = useState([]);
 
   useEffect(() => {
     if (activeTab === 'staff') fetchStaff();
   }, [activeTab]);
 
-  const CAFETERIA_NAMES = { 1: 'The Last Drop', 2: 'Hex Core Cafe', 3: 'Skyline Sips' };
+  useEffect(() => {
+    const fetchCafeterias = async () => {
+      try {
+        const res = await api.get('/api/cafeterias');
+        setCafeterias(res.data.data || []);
+      } catch {
+        setCafeterias([]);
+      }
+    };
+    fetchCafeterias();
+  }, []);
+
+  const getCafeteriaName = (id) => {
+    const cafe = cafeterias.find(c => c.cafeteriaId === id);
+    return cafe ? cafe.name : `Cafeteria #${id}`;
+  };
 
   const fetchStaff = async () => {
     try {
@@ -32,7 +49,7 @@ function AdminConsole() {
         name: u.username.charAt(0).toUpperCase() + u.username.slice(1),
         status: 'Active',
         joinedDate: 'N/A',
-        cafeteria: u.assignedCafeteriaId ? (CAFETERIA_NAMES[u.assignedCafeteriaId] || `Cafeteria #${u.assignedCafeteriaId}`) : 'Unassigned',
+        cafeteria: u.assignedCafeteriaId ? getCafeteriaName(u.assignedCafeteriaId) : 'Unassigned',
       })));
     } catch {
       setStaffList([]);
@@ -100,6 +117,7 @@ function AdminConsole() {
             <button onClick={() => setActiveTab('staff')} className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'staff' ? 'bg-white dark:bg-white text-gray-900 shadow-sm' : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'}`}>Staff Management</button>
             <button onClick={() => setActiveTab('wallets')} className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'wallets' ? 'bg-white dark:bg-white text-gray-900 shadow-sm' : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'}`}>Student Wallets</button>
             <button onClick={() => setActiveTab('analytics')} className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'analytics' ? 'bg-white dark:bg-white text-gray-900 shadow-sm' : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'}`}>Analytics</button>
+            <button onClick={() => setActiveTab('audit')} className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'audit' ? 'bg-white dark:bg-white text-gray-900 shadow-sm' : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'}`}>Audit Log</button>
             <button onClick={() => navigate('/admin/promotions')} className="px-6 py-2 rounded-full font-medium transition-all bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text">Promotions</button>
           </div>
         </div>
@@ -132,9 +150,11 @@ function AdminConsole() {
                       <div>
                         <label className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">Assigned Cafeteria</label>
                         <select value={newStaffData.cafeteriaId} onChange={(e) => setNewStaffData({ ...newStaffData, cafeteriaId: parseInt(e.target.value) })} className="w-full px-4 py-3 border border-light-border dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg text-light-text dark:text-dark-text focus:ring-2 focus:ring-light-accent dark:focus:ring-dark-accent focus:border-transparent transition-all">
-                          <option value={1}>The Last Drop (1)</option>
-                          <option value={2}>Hex Core Cafe (2)</option>
-                          <option value={3}>Skyline Sips (3)</option>
+                          {cafeterias.length > 0 ? cafeterias.map(c => (
+                            <option key={c.cafeteriaId} value={c.cafeteriaId}>{c.name} ({c.cafeteriaId})</option>
+                          )) : (
+                            <option value={1}>Loading cafeterias...</option>
+                          )}
                         </select>
                       </div>
                     </div>
@@ -164,6 +184,13 @@ function AdminConsole() {
         {activeTab === 'wallets' && <WalletTable />}
 
         {activeTab === 'analytics' && <AnalyticsDashboard />}
+
+        {activeTab === 'audit' && (
+          <div>
+            <h2 className="text-xl font-semibold text-light-text dark:text-dark-text mb-6">Audit Log</h2>
+            <AuditLogTable />
+          </div>
+        )}
       </main>
     </div>
   );

@@ -61,5 +61,28 @@ services:
       timeout: 5s
       retries: 3
 
+  db-backup:
+    image: mysql:8.0
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_PWD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - ./backups:/backups
+    entrypoint: >
+      /bin/sh -c '
+      while true; do
+        TIMESTAMP=$$(date +%Y%m%d_%H%M%S);
+        mysqldump --host=mysql --user=root --single-transaction --routines --triggers --set-gtid-purged=OFF demeter_db 2>/dev/null | gzip > /backups/demeter_$${TIMESTAMP}.sql.gz;
+        echo "[$$TIMESTAMP] Backup complete: $$(du -h /backups/demeter_$${TIMESTAMP}.sql.gz | cut -f1)";
+        COUNT=$$(ls -1 /backups/demeter_*.sql.gz 2>/dev/null | wc -l);
+        if [ "$$COUNT" -gt 288 ]; then
+          ls -1t /backups/demeter_*.sql.gz | tail -n +289 | xargs rm -f;
+        fi;
+        sleep 300;
+      done'
+    restart: unless-stopped
+
 volumes:
   mysql_data:

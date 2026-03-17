@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext.jsx";
 import { useWallet } from "../../contexts/WalletContext.jsx";
 import { useAuth } from "../../contexts/AuthContext.jsx";
+import NotificationBell from "./NotificationBell.jsx";
 
 const Navbar = ({
   title = "Demeter",
@@ -10,6 +11,7 @@ const Navbar = ({
 
   showBalance = true,
   showCart = true,
+  showNotifications = true,
   showProfile = true,
   showExit = true,
 
@@ -96,6 +98,9 @@ const Navbar = ({
             </div>
           </Link>
         )}
+
+        {/* NOTIFICATIONS */}
+        {showNotifications && <NotificationBell />}
 
         {/* CART */}
         {showCart && (

@@ -10,8 +10,6 @@ import { useToast } from "../contexts/ToastContext.jsx";
 import api from "../utils/api.js";
 import { getFoodImage, getCafeteriaImage } from "../utils/foodImages.js";
 
-const CAFETERIA_NAMES = { 1: "The Last Drop", 2: "Hex Core Cafe", 3: "Skyline Sips" };
-
 // Fallback recommended items (used when API not available)
 const fallbackRecommended = [
   {
@@ -141,8 +139,7 @@ export default function StudentHome() {
           </h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
             {recommendedItems.map((item) => {
-              const cafeName = cafeterias.find(c => c.id === item.cafeId)?.name
-                || CAFETERIA_NAMES[item.cafeId] || "";
+              const cafeName = cafeterias.find(c => c.id === item.cafeId)?.name || "";
               return (
                 <FoodCard
                   key={item.id}
