@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { WalletProvider, useWallet } from "../WalletContext.jsx";
+import { AuthContext } from "../AuthContext.jsx";
 
 // Mock the api module
 vi.mock("../../utils/api.js", () => ({
@@ -33,6 +34,22 @@ function WalletConsumer() {
   );
 }
 
+// Wrapper that provides both AuthContext and WalletProvider
+function Wrapper({ role = "STUDENT", isAuthenticated = true, children }) {
+  const authValue = {
+    user: role ? { role, token: "test-token" } : null,
+    token: isAuthenticated ? "test-token" : null,
+    isAuthenticated,
+    login: vi.fn(),
+    logout: vi.fn(),
+  };
+  return (
+    <AuthContext.Provider value={authValue}>
+      <WalletProvider>{children}</WalletProvider>
+    </AuthContext.Provider>
+  );
+}
+
 describe("WalletContext", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -40,18 +57,14 @@ describe("WalletContext", () => {
   });
 
   it("fetches balance on mount for STUDENT role", async () => {
-    localStorage.setItem(
-      "authData",
-      JSON.stringify({ role: "STUDENT", token: "test-token" })
-    );
     api.get.mockResolvedValueOnce({
       data: { data: { balance: 250.5 } },
     });
 
     render(
-      <WalletProvider>
+      <Wrapper role="STUDENT">
         <WalletConsumer />
-      </WalletProvider>
+      </Wrapper>
     );
 
     await waitFor(() => {
@@ -61,15 +74,10 @@ describe("WalletContext", () => {
   });
 
   it("does not fetch balance for non-STUDENT roles", async () => {
-    localStorage.setItem(
-      "authData",
-      JSON.stringify({ role: "ADMIN", token: "test-token" })
-    );
-
     render(
-      <WalletProvider>
+      <Wrapper role="ADMIN">
         <WalletConsumer />
-      </WalletProvider>
+      </Wrapper>
     );
 
     await waitFor(() => {
@@ -81,11 +89,11 @@ describe("WalletContext", () => {
 
   it("adds and deducts funds locally", async () => {
     const user = userEvent.setup();
-    // No authData means no fetch
+
     render(
-      <WalletProvider>
+      <Wrapper isAuthenticated={false} role={null}>
         <WalletConsumer />
-      </WalletProvider>
+      </Wrapper>
     );
 
     await user.click(screen.getByText("Add 100"));
@@ -98,22 +106,17 @@ describe("WalletContext", () => {
   it("subscribes to WebSocket for real-time updates when STUDENT", async () => {
     const { connectWebSocket, subscribe } = await import("../../utils/websocket.js");
 
-    localStorage.setItem(
-      "authData",
-      JSON.stringify({ role: "STUDENT", token: "test-token" })
-    );
     api.get.mockResolvedValue({
       data: { data: { balance: 100 } },
     });
 
-    // Make connectWebSocket invoke its callback with a mock client
     const mockClient = {};
     connectWebSocket.mockImplementation((cb) => cb(mockClient));
 
     render(
-      <WalletProvider>
+      <Wrapper role="STUDENT">
         <WalletConsumer />
-      </WalletProvider>
+      </Wrapper>
     );
 
     await waitFor(() => {
@@ -125,15 +128,10 @@ describe("WalletContext", () => {
   it("does not subscribe to WebSocket for non-STUDENT roles", async () => {
     const { connectWebSocket } = await import("../../utils/websocket.js");
 
-    localStorage.setItem(
-      "authData",
-      JSON.stringify({ role: "STAFF", token: "test-token" })
-    );
-
     render(
-      <WalletProvider>
+      <Wrapper role="STAFF">
         <WalletConsumer />
-      </WalletProvider>
+      </Wrapper>
     );
 
     await waitFor(() => {
