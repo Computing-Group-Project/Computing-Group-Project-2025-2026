@@ -78,7 +78,7 @@ const NotificationBell = ({ className = "" }) => {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 top-8 z-50 w-80 max-h-96 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden">
+          <div className="absolute right-0 top-8 z-50 w-80 max-h-96 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden animate-fade-in-scale">
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-slate-700">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Notifications</h3>
               {notifications.length > 0 && (

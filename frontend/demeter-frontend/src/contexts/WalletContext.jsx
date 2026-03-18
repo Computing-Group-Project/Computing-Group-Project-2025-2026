@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import api from "../utils/api.js";
+import { useAuth } from "./AuthContext.jsx";
 import { connectWebSocket, subscribe, disconnectWebSocket } from "../utils/websocket.js";
 
 const WalletContext = createContext();
@@ -8,14 +9,11 @@ export const WalletProvider = ({ children }) => {
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { user, isAuthenticated } = useAuth();
 
   const fetchBalance = useCallback(async () => {
     try {
-      const authData = localStorage.getItem("authData");
-      if (!authData) return;
-
-      const { role } = JSON.parse(authData);
-      if (role !== "STUDENT") return;
+      if (!isAuthenticated || user?.role !== "STUDENT") return;
 
       setLoading(true);
       setError(null);
@@ -27,29 +25,29 @@ export const WalletProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated, user?.role]);
 
+  // Re-fetch balance when auth state changes (login/logout)
   useEffect(() => {
-    fetchBalance();
-  }, [fetchBalance]);
+    if (isAuthenticated && user?.role === "STUDENT") {
+      fetchBalance();
+    } else {
+      setBalance(0);
+    }
+  }, [isAuthenticated, user?.role, fetchBalance]);
 
   // Subscribe to WebSocket for real-time balance updates
   useEffect(() => {
-    const authData = localStorage.getItem("authData");
-    if (!authData) return;
-
-    const { role } = JSON.parse(authData);
-    if (role !== "STUDENT") return;
+    if (!isAuthenticated || user?.role !== "STUDENT") return;
 
     connectWebSocket((stompClient) => {
-      // Refresh balance whenever an order event occurs (payment, refund, etc.)
       subscribe(stompClient, "/topic/orders", () => {
         fetchBalance();
       });
     });
 
     return () => disconnectWebSocket();
-  }, [fetchBalance]);
+  }, [isAuthenticated, user?.role, fetchBalance]);
 
   const refreshBalance = fetchBalance;
 

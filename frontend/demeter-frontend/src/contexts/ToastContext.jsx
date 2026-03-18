@@ -9,14 +9,20 @@ export function ToastProvider({ children }) {
 
   const showToast = useCallback((message, type = 'info') => {
     const id = ++toastId;
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts(prev => [...prev, { id, message, type, exiting: false }]);
     setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 4000);
+      setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
+      setTimeout(() => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+      }, 300);
+    }, 3700);
   }, []);
 
   const removeToast = useCallback((id) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+    setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 300);
   }, []);
 
   return (
@@ -27,7 +33,7 @@ export function ToastProvider({ children }) {
         {toasts.map(toast => (
           <div
             key={toast.id}
-            className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-sm max-w-sm animate-slide-in
+            className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border backdrop-blur-sm max-w-sm ${toast.exiting ? 'animate-slide-out' : 'animate-slide-in'}
               ${toast.type === 'success' ? 'bg-green-50 dark:bg-green-900/80 border-green-200 dark:border-green-700 text-green-800 dark:text-green-200' : ''}
               ${toast.type === 'error' ? 'bg-red-50 dark:bg-red-900/80 border-red-200 dark:border-red-700 text-red-800 dark:text-red-200' : ''}
               ${toast.type === 'warning' ? 'bg-yellow-50 dark:bg-yellow-900/80 border-yellow-200 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200' : ''}
@@ -37,7 +43,7 @@ export function ToastProvider({ children }) {
             <span className="text-sm font-medium flex-1">{toast.message}</span>
             <button
               onClick={() => removeToast(toast.id)}
-              className="text-current opacity-50 hover:opacity-100 text-lg leading-none"
+              className="text-current opacity-50 hover:opacity-100 text-lg leading-none transition-opacity duration-200"
               aria-label="Dismiss notification"
             >
               ×

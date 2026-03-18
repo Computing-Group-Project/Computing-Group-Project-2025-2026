@@ -24,6 +24,8 @@ const keywordImages = [
   { keywords: ["taco"], images: [IMG("1565299585323-38d6b0865b47"), IMG("1551504734-5ee1c4a1479b")] },
   // Fried chicken
   { keywords: ["fried chicken", "chicken"], images: [IMG("1626645738196-c2a7c87a8f58"), IMG("1562967914-01efa7e87832")] },
+  // Water (before "rice" — "Overpriced" contains "rice" as substring)
+  { keywords: ["water"], images: [IMG("1548839140-29a749e1cf4d")] },
   // Rice
   { keywords: ["rice"], images: [IMG("1603133872878-684f208fb84b")] },
   // Noodles
@@ -50,8 +52,6 @@ const keywordImages = [
   { keywords: ["cake"], images: [IMG("1578985545062-69928b1d9587")] },
   // Cola & soda
   { keywords: ["coke", "cola", "soda"], images: [IMG("1622483767028-3f66f32aef97")] },
-  // Water
-  { keywords: ["water"], images: [IMG("1548839140-29a749e1cf4d")] },
   // Energy drink
   { keywords: ["energy", "drink"], images: [IMG("1527960471264-932f39eb5846")] },
   // Chilli / paste / sauce

@@ -56,7 +56,7 @@ export default function FoodModal({ food, onClose }) {
     /* BACKGROUND */
     <div
       onClick={handleClose}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
     >
 
       {/* MODAL */}

@@ -57,7 +57,7 @@ Docker Compose starts five containers in order:
 2. **AI Service** starts after the database is ready
 3. **Backend** starts after both MySQL and AI Service are healthy
 4. **Frontend (Nginx)** starts last, once the backend is ready
-5. **DB Backup** starts after MySQL is healthy — runs mysqldump every 5 minutes, gzip-compressed, retains 288 backups (24 hours) in `./backups/`
+5. **DB Backup** (optional, `backup` profile) starts after MySQL is healthy — runs mysqldump every 5 minutes, gzip-compressed, retains 288 backups (24 hours) in `./backups/`. Enable with `docker compose --profile backup up -d`
 
 Each service has a **health check** so Docker knows when it's ready before starting the next one.
 
@@ -170,7 +170,7 @@ Nginx sends these headers with every response to tell browsers how to behave sec
 
 To prevent abuse (like bots sending thousands of requests):
 
-- **Backend**: Each IP address can make at most **20 requests per minute**. After that, they get a "Too Many Requests" error.
+- **Backend**: Each IP address can make at most **60 requests per minute**. After that, they get a "Too Many Requests" error.
 - **AI Service**: Each endpoint has its own limit (e.g., 10 recommendations per minute, 5 discount generations per minute)
 
 ### CORS (Cross-Origin Requests)
@@ -209,7 +209,7 @@ If the audit logging itself fails, the error is written to the server log so it 
 | Item | What It Means | When to Address |
 |---|---|---|
 | **Rate limiter resets on restart** | The request counter is stored in memory, so it resets if the server restarts. In a multi-server setup, each server tracks limits separately. | If deploying multiple backend instances, switch to a Redis-backed rate limiter. |
-| **Database backups are local** | The `db-backup` Docker service saves mysqldump backups to `./backups/` every 5 minutes (288 retained = 24 hours). Backups stay on the same host. | For production, replicate backups to off-site storage (S3, GCS) or use a managed database. |
+| **Database backups are local** | The `db-backup` Docker service (enabled via `--profile backup`) saves mysqldump backups to `./backups/` every 5 minutes (288 retained = 24 hours). Backups stay on the same host. | For production, replicate backups to off-site storage (S3, GCS) or use a managed database. |
 
 ### Intentional Design Decisions
 
@@ -281,7 +281,7 @@ A cafeteria ordering system for Bastion University. Students browse menus, place
 
 4. **The server checks permissions on every request.** Even if someone tries to access admin features directly (e.g., by typing the URL), the server will reject them if they don't have the right role.
 
-5. **Flood protection is in place.** Each IP address is limited to 20 requests per minute, preventing bots and abuse.
+5. **Flood protection is in place.** Each IP address is limited to 60 requests per minute, preventing bots and abuse.
 
 6. **No secrets are stored in the code.** Database passwords, signing keys, and API keys are all loaded from environment variables that are never committed to Git.
 

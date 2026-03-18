@@ -68,7 +68,11 @@ Students can also log in using their **university ID** instead of username.
 
 ### 6. Database backups
 
-Backups run automatically every 5 minutes via the `db-backup` Docker Compose service. Backups are gzip-compressed and saved to `./backups/`, retaining the last 288 (24 hours).
+Backups are handled by the `db-backup` Docker Compose service (every 5 minutes, gzip-compressed, saved to `./backups/`, retaining the last 288 = 24 hours). The backup service is disabled by default; enable it with:
+
+```bash
+docker compose --profile backup up -d
+```
 
 For manual backup/restore without Docker:
 ```bash

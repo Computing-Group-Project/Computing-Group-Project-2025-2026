@@ -62,6 +62,8 @@ services:
       retries: 3
 
   db-backup:
+    profiles:
+      - backup
     image: mysql:8.0
     depends_on:
       mysql:

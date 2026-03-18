@@ -119,8 +119,8 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-6">
-      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl w-full max-w-md p-6 max-h-[calc(100vh-3rem)] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-6 animate-fade-in">
+      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl w-full max-w-md p-6 max-h-[calc(100vh-3rem)] overflow-y-auto animate-fade-in-up">
 
         {/* FORM STEP */}
         {step === "form" && (
@@ -274,7 +274,7 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
 
         {/* PROCESSING STEP */}
         {step === "processing" && (
-          <div className="flex flex-col items-center py-8">
+          <div className="flex flex-col items-center py-8 animate-fade-in-up">
             <div className="animate-spin h-12 w-12 border-4 border-teal-400 border-t-transparent rounded-full mb-4"></div>
             <p className="text-gray-700 dark:text-gray-300 font-medium">
               Processing payment...
@@ -287,7 +287,7 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
 
         {/* SUCCESS STEP */}
         {step === "success" && (
-          <div className="flex flex-col items-center py-8">
+          <div className="flex flex-col items-center py-8 animate-fade-in-up">
             <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
               <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -313,7 +313,7 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
 
         {/* ERROR STEP */}
         {step === "error" && (
-          <div className="flex flex-col items-center py-8">
+          <div className="flex flex-col items-center py-8 animate-fade-in-up">
             <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
               <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

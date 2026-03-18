@@ -134,8 +134,8 @@ function AdminConsole() {
             </div>
 
             {isModalOpen && (
-              <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setIsModalOpen(false)}>
-                <div className="bg-white dark:bg-dark-card rounded-2xl max-w-md w-full p-8 border border-light-border dark:border-dark-border shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 animate-fade-in" onClick={() => setIsModalOpen(false)}>
+                <div className="bg-white dark:bg-dark-card rounded-2xl max-w-md w-full p-8 border border-light-border dark:border-dark-border shadow-2xl animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
                   <h2 className="text-2xl font-bold text-light-text dark:text-dark-text mb-6">Add New Staff Member</h2>
                   <form onSubmit={handleAddStaff}>
                     <div className="space-y-5">
