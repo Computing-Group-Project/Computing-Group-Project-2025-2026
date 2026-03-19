@@ -22,7 +22,7 @@ public class ImageStorageServiceImpl implements ImageStorageService {
     @Override
     public void save(MultipartFile file, Path targetPath) {
         try {
-            // Make sure parent directories exist
+
             Path parent = targetPath.getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
