@@ -96,4 +96,12 @@ public class DiscountService {
             return discountRepository.save(discount);
         }).orElseThrow(() -> new AppException(ErrorCode.DISCOUNT_NOT_FOUND));
     }
+
+    @LogActivity(action = "ACTIVATE_DISCOUNT", targetTable = "DISCOUNT")
+    public Discount activateDiscount(Integer id) {
+        return discountRepository.findById(id).map(discount -> {
+            discount.setIsActive(true);
+            return discountRepository.save(discount);
+        }).orElseThrow(() -> new AppException(ErrorCode.DISCOUNT_NOT_FOUND));
+    }
 }

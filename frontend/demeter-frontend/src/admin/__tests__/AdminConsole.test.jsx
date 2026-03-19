@@ -64,7 +64,7 @@ describe("AdminConsole", () => {
       expect(screen.getByText("Admin Console")).toBeInTheDocument();
       expect(screen.getByText("Staff Management")).toBeInTheDocument();
       expect(screen.getByText("Student Wallets")).toBeInTheDocument();
-      expect(screen.getByText("Promotions")).toBeInTheDocument();
+      expect(screen.getByText("Audit Log")).toBeInTheDocument();
     });
   });
 
@@ -86,13 +86,13 @@ describe("AdminConsole", () => {
     });
   });
 
-  it("navigates to promotions tab", async () => {
+  it("renders audit log tab", async () => {
     api.get.mockResolvedValueOnce({ data: { data: [] } });
 
     render(<AdminConsole />);
 
     await waitFor(() => {
-      expect(screen.getByText("Promotions")).toBeInTheDocument();
+      expect(screen.getByText("Audit Log")).toBeInTheDocument();
     });
   });
 });

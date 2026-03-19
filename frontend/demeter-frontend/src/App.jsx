@@ -13,9 +13,10 @@ import Cart from "./student/Cart.jsx";
 import Orders from "./student/Orders.jsx";
 import Login from "./auth/Login.jsx";
 import AdminConsole from "./admin/AdminConsole.jsx";
-import PromotionManagementConsole from "./admin/PromotionManagementConsole.jsx";
+import PromotionManagementConsole from "./staff/PromotionManagementConsole.jsx";
 import StaffDashboard from "./staff/StaffDashboard.jsx";
 import StaffLayout from "./layouts/StaffLayout.jsx";
+import AdminLayout from "./layouts/AdminLayout.jsx";
 import ThemeToggle from "./components/common/ThemeToggle.jsx";
 import NotFound from "./components/common/NotFound.jsx";
 
@@ -40,11 +41,11 @@ function App() {
                 <Route path="/orders" element={<ProtectedRoute allowedRoles={["STUDENT"]}><Orders /></ProtectedRoute>} />
 
                 {/* Admin routes */}
-                <Route path="/admin" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminConsole /></ProtectedRoute>} />
-                <Route path="/admin/promotions" element={<ProtectedRoute allowedRoles={["ADMIN", "STAFF"]}><PromotionManagementConsole /></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminLayout><AdminConsole /></AdminLayout></ProtectedRoute>} />
 
                 {/* Staff routes */}
                 <Route path="/staff" element={<ProtectedRoute allowedRoles={["STAFF", "ADMIN"]}><StaffLayout><StaffDashboard /></StaffLayout></ProtectedRoute>} />
+                <Route path="/staff/promotions" element={<ProtectedRoute allowedRoles={["STAFF"]}><StaffLayout><PromotionManagementConsole /></StaffLayout></ProtectedRoute>} />
 
                 <Route path="*" element={<NotFound />} />
               </Routes>

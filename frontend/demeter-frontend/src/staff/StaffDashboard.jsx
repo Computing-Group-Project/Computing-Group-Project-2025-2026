@@ -9,7 +9,7 @@ import api from '../utils/api.js';
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const [stats, setStats] = useState({ pending: 0, completed: 0, revenue: 0 });
   const [cafeteriaName, setCafeteriaName] = useState(null);
@@ -48,48 +48,40 @@ const StaffDashboard = () => {
     fetchStats();
   }, [user]);
 
-  const handleExitShift = () => {
-    logout();
-    navigate('/login');
-  };
-
   const cafeteriaId = user?.assignedCafeteriaId || 1;
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 p-4 md:p-8 transition-colors duration-300">
 
       {/* header */}
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
-            Staff Dashboard
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
-            Staff: {((user?.username || 'Unknown').charAt(0).toUpperCase() + (user?.username || 'Unknown').slice(1))} | {cafeteriaName || `Cafeteria #${cafeteriaId}`}
-          </p>
-        </div>
-
-        <button
-          onClick={handleExitShift}
-          className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors shadow-sm"
-        >
-          Exit Shift
-        </button>
+      <div className="mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
+          Staff Dashboard
+        </h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+          Staff: {((user?.username || 'Unknown').charAt(0).toUpperCase() + (user?.username || 'Unknown').slice(1))} | {cafeteriaName || `Cafeteria #${cafeteriaId}`}
+        </p>
       </div>
 
       {/* tab buttons */}
       <div className="flex gap-2 mb-8">
         <button
           onClick={() => setActiveTab('orders')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'orders' ? 'bg-teal-400 text-gray-900' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600'}`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'orders' ? 'bg-amber-400 text-gray-900' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600'}`}
         >
           Orders
         </button>
         <button
           onClick={() => setActiveTab('menu')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'menu' ? 'bg-teal-400 text-gray-900' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600'}`}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'menu' ? 'bg-amber-400 text-gray-900' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600'}`}
         >
           Menu
+        </button>
+        <button
+          onClick={() => navigate('/staff/promotions')}
+          className="px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+        >
+          Promotions
         </button>
       </div>
 

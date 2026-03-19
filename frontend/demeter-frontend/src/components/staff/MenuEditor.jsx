@@ -142,7 +142,7 @@ const MenuEditor = ({ cafeteriaId }) => {
         <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Menu Items</h2>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="px-4 py-2 bg-teal-400 text-gray-900 rounded-lg text-sm font-medium hover:bg-teal-500 transition-colors"
+          className="px-4 py-2 bg-amber-400 text-gray-900 rounded-lg text-sm font-medium hover:bg-amber-500 transition-colors"
         >
           {showAddForm ? 'Cancel' : '+ Add Item'}
         </button>
@@ -201,7 +201,7 @@ const MenuEditor = ({ cafeteriaId }) => {
             <button
               onClick={addItem}
               disabled={saving}
-              className="px-4 py-2 bg-teal-400 text-gray-900 rounded-lg text-sm font-medium hover:bg-teal-500 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-amber-400 text-gray-900 rounded-lg text-sm font-medium hover:bg-amber-500 transition-colors disabled:opacity-50"
             >
               {saving ? 'Adding...' : 'Add Item'}
             </button>
@@ -256,7 +256,7 @@ const MenuEditor = ({ cafeteriaId }) => {
             <button
               onClick={saveEdit}
               disabled={saving}
-              className="px-4 py-2 bg-teal-400 text-gray-900 rounded-lg text-sm font-medium hover:bg-teal-500 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-amber-400 text-gray-900 rounded-lg text-sm font-medium hover:bg-amber-500 transition-colors disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>

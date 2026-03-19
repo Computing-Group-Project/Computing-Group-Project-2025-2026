@@ -24,7 +24,7 @@ public class DiscountController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<DiscountDTO> createDiscount(@Valid @RequestBody DiscountDTO discountDTO) {
         Discount discount = modelMapper.map(discountDTO, Discount.class);
         Discount saved = discountService.createDiscount(discount);
@@ -32,6 +32,7 @@ public class DiscountController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     public ResponseEntity<List<DiscountDTO>> getAllDiscounts() {
         List<DiscountDTO> dtos = discountService.getAllDiscounts().stream()
                 .map(d -> modelMapper.map(d, DiscountDTO.class))
@@ -40,6 +41,7 @@ public class DiscountController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     public ResponseEntity<DiscountDTO> getDiscountById(@PathVariable Integer id) {
         return discountService.getDiscountById(id)
                 .map(d -> ResponseEntity.ok(modelMapper.map(d, DiscountDTO.class)))
@@ -47,6 +49,7 @@ public class DiscountController {
     }
 
     @GetMapping("/active")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     public ResponseEntity<List<DiscountDTO>> getActiveDiscounts() {
         List<DiscountDTO> dtos = discountService.getActiveDiscounts().stream()
                 .map(d -> modelMapper.map(d, DiscountDTO.class))
@@ -55,6 +58,7 @@ public class DiscountController {
     }
 
     @GetMapping("/cafeteria/{cafeteriaId}")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     public ResponseEntity<List<DiscountDTO>> getDiscountsByCafeteria(@PathVariable Integer cafeteriaId) {
         List<DiscountDTO> dtos = discountService.getDiscountsByCafeteria(cafeteriaId).stream()
                 .map(d -> modelMapper.map(d, DiscountDTO.class))
@@ -63,6 +67,7 @@ public class DiscountController {
     }
 
     @GetMapping("/cafeteria/{cafeteriaId}/active")
+    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
     public ResponseEntity<List<DiscountDTO>> getActiveDiscountsByCafeteria(@PathVariable Integer cafeteriaId) {
         List<DiscountDTO> dtos = discountService.getActiveDiscountsByCafeteria(cafeteriaId).stream()
                 .map(d -> modelMapper.map(d, DiscountDTO.class))
@@ -89,7 +94,7 @@ public class DiscountController {
     }
 
     @PutMapping("/{id}/approve")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<DiscountDTO> approveDiscount(@PathVariable Integer id,
                                                         @RequestParam Integer staffUserId) {
         Discount approved = discountService.approveDiscount(id, staffUserId);
@@ -97,14 +102,14 @@ public class DiscountController {
     }
 
     @PutMapping("/{id}/reject")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<DiscountDTO> rejectDiscount(@PathVariable Integer id) {
         Discount rejected = discountService.rejectDiscount(id);
         return ResponseEntity.ok(modelMapper.map(rejected, DiscountDTO.class));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<DiscountDTO> updateDiscount(@PathVariable Integer id,
                                                        @Valid @RequestBody DiscountDTO discountDTO) {
         Discount discount = modelMapper.map(discountDTO, Discount.class);
@@ -113,16 +118,23 @@ public class DiscountController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<Void> deleteDiscount(@PathVariable Integer id) {
         discountService.deleteDiscount(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}/deactivate")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<DiscountDTO> deactivateDiscount(@PathVariable Integer id) {
         Discount deactivated = discountService.deactivateDiscount(id);
         return ResponseEntity.ok(modelMapper.map(deactivated, DiscountDTO.class));
+    }
+
+    @PutMapping("/{id}/activate")
+    @PreAuthorize("hasRole('STAFF')")
+    public ResponseEntity<DiscountDTO> activateDiscount(@PathVariable Integer id) {
+        Discount activated = discountService.activateDiscount(id);
+        return ResponseEntity.ok(modelMapper.map(activated, DiscountDTO.class));
     }
 }

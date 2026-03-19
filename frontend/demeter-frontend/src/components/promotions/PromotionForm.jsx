@@ -24,7 +24,6 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
         const res = await api.get('/api/cafeterias');
         setCafeterias(res.data.data || []);
       } catch {
-        // Fallback
         setCafeterias([
           { cafeteriaId: 1, name: 'The Last Drop' },
           { cafeteriaId: 2, name: 'Hex Core Cafe' },
@@ -81,14 +80,16 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
     }
   };
 
+  const inputClass = "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all";
+
   return (
-    <div className="bg-white dark:bg-dark-card rounded-lg shadow-md p-6">
-      <h3 className="text-lg font-semibold mb-4 dark:text-dark-text">
+    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
+      <h3 className="text-lg font-bold mb-4 text-gray-800 dark:text-white">
         {discountId ? 'Edit Discount' : 'Create Discount'}
       </h3>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4">
           {error}
         </div>
       )}
@@ -96,33 +97,21 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Cafeteria *
             </label>
-            <select
-              name="cafeteriaId"
-              value={formData.cafeteriaId || ''}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+            <select name="cafeteriaId" value={formData.cafeteriaId || ''} onChange={handleChange} required className={inputClass}>
               <option value="">Select cafeteria</option>
               {cafeterias.map(c => (
                 <option key={c.cafeteriaId} value={c.cafeteriaId}>{c.name}</option>
               ))}
             </select>
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Discount Type *
             </label>
-            <select
-              name="discountType"
-              value={formData.discountType}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+            <select name="discountType" value={formData.discountType} onChange={handleChange} className={inputClass}>
               <option value="PERCENTAGE">Percentage (%)</option>
               <option value="FIXED_AMOUNT">Fixed Amount (GK)</option>
               <option value="BOGO">Buy One Get One Free</option>
@@ -133,87 +122,40 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Discount Value *
             </label>
-            <input
-              type="number"
-              name="discountValue"
-              value={formData.discountValue}
-              onChange={handleChange}
-              required
-              step="0.01"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Value"
-            />
+            <input type="number" name="discountValue" value={formData.discountValue} onChange={handleChange} required step="0.01" className={inputClass} placeholder="Value" />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Applicable Items
             </label>
-            <input
-              type="text"
-              name="applicableItems"
-              value={formData.applicableItems || ''}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., [1, 2, 3] or ALL"
-            />
+            <input type="text" name="applicableItems" value={formData.applicableItems || ''} onChange={handleChange} className={inputClass} placeholder="e.g., [1, 2, 3] or ALL" />
           </div>
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Requirements
           </label>
-          <textarea
-            name="requirements"
-            value={formData.requirements || ''}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="e.g., Min Order Value: 50 GK"
-            rows="2"
-          />
+          <textarea name="requirements" value={formData.requirements || ''} onChange={handleChange} className={inputClass} placeholder="e.g., Min Order Value: 50 GK" rows="2" />
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
-              Start Date
-            </label>
-            <input
-              type="date"
-              name="startDate"
-              value={formData.startDate || ''}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+            <input type="date" name="startDate" value={formData.startDate || ''} onChange={handleChange} className={inputClass} />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-dark-textMuted mb-1">
-              End Date
-            </label>
-            <input
-              type="date"
-              name="endDate"
-              value={formData.endDate || ''}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-border rounded-lg bg-white dark:bg-dark-bg dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+            <input type="date" name="endDate" value={formData.endDate || ''} onChange={handleChange} className={inputClass} />
           </div>
         </div>
 
         <div className="mb-4">
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-dark-textMuted">
-            <input
-              type="checkbox"
-              name="isActive"
-              checked={formData.isActive}
-              onChange={handleChange}
-              className="rounded"
-            />
+          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} className="rounded" />
             Active
           </label>
         </div>
@@ -222,14 +164,14 @@ const PromotionForm = ({ discountId, onSave, onCancel }) => {
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 text-gray-600 dark:text-dark-textMuted bg-gray-100 dark:bg-dark-bg rounded-lg hover:bg-gray-200 dark:hover:bg-dark-border"
+            className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+            className="px-4 py-2 bg-amber-400 text-gray-900 rounded-lg hover:bg-amber-500 transition-colors disabled:opacity-50 font-medium"
           >
             {loading ? 'Saving...' : 'Save'}
           </button>

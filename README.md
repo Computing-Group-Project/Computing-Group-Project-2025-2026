@@ -165,5 +165,29 @@ python3 -m venv venv           # Create virtual environment
 source venv/bin/activate       # Activate it
 pip install -r requirements.txt
 python run.py                  # Starts on port 8001
-python -m pytest tests/ -v    # Run all tests (49 tests)
+python -m pytest tests/ -v     # Run all tests (49 tests)
 ```
+
+## Test Coverage
+
+| Service | Tests | Framework |
+|---------|-------|-----------|
+| Backend | 58 | JUnit 5 + Spring Boot Test (H2 in-memory DB) |
+| Frontend | 55 | Vitest + React Testing Library (jsdom) |
+| AI Service | 49 | pytest + FastAPI TestClient |
+
+All tests run in CI on every push/PR to `main` (see `.github/workflows/ci.yml`).
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [`backend/BACKEND.md`](backend/BACKEND.md) | Backend API, authentication, database patterns |
+| [`frontend/demeter-frontend/FRONTEND.md`](frontend/demeter-frontend/FRONTEND.md) | Frontend SPA, components, routing |
+| [`database/DATABASE.md`](database/DATABASE.md) | Schema, ERD, seed data, wallet system |
+| [`ai-service/README.md`](ai-service/README.md) | AI endpoints, ML models |
+| [`ai-service/AI_SERVICE_CHANGES.md`](ai-service/AI_SERVICE_CHANGES.md) | AI service restructuring details |
+| [`UI_UX_DESIGN.md`](UI_UX_DESIGN.md) | Design system, theming, components, accessibility |
+| [`API_AND_TESTING.md`](API_AND_TESTING.md) | Full API reference, 164 tests, CI/CD pipeline |
+| [`SECURITY_NETWORK.md`](SECURITY_NETWORK.md) | Security architecture, TLS, headers, audit |
+| [`load-testing/README.md`](load-testing/README.md) | k6 load testing and NFR targets |

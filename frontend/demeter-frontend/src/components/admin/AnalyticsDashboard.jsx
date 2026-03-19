@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend,
+  BarChart, Bar,
+} from 'recharts';
 import api from '../../utils/api.js';
 
 const PERIODS = [
@@ -7,6 +12,15 @@ const PERIODS = [
   { key: 'monthly', label: 'Monthly' },
   { key: 'quarterly', label: 'Quarterly' },
 ];
+
+const STATUS_COLORS = {
+  PLACED: '#3b82f6',
+  CONFIRMED: '#eab308',
+  PREPARING: '#f97316',
+  READY: '#a855f7',
+  COMPLETED: '#22c55e',
+  CANCELLED: '#ef4444',
+};
 
 function AnalyticsDashboard() {
   const [period, setPeriod] = useState('monthly');
@@ -71,7 +85,7 @@ function AnalyticsDashboard() {
   if (loading) {
     return (
       <div className="text-center py-16">
-        <div className="animate-spin h-8 w-8 border-4 border-teal-400 border-t-transparent rounded-full mx-auto mb-4"></div>
+        <div className="animate-spin h-8 w-8 border-4 border-light-accent dark:border-dark-accent border-t-transparent rounded-full mx-auto mb-4"></div>
         <p className="text-light-textMuted dark:text-dark-textMuted">Loading analytics...</p>
       </div>
     );
@@ -87,7 +101,7 @@ function AnalyticsDashboard() {
         </div>
         <p className="text-red-500 font-medium mb-2">Failed to load analytics</p>
         <p className="text-light-textMuted dark:text-dark-textMuted text-sm mb-4">{error}</p>
-        <button onClick={fetchAnalytics} className="px-4 py-2 rounded-lg font-medium bg-light-accent dark:bg-dark-accent text-gray-800 dark:text-white hover:opacity-90 transition-colors">
+        <button onClick={fetchAnalytics} className="px-4 py-2 rounded-lg font-medium bg-light-accent dark:bg-dark-accent text-white hover:opacity-90 transition-colors">
           Retry
         </button>
       </div>
@@ -96,16 +110,62 @@ function AnalyticsDashboard() {
 
   if (!data) return null;
 
-  const orderStatuses = data.ordersByStatus || {};
-  const maxStatusCount = Math.max(...Object.values(orderStatuses), 1);
+  // Prepare chart data
+  const orderStatusData = Object.entries(data.ordersByStatus || {}).map(([status, count]) => ({
+    name: status,
+    value: count,
+  }));
 
-  const statusColors = {
-    PLACED: 'bg-blue-500',
-    CONFIRMED: 'bg-yellow-500',
-    PREPARING: 'bg-orange-500',
-    READY: 'bg-purple-500',
-    COMPLETED: 'bg-green-500',
-    CANCELLED: 'bg-red-500',
+  const revenueChartData = (data.revenueByPeriod || []).map(entry => ({
+    period: entry.period,
+    revenue: Number(entry.revenue) || 0,
+    orders: entry.orderCount || 0,
+  }));
+
+  const topItemsChartData = (data.topSellingItems || []).slice(0, 8).map(item => ({
+    name: item.itemName?.length > 20 ? item.itemName.substring(0, 18) + '...' : item.itemName,
+    fullName: item.itemName,
+    quantity: item.totalQuantity,
+    revenue: Number(item.totalRevenue) || 0,
+  }));
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div className="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-lg shadow-lg p-3 text-sm">
+        <p className="font-medium text-light-text dark:text-dark-text mb-1">{label}</p>
+        {payload.map((entry, i) => (
+          <p key={i} style={{ color: entry.color }} className="text-xs">
+            {entry.name}: {entry.name === 'revenue' ? `${formatGK(entry.value)} GK` : entry.value}
+          </p>
+        ))}
+      </div>
+    );
+  };
+
+  const PieTooltip = ({ active, payload }) => {
+    if (!active || !payload?.length) return null;
+    const { name, value } = payload[0];
+    const total = orderStatusData.reduce((sum, d) => sum + d.value, 0);
+    const pct = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+    return (
+      <div className="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-lg shadow-lg p-3 text-sm">
+        <p className="font-medium text-light-text dark:text-dark-text">{name}</p>
+        <p className="text-xs text-light-textMuted dark:text-dark-textMuted">{value} orders ({pct}%)</p>
+      </div>
+    );
+  };
+
+  const BarTooltip = ({ active, payload }) => {
+    if (!active || !payload?.length) return null;
+    const item = payload[0]?.payload;
+    return (
+      <div className="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-lg shadow-lg p-3 text-sm">
+        <p className="font-medium text-light-text dark:text-dark-text">{item?.fullName}</p>
+        <p className="text-xs text-light-textMuted dark:text-dark-textMuted">Qty: {item?.quantity}</p>
+        <p className="text-xs text-light-textMuted dark:text-dark-textMuted">Revenue: {formatGK(item?.revenue)} GK</p>
+      </div>
+    );
   };
 
   return (
@@ -117,24 +177,24 @@ function AnalyticsDashboard() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleExport}
-              className="px-4 py-1.5 rounded-full text-sm font-medium bg-light-accent dark:bg-dark-accent text-gray-800 dark:text-white hover:opacity-90 transition-colors"
+              className="px-4 py-1.5 rounded-full text-sm font-medium bg-light-accent dark:bg-dark-accent text-white hover:opacity-90 transition-colors"
             >
               Export CSV
             </button>
             <div className="inline-flex gap-1 rounded-full bg-gray-200 dark:bg-dark-card p-1">
-          {PERIODS.map((p) => (
-            <button
-              key={p.key}
-              onClick={() => setPeriod(p.key)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                period === p.key
-                  ? 'bg-white dark:bg-white text-gray-900 shadow-sm'
-                  : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
+              {PERIODS.map((p) => (
+                <button
+                  key={p.key}
+                  onClick={() => setPeriod(p.key)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    period === p.key
+                      ? 'bg-white dark:bg-white text-gray-900 shadow-sm'
+                      : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -168,32 +228,105 @@ function AnalyticsDashboard() {
         } />
       </div>
 
-      {/* Orders by Status */}
-      <div className="bg-white dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-6 mb-8">
-        <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-4">Orders by Status</h3>
-        {Object.keys(orderStatuses).length === 0 ? (
-          <p className="text-light-textMuted dark:text-dark-textMuted text-sm">No order data available.</p>
-        ) : (
-          <div className="space-y-3">
-            {Object.entries(orderStatuses).map(([status, count]) => (
-              <div key={status} className="flex items-center gap-3">
-                <span className="w-28 text-sm font-medium text-light-text dark:text-dark-text">{status}</span>
-                <div className="flex-1 bg-gray-200 dark:bg-dark-bg rounded-full h-6 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${statusColors[status] || 'bg-gray-500'}`}
-                    style={{ width: `${(count / maxStatusCount) * 100}%`, minWidth: count > 0 ? '2rem' : '0' }}
-                  ></div>
-                </div>
-                <span className="w-12 text-sm font-medium text-right text-light-textMuted dark:text-dark-textMuted">{count}</span>
-              </div>
-            ))}
+      {/* === CHARTS SECTION === */}
+
+      {/* Chart 1: Revenue Over Time (Area Chart) */}
+      {revenueChartData.length > 0 && (
+        <div className="bg-white dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-6 mb-8">
+          <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-4">Revenue Over Time</h3>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={revenueChartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" strokeOpacity={0.5} />
+                <XAxis dataKey="period" tick={{ fontSize: 12, fill: '#9ca3af' }} tickLine={false} axisLine={false} />
+                <YAxis yAxisId="revenue" tick={{ fontSize: 12, fill: '#9ca3af' }} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+                <YAxis yAxisId="orders" orientation="right" tick={{ fontSize: 12, fill: '#9ca3af' }} tickLine={false} axisLine={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Area yAxisId="revenue" type="monotone" dataKey="revenue" stroke="#ef4444" strokeWidth={2} fill="url(#revenueGradient)" name="revenue" />
+                <Area yAxisId="orders" type="monotone" dataKey="orders" stroke="#3b82f6" strokeWidth={2} fill="url(#ordersGradient)" name="orders" />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
-        )}
+          <div className="flex justify-center gap-6 mt-3 text-xs text-light-textMuted dark:text-dark-textMuted">
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-500"></span>Revenue (GK)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500"></span>Orders</span>
+          </div>
+        </div>
+      )}
+
+      {/* Charts Row: Order Status Pie + Top Items Bar */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+
+        {/* Chart 2: Orders by Status (Donut Chart) */}
+        <div className="bg-white dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-6">
+          <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-4">Orders by Status</h3>
+          {orderStatusData.length === 0 ? (
+            <p className="text-light-textMuted dark:text-dark-textMuted text-sm">No order data available.</p>
+          ) : (
+            <div className="h-[280px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={orderStatusData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={3}
+                    dataKey="value"
+                  >
+                    {orderStatusData.map((entry) => (
+                      <Cell key={entry.name} fill={STATUS_COLORS[entry.name] || '#6b7280'} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<PieTooltip />} />
+                  <Legend
+                    verticalAlign="bottom"
+                    iconType="circle"
+                    iconSize={8}
+                    formatter={(value) => <span className="text-xs text-light-textMuted dark:text-dark-textMuted">{value}</span>}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+
+        {/* Chart 3: Top Selling Items (Horizontal Bar Chart) */}
+        <div className="bg-white dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-6">
+          <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-4">Top Selling Items</h3>
+          {topItemsChartData.length === 0 ? (
+            <p className="text-light-textMuted dark:text-dark-textMuted text-sm">No items data available.</p>
+          ) : (
+            <div className="h-[280px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={topItemsChartData} layout="vertical" margin={{ top: 5, right: 20, left: 5, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" strokeOpacity={0.5} horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} tickLine={false} axisLine={false} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#9ca3af' }} tickLine={false} axisLine={false} width={120} />
+                  <Tooltip content={<BarTooltip />} />
+                  <Bar dataKey="quantity" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={18} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Two-column layout: Top Selling Items + Cafeteria Stats */}
+      {/* === TABLES SECTION === */}
+
+      {/* Cafeteria Performance */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Top Selling Items */}
         <div className="bg-white dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-6">
           <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-4">Top Selling Items</h3>
           {(!data.topSellingItems || data.topSellingItems.length === 0) ? (
@@ -222,7 +355,6 @@ function AnalyticsDashboard() {
           )}
         </div>
 
-        {/* Cafeteria Stats */}
         <div className="bg-white dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-6">
           <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-4">Cafeteria Performance</h3>
           {(!data.cafeteriaStats || data.cafeteriaStats.length === 0) ? (
@@ -255,33 +387,6 @@ function AnalyticsDashboard() {
           )}
         </div>
       </div>
-
-      {/* Revenue by Period */}
-      {data.revenueByPeriod && data.revenueByPeriod.length > 0 && (
-        <div className="bg-white dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-6 mb-8">
-          <h3 className="text-lg font-semibold text-light-text dark:text-dark-text mb-4">Revenue by Period</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-light-border dark:border-dark-border">
-                  <th className="text-left py-2 pr-4 font-medium text-light-textMuted dark:text-dark-textMuted">Period</th>
-                  <th className="text-right py-2 px-4 font-medium text-light-textMuted dark:text-dark-textMuted">Orders</th>
-                  <th className="text-right py-2 pl-4 font-medium text-light-textMuted dark:text-dark-textMuted">Revenue (GK)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.revenueByPeriod.map((entry, idx) => (
-                  <tr key={idx} className="border-b border-light-border/50 dark:border-dark-border/50 last:border-0">
-                    <td className="py-2.5 pr-4 text-light-text dark:text-dark-text">{entry.period}</td>
-                    <td className="py-2.5 px-4 text-right text-light-textMuted dark:text-dark-textMuted">{entry.orderCount}</td>
-                    <td className="py-2.5 pl-4 text-right font-medium text-light-text dark:text-dark-text">{formatGK(entry.revenue)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
 
       {/* Recent Orders */}
       <div className="bg-white dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-6">

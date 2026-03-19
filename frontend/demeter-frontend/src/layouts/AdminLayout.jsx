@@ -4,11 +4,13 @@ import Navbar from '../components/common/Navbar.jsx';
 import ProfileModal from '../components/common/ProfileModal.jsx';
 import { useAuth } from '../contexts/AuthContext.jsx';
 
-const StaffLayout = ({ children }) => {
+const AdminLayout = ({ children }) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [profilePhoto, setProfilePhoto] = useState(null);
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+
+  const role = user?.role || 'ADMIN';
 
   const handleLogout = () => {
     logout();
@@ -16,17 +18,17 @@ const StaffLayout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 font-sans">
+    <div className="min-h-screen bg-light-bg dark:bg-dark-bg transition-colors duration-300">
       <Navbar
         showBalance={false}
         showCart={false}
-        showNotifications={true}
+        showNotifications={role === 'STAFF'}
         onProfileClick={() => setProfileOpen(!profileOpen)}
         onExitClick={handleLogout}
         profilePhoto={profilePhoto}
       />
 
-      <main className="max-w-7xl mx-auto">
+      <main className="max-w-7xl mx-auto px-8 py-8">
         {children}
       </main>
 
@@ -40,4 +42,4 @@ const StaffLayout = ({ children }) => {
   );
 };
 
-export default StaffLayout;
+export default AdminLayout;

@@ -5,6 +5,18 @@ import { useWallet } from "../../contexts/WalletContext.jsx";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import NotificationBell from "./NotificationBell.jsx";
 
+const logoStyles = {
+  STUDENT: "bg-gradient-to-br from-lime-400 to-cyan-400 text-slate-900",
+  STAFF: "bg-amber-400 text-slate-900",
+  ADMIN: "bg-red-500 text-white",
+};
+
+const homeLinks = {
+  STUDENT: "/",
+  STAFF: "/staff",
+  ADMIN: "/admin",
+};
+
 const Navbar = ({
   title = "Demeter",
   logoLetter = "D",
@@ -22,16 +34,13 @@ const Navbar = ({
 
   height = "h-[70px]",
   className = "",
-  walletClassName = "",
-  iconClassName = "",
-  profileClassName = "",
-  exitClassName = "",
 }) => {
   const { cart = [] } = useCart() || {};
   const { balance = 0 } = useWallet() || {};
   const { user } = useAuth();
 
-  const name = user?.username || "Student";
+  const role = user?.role || "STUDENT";
+  const name = user?.username || "User";
   const initials = name
     .split(/[_\s]/)
     .map((n) => n[0])
@@ -54,8 +63,8 @@ const Navbar = ({
       `}
     >
       {/* LEFT SIDE */}
-      <Link to="/" className="flex items-center gap-3 cursor-pointer">
-        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-lime-400 to-cyan-400 flex items-center justify-center font-bold text-slate-900 dark:text-slate-900">
+      <Link to={homeLinks[role] || "/"} className="flex items-center gap-3 cursor-pointer">
+        <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold ${logoStyles[role] || logoStyles.STUDENT}`}>
           {logoLetter}
         </div>
         <h3 className="text-lg font-semibold tracking-wide hover:text-cyan-500 dark:hover:text-cyan-300 transition">
@@ -69,7 +78,7 @@ const Navbar = ({
         {showBalance && (
           <Link to="/wallet">
             <div
-              className={`
+              className="
                 bg-gray-100 dark:bg-slate-800
                 h-10
                 pl-4 pr-2
@@ -79,8 +88,7 @@ const Navbar = ({
                 hover:bg-gray-200 dark:hover:bg-slate-700
                 cursor-pointer
                 transition
-                ${walletClassName}
-              `}
+              "
             >
               <span className="text-sm md:text-base leading-none">
                 {Number(balance).toFixed(2)} GK
@@ -108,7 +116,7 @@ const Navbar = ({
             <div className="relative w-6 h-6 flex items-center justify-center">
               <ShoppingBag
                 size={20}
-                className={`text-gray-500 dark:text-slate-300 hover:text-gray-700 dark:hover:text-white transition ${iconClassName}`}
+                className="text-gray-500 dark:text-slate-300 hover:text-gray-700 dark:hover:text-white transition"
               />
               {cart.length > 0 && (
                 <span className="
@@ -135,7 +143,7 @@ const Navbar = ({
             onClick={onProfileClick}
             role="button"
             aria-label="User profile"
-            className={`w-8 h-8 rounded-full bg-gray-300 dark:bg-slate-600 flex items-center justify-center overflow-hidden cursor-pointer text-gray-700 dark:text-white text-xs font-semibold ${profileClassName}`}
+            className="w-8 h-8 rounded-full bg-gray-300 dark:bg-slate-600 flex items-center justify-center overflow-hidden cursor-pointer text-gray-700 dark:text-white text-xs font-semibold"
           >
             {profilePhoto ? (
               <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
@@ -152,7 +160,7 @@ const Navbar = ({
             onClick={onExitClick}
             role="button"
             aria-label="Logout"
-            className={`cursor-pointer text-red-400 hover:text-red-500 transition ${exitClassName}`}
+            className="cursor-pointer text-red-400 hover:text-red-500 transition"
           />
         )}
       </div>

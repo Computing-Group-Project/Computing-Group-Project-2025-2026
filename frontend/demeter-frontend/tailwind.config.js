@@ -15,7 +15,7 @@ export default {
           border: '#363c47',    // Gray-blue border
           text: '#FFFFFF',      // White text
           textMuted: '#9CA3AF', // Gray for muted text
-          accent: '#14B8A6',    // Teal/Green for dark mode
+          accent: '#EF4444',    // Red for dark mode
         },
         // Light Mode Colors
         light: {
@@ -24,7 +24,7 @@ export default {
           border: '#E5E7EB',
           text: '#111827',
           textMuted: '#6B7280', // Gray for subtitles
-          accent: '#F4C2C2',    // Baby pink for light mode
+          accent: '#F87171',    // Red for light mode
           success: '#10B981',
         }
       }

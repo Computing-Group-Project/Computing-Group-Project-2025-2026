@@ -114,7 +114,7 @@ This prevents accidental deployment with a weak secret.
 |---|---|
 | **Anyone** (not logged in) | View cafeterias, menus, and reviews |
 | **Student** | Place orders, manage wallet, submit reviews |
-| **Staff** | Manage orders and menu for their assigned cafeteria |
+| **Staff** | Manage orders, menu, and discounts for their assigned cafeteria |
 | **Admin** | Manage users, top up wallets, view analytics, view audit logs |
 
 The backend enforces these rules on **every request**. The frontend also hides buttons/pages based on role, but the real security is on the backend — even if someone bypasses the frontend, the backend will reject unauthorized requests.
@@ -189,7 +189,7 @@ Swagger UI (interactive API documentation) is available for development. In prod
 
 ### Audit Logging
 
-Every important action is recorded in an audit log via `@LogActivity` annotations (19 methods covered across 7 services: auth, menu, orders, discounts, users, wallet, reviews). Each entry records:
+Every important action is recorded in an audit log via `@LogActivity` annotations (20 methods covered across 7 services: auth, menu, orders, discounts, users, wallet, reviews). Each entry records:
 - Who did it (user ID)
 - What they did
 - When they did it
@@ -285,7 +285,7 @@ A cafeteria ordering system for Bastion University. Students browse menus, place
 
 6. **No secrets are stored in the code.** Database passwords, signing keys, and API keys are all loaded from environment variables that are never committed to Git.
 
-7. **Everything important is logged.** 19 audited operations across 7 services — order placements, status changes, user management, wallet transactions, reviews, discounts — all recorded with who, what, when, and from where (IP address).
+7. **Everything important is logged.** 20 audited operations across 7 services — order placements, status changes, user management, wallet transactions, reviews, discounts — all recorded with who, what, when, and from where (IP address).
 
 8. **The AI service is locked down.** It only accepts requests from the backend (via API key), runs as a non-root user, and never exposes internal error details to users.
 

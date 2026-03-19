@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext.jsx';
+
+
 import { useToast } from '../contexts/ToastContext.jsx';
 import StaffCard from '../components/admin/StaffCard';
 import WalletTable from '../components/admin/WalletTable';
-import AnalyticsDashboard from '../components/admin/AnalyticsDashboard';
+const AnalyticsDashboard = React.lazy(() => import('../components/admin/AnalyticsDashboard'));
 import AuditLogTable from '../components/admin/AuditLogTable';
 import api from '../utils/api.js';
 
 function AdminConsole() {
-  const navigate = useNavigate();
-  const { logout } = useAuth();
+
+
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState('staff');
@@ -87,25 +87,7 @@ function AdminConsole() {
   };
 
   return (
-    <div className="min-h-screen bg-light-bg dark:bg-dark-bg">
-      {/* Header */}
-      <header className="bg-white dark:bg-dark-bg border-b border-light-border dark:border-dark-border">
-        <div className="max-w-7xl mx-auto px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg bg-light-accent dark:bg-dark-accent text-white dark:text-dark-bg">D</div>
-              <span className="text-xl font-semibold text-light-text dark:text-dark-text">Demeter</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <button onClick={() => { logout(); navigate('/login'); }} className="p-2 text-red-500 hover:text-red-600 transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-8 py-8">
+    <div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-light-text dark:text-dark-text mb-2">Admin Console</h1>
           <p className="text-base text-light-textMuted dark:text-dark-textMuted">Manage staff, students, and system finances.</p>
@@ -118,7 +100,6 @@ function AdminConsole() {
             <button onClick={() => setActiveTab('wallets')} className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'wallets' ? 'bg-white dark:bg-white text-gray-900 shadow-sm' : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'}`}>Student Wallets</button>
             <button onClick={() => setActiveTab('analytics')} className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'analytics' ? 'bg-white dark:bg-white text-gray-900 shadow-sm' : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'}`}>Analytics</button>
             <button onClick={() => setActiveTab('audit')} className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'audit' ? 'bg-white dark:bg-white text-gray-900 shadow-sm' : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'}`}>Audit Log</button>
-            <button onClick={() => navigate('/admin/promotions')} className="px-6 py-2 rounded-full font-medium transition-all bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text">Promotions</button>
           </div>
         </div>
 
@@ -127,7 +108,7 @@ function AdminConsole() {
           <div>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">Staff Members ({staffList.length})</h2>
-              <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors bg-light-accent dark:bg-dark-accent text-gray-800 dark:text-white hover:opacity-90">
+              <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors bg-light-accent dark:bg-dark-accent text-white hover:opacity-90">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
                 Add New Staff
               </button>
@@ -159,7 +140,7 @@ function AdminConsole() {
                       </div>
                     </div>
                     <div className="flex gap-3 mt-8">
-                      <button type="submit" className="flex-1 px-6 py-3 rounded-lg font-medium transition-colors bg-light-accent dark:bg-dark-accent text-gray-800 dark:text-white hover:opacity-90">Create Account</button>
+                      <button type="submit" className="flex-1 px-6 py-3 rounded-lg font-medium transition-colors bg-light-accent dark:bg-dark-accent text-white hover:opacity-90">Create Account</button>
                       <button type="button" onClick={() => { setIsModalOpen(false); setNewStaffData({ username: '', password: '', cafeteriaId: 1 }); }} className="px-6 py-3 border border-light-border dark:border-dark-border text-light-text dark:text-dark-text rounded-lg hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors font-medium">Cancel</button>
                     </div>
                   </form>
@@ -183,7 +164,11 @@ function AdminConsole() {
 
         {activeTab === 'wallets' && <WalletTable />}
 
-        {activeTab === 'analytics' && <AnalyticsDashboard />}
+        {activeTab === 'analytics' && (
+          <React.Suspense fallback={<div className="text-center py-16"><div className="animate-spin h-8 w-8 border-4 border-light-accent dark:border-dark-accent border-t-transparent rounded-full mx-auto"></div></div>}>
+            <AnalyticsDashboard />
+          </React.Suspense>
+        )}
 
         {activeTab === 'audit' && (
           <div>
@@ -191,7 +176,6 @@ function AdminConsole() {
             <AuditLogTable />
           </div>
         )}
-      </main>
     </div>
   );
 }

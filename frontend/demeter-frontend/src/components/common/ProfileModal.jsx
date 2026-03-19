@@ -1,6 +1,12 @@
 import { X } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 
+const roleLabels = {
+  STUDENT: "Student Profile",
+  STAFF: "Staff Profile",
+  ADMIN: "Admin Profile",
+};
+
 export default function ProfileModal({
   open,
   onClose,
@@ -10,16 +16,17 @@ export default function ProfileModal({
 
   const { user } = useAuth();
 
-  const rawName = user?.username || "Student";
+  const role = user?.role || "STUDENT";
+  const rawName = user?.username || "User";
   const name = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-  const studentId = user?.userId || "N/A";
-  const batch = "N/A";
+  const userId = user?.userId || "N/A";
 
   const initials = rawName
-    .split(" ")
+    .split(/[_\s]/)
     .map(n => n[0])
     .join("")
-    .toUpperCase();
+    .toUpperCase()
+    .slice(0, 2);
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
@@ -49,7 +56,7 @@ export default function ProfileModal({
         <div className="flex justify-between items-center mb-6">
 
           <h2 className="text-gray-900 dark:text-white text-lg font-semibold">
-            Student Profile
+            {roleLabels[role] || "Profile"}
           </h2>
 
           <button
@@ -111,14 +118,21 @@ export default function ProfileModal({
           </div>
 
           <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-slate-400">Student ID</span>
-            <span className="text-gray-900 dark:text-white">{studentId}</span>
+            <span className="text-gray-500 dark:text-slate-400">User ID</span>
+            <span className="text-gray-900 dark:text-white">{userId}</span>
           </div>
 
           <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-slate-400">Batch</span>
-            <span className="text-gray-900 dark:text-white">{batch}</span>
+            <span className="text-gray-500 dark:text-slate-400">Role</span>
+            <span className="text-gray-900 dark:text-white">{role.charAt(0) + role.slice(1).toLowerCase()}</span>
           </div>
+
+          {role === "STAFF" && user?.assignedCafeteriaId && (
+            <div className="flex justify-between">
+              <span className="text-gray-500 dark:text-slate-400">Cafeteria</span>
+              <span className="text-gray-900 dark:text-white">#{user.assignedCafeteriaId}</span>
+            </div>
+          )}
 
         </div>
 

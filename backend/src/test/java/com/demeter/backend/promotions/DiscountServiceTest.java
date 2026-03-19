@@ -157,4 +157,26 @@ class DiscountServiceTest {
                 () -> discountService.deactivateDiscount(999));
         assertEquals(ErrorCode.DISCOUNT_NOT_FOUND, ex.getErrorCode());
     }
+
+    @Test
+    void activateDiscount_shouldSetIsActiveTrue() {
+        Discount d = createTestDiscount();
+        d.setIsActive(false);
+
+        when(discountRepository.findById(1)).thenReturn(Optional.of(d));
+        when(discountRepository.save(any(Discount.class))).thenAnswer(i -> i.getArgument(0));
+
+        Discount result = discountService.activateDiscount(1);
+
+        assertTrue(result.getIsActive());
+    }
+
+    @Test
+    void activateDiscount_withInvalidId_shouldThrowAppException() {
+        when(discountRepository.findById(999)).thenReturn(Optional.empty());
+
+        AppException ex = assertThrows(AppException.class,
+                () -> discountService.activateDiscount(999));
+        assertEquals(ErrorCode.DISCOUNT_NOT_FOUND, ex.getErrorCode());
+    }
 }

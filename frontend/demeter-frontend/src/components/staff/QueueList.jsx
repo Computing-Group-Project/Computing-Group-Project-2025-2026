@@ -109,7 +109,7 @@ const QueueList = ({ cafeteriaId = 1 }) => {
       {/* list */}
       {loading ? (
         <div className="text-center py-8">
-          <div className="animate-spin h-8 w-8 border-4 border-teal-400 border-t-transparent rounded-full mx-auto"></div>
+          <div className="animate-spin h-8 w-8 border-4 border-amber-400 border-t-transparent rounded-full mx-auto"></div>
         </div>
       ) : (
         <div className="space-y-4">

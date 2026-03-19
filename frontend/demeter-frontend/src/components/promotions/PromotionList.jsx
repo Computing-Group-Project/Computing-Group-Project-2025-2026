@@ -5,6 +5,7 @@ import api from '../../utils/api.js';
 
 const PromotionList = () => {
   const { user } = useAuth();
+  const isStaff = user?.role === 'STAFF';
   const [discounts, setDiscounts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -58,7 +59,7 @@ const PromotionList = () => {
         await api.delete(`/api/discounts/${id}`);
         fetchDiscounts();
       } catch (err) {
-        console.error('Error deleting discount:', err);
+        if (import.meta.env.DEV) console.error('Error deleting discount:', err);
       }
     }
   };
@@ -68,7 +69,16 @@ const PromotionList = () => {
       await api.put(`/api/discounts/${id}/deactivate`);
       fetchDiscounts();
     } catch (err) {
-      console.error('Error deactivating discount:', err);
+      if (import.meta.env.DEV) console.error('Error deactivating discount:', err);
+    }
+  };
+
+  const handleActivate = async (id) => {
+    try {
+      await api.put(`/api/discounts/${id}/activate`);
+      fetchDiscounts();
+    } catch (err) {
+      if (import.meta.env.DEV) console.error('Error activating discount:', err);
     }
   };
 
@@ -77,7 +87,7 @@ const PromotionList = () => {
       await api.put(`/api/discounts/${id}/approve?staffUserId=${staffUserId}`);
       fetchDiscounts();
     } catch (err) {
-      console.error('Error approving discount:', err);
+      if (import.meta.env.DEV) console.error('Error approving discount:', err);
     }
   };
 
@@ -86,7 +96,7 @@ const PromotionList = () => {
       await api.put(`/api/discounts/${id}/reject`);
       fetchDiscounts();
     } catch (err) {
-      console.error('Error rejecting discount:', err);
+      if (import.meta.env.DEV) console.error('Error rejecting discount:', err);
     }
   };
 
@@ -104,9 +114,16 @@ const PromotionList = () => {
 
   const getStatusStyle = (discount) => {
     const status = getStatusLabel(discount);
-    if (status === 'ACTIVE') return 'bg-green-100 text-green-800';
-    if (status === 'PENDING') return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
+    if (status === 'ACTIVE') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+    if (status === 'PENDING') return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+    return 'bg-gray-100 text-gray-600 dark:bg-gray-800/50 dark:text-gray-400';
+  };
+
+  const formatValue = (discount) => {
+    if (discount.discountType === 'PERCENTAGE') return `${discount.discountValue}%`;
+    if (discount.discountType === 'BOGO') return 'BOGO';
+    if (discount.discountType === 'COMBO_FIXED_PRICE') return `${discount.discountValue} GK combo`;
+    return `${discount.discountValue} GK`;
   };
 
   if (showForm) {
@@ -123,118 +140,142 @@ const PromotionList = () => {
   }
 
   return (
-    <div className="bg-white dark:bg-dark-card rounded-lg shadow-md p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold dark:text-dark-text">Discounts</h2>
-        <button
-          onClick={() => {
-            setSelectedDiscount(null);
-            setShowForm(true);
-          }}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        >
-          + New Discount
-        </button>
+    <div>
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-gray-800 dark:text-white">
+          Discounts ({discounts.length})
+        </h2>
+        {isStaff && (
+          <button
+            onClick={() => {
+              setSelectedDiscount(null);
+              setShowForm(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors bg-amber-400 text-gray-900 hover:bg-amber-500"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            New Discount
+          </button>
+        )}
       </div>
 
-      <div className="mb-4 flex gap-2">
+      {/* Filter buttons — matches StaffDashboard tab style */}
+      <div className="flex gap-2 mb-6">
         {['ALL', 'ACTIVE', 'PENDING'].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-3 py-1 rounded text-sm ${
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filter === f
-                ? f === 'ACTIVE'
-                  ? 'bg-green-500 text-white'
-                  : f === 'PENDING'
-                  ? 'bg-yellow-500 text-white'
-                  : 'bg-blue-500 text-white'
-                : 'bg-gray-100 dark:bg-dark-bg text-gray-700 dark:text-dark-textMuted'
+                ? 'bg-amber-400 text-gray-900'
+                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600'
             }`}
           >
-            {f === 'ALL' ? 'All' : f === 'ACTIVE' ? 'Active' : 'Pending Approval'}
+            {f === 'ALL' ? 'All' : f === 'ACTIVE' ? 'Active' : 'Pending'}
           </button>
         ))}
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-4">
           {error}
         </div>
       )}
 
       {loading ? (
         <div className="text-center py-8">
-          <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
+          <div className="animate-spin h-8 w-8 border-4 border-amber-400 border-t-transparent rounded-full mx-auto"></div>
         </div>
       ) : discounts.length === 0 ? (
-        <p className="text-gray-500 dark:text-dark-textMuted text-center py-8">No discounts found</p>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-12 text-center">
+          <svg className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" /></svg>
+          <p className="text-gray-500 dark:text-gray-400">No discounts found</p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-dark-bg border-b dark:border-dark-border">
-              <tr>
-                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Cafeteria</th>
-                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Type</th>
-                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Value</th>
-                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Items</th>
-                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Requirements</th>
-                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Status</th>
-                <th className="text-left px-4 py-3 dark:text-dark-textMuted">AI</th>
-                <th className="text-left px-4 py-3 dark:text-dark-textMuted">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {discounts.map((discount) => (
-                <tr key={discount.discountId} className="border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-dark-bg">
-                  <td className="px-4 py-3 dark:text-dark-text">{cafeteriaMap[discount.cafeteriaId] || `#${discount.cafeteriaId}`}</td>
-                  <td className="px-4 py-3 font-medium dark:text-dark-text">{discount.discountType}</td>
-                  <td className="px-4 py-3 dark:text-dark-text">
-                    {discount.discountType === 'PERCENTAGE'
-                      ? `${discount.discountValue}%`
-                      : `${discount.discountValue} GK`}
-                  </td>
-                  <td className="px-4 py-3 dark:text-dark-textMuted">{discount.applicableItems || '-'}</td>
-                  <td className="px-4 py-3 dark:text-dark-textMuted">{discount.requirements || '-'}</td>
-                  <td className="px-4 py-3">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusStyle(discount)}`}>
-                      {getStatusLabel(discount)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {discount.aiGenerated ? (
-                      <span className="px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                        AI
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {discounts.map((discount) => {
+            const status = getStatusLabel(discount);
+            return (
+              <div
+                key={discount.discountId}
+                className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden shadow-sm"
+              >
+                {/* Card top */}
+                <div className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-gray-800 dark:text-white truncate">
+                          {cafeteriaMap[discount.cafeteriaId] || `Cafeteria #${discount.cafeteriaId}`}
+                        </h3>
+                        {discount.aiGenerated && (
+                          <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                            AI
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {discount.discountType.replace(/_/g, ' ')}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1.5">
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusStyle(discount)}`}>
+                        {status}
                       </span>
-                    ) : (
-                      <span className="text-gray-400">-</span>
+                      <span className="text-lg font-bold text-gray-800 dark:text-white">
+                        {formatValue(discount)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Details */}
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                    {discount.applicableItems && (
+                      <span>Items: {discount.applicableItems}</span>
                     )}
-                  </td>
-                  <td className="px-4 py-3 flex gap-2">
-                    {getStatusLabel(discount) === 'PENDING' && (
+                    {discount.requirements && (
+                      <span>Req: {discount.requirements}</span>
+                    )}
+                    {discount.endDate && (
+                      <span>Expires: {new Date(discount.endDate).toLocaleDateString()}</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Card bottom — action buttons (staff only) */}
+                {isStaff && (
+                  <div className="bg-gray-50 dark:bg-gray-800 px-5 py-3 flex items-center gap-2 border-t border-gray-200 dark:border-gray-700">
+                    {status === 'PENDING' && (
                       <>
                         <button
-                          onClick={() => {
-                            handleApprove(discount.discountId, user?.userId || 0);
-                          }}
-                          className="text-green-500 hover:text-green-700 text-sm"
+                          onClick={() => handleApprove(discount.discountId, user?.userId || 0)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors"
                         >
                           Approve
                         </button>
                         <button
                           onClick={() => handleReject(discount.discountId)}
-                          className="text-red-500 hover:text-red-700 text-sm"
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors"
                         >
                           Reject
                         </button>
                       </>
                     )}
-                    {discount.isActive && (
+                    {status === 'ACTIVE' && (
                       <button
                         onClick={() => handleDeactivate(discount.discountId)}
-                        className="text-orange-500 hover:text-orange-700 text-sm"
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-orange-100 text-orange-700 hover:bg-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:hover:bg-orange-900/50 transition-colors"
                       >
                         Deactivate
+                      </button>
+                    )}
+                    {status === 'INACTIVE' && (
+                      <button
+                        onClick={() => handleActivate(discount.discountId)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 transition-colors"
+                      >
+                        Activate
                       </button>
                     )}
                     <button
@@ -242,21 +283,25 @@ const PromotionList = () => {
                         setSelectedDiscount(discount);
                         setShowForm(true);
                       }}
-                      className="text-blue-500 hover:text-blue-700 text-sm"
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
                     >
                       Edit
                     </button>
+
+                    <div className="flex-1" />
                     <button
                       onClick={() => handleDelete(discount.discountId)}
-                      className="text-red-500 hover:text-red-700 text-sm"
+                      className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                     >
-                      Delete
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
