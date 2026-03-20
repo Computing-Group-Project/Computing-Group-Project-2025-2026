@@ -22,7 +22,8 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private static final List<String> EXCLUDED_PATHS = List.of(
             "/api/auth/",
-            "/api/health"
+            "/api/health",
+            "/ws/"
     );
 
     private final Map<String, RateWindow> requestCounts = new ConcurrentHashMap<>();

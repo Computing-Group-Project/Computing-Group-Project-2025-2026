@@ -134,7 +134,7 @@ function WalletTable() {
             <h2 className="text-2xl font-semibold text-light-text dark:text-dark-text">
               Pending Top-Up Requests
               {pendingRequests.length > 0 && (
-                <span className="ml-2 inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                <span className="ml-2 inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-orange-200 text-red-800 dark:bg-orange-400/20 dark:text-red-400">
                   {pendingRequests.length}
                 </span>
               )}
@@ -162,7 +162,7 @@ function WalletTable() {
             {pendingRequests.map((req) => (
               <div
                 key={req.requestId}
-                className="bg-gray-50 dark:bg-dark-bg rounded-xl border border-light-border dark:border-dark-border p-4"
+                className="bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-200 dark:border-amber-800/40 p-4"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">

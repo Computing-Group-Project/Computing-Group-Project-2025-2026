@@ -3,7 +3,7 @@ import React from 'react';
 const StatCard = ({ title, value, subtext, isHighlighted = false, valueColor }) => {
   
   // bg logic (changes with theme)
-  const highlightBg = "bg-yellow-50 border-yellow-300 text-gray-500 dark:bg-amber-500 dark:border-amber-400 dark:text-white";
+  const highlightBg = "bg-orange-100 border-orange-300 text-gray-500 dark:bg-amber-700/40 dark:border-amber-600 dark:text-white";
   const standardBg = "bg-white border-gray-200 text-gray-500 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-400";
 
   const currentBg = isHighlighted ? highlightBg : standardBg;

@@ -93,7 +93,7 @@ const StaffDashboard = () => {
               value={String(stats.pending)}
               title="Pending Orders"
               isHighlighted={true}
-              valueColor="text-gray-900 dark:text-gray-900"
+              valueColor="text-red-800 dark:text-red-400"
             />
             <StatCard
               value={String(stats.completed)}
