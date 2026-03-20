@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,12 +20,23 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private static final int MAX_REQUESTS_PER_MINUTE = 60;
     private static final long WINDOW_MS = 60_000;
 
+    private static final List<String> EXCLUDED_PATHS = List.of(
+            "/api/auth/",
+            "/api/health"
+    );
+
     private final Map<String, RateWindow> requestCounts = new ConcurrentHashMap<>();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        // Skip rate limiting for auth endpoints, health checks, and CORS preflight
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod()) || isExcludedPath(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String clientIp = getClientIp(request);
         long now = System.currentTimeMillis();
 
@@ -53,6 +65,10 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             return xForwardedFor.split(",")[0].trim();
         }
         return request.getRemoteAddr();
+    }
+
+    private boolean isExcludedPath(String uri) {
+        return EXCLUDED_PATHS.stream().anyMatch(uri::startsWith);
     }
 
     private static class RateWindow {
