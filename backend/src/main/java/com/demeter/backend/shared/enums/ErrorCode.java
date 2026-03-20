@@ -24,6 +24,7 @@ public enum ErrorCode {
     AI_SERVICE_UNAVAILABLE("AI service is temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE),
     ORDER_CANNOT_BE_CANCELLED("Order can only be cancelled before staff confirmation", HttpStatus.BAD_REQUEST),
     INVALID_ORDER_TRANSITION("Invalid order status transition", HttpStatus.BAD_REQUEST),
+    TOPUP_REQUEST_NOT_FOUND("Top-up request not found", HttpStatus.NOT_FOUND),
     INTERNAL_ERROR("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String message;

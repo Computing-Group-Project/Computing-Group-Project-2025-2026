@@ -12,7 +12,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
   const [cvv, setCvv] = useState("");
   const [cardName, setCardName] = useState("");
   const [errors, setErrors] = useState({});
-  const [newBalance, setNewBalance] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
 
   const resetForm = () => {
@@ -23,7 +22,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
     setCvv("");
     setCardName("");
     setErrors({});
-    setNewBalance(null);
     setErrorMessage("");
   };
 
@@ -96,7 +94,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
       const res = await api.post("/api/wallet/student-topup", {
         amount: parseFloat(amount),
       });
-      setNewBalance(res.data.data.balance);
       setStep("success");
     } catch (err) {
       setErrorMessage(
@@ -288,19 +285,16 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
         {/* SUCCESS STEP */}
         {step === "success" && (
           <div className="flex flex-col items-center py-8 animate-fade-in-up">
-            <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-              Payment Successful
+              Request Submitted
             </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-1">
-              {parseFloat(amount).toFixed(2)} GK added to your wallet
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              New balance: <span className="font-semibold text-yellow-400">{Number(newBalance).toFixed(2)} GK</span>
+            <p className="text-gray-500 dark:text-gray-400 mb-6 text-center">
+              Your request for {parseFloat(amount).toFixed(2)} GK has been submitted for admin approval
             </p>
             <button
               onClick={handleClose}

@@ -48,9 +48,14 @@ export default function ProfileModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 flex justify-center items-start pt-20 sm:justify-end sm:pr-6 z-50 animate-fade-in">
+    <div
+      className="fixed inset-0 flex justify-center items-start pt-20 sm:justify-end sm:pr-6 z-50 animate-fade-in"
+      onClick={onClose}
+    >
 
-      <div className="w-[90vw] max-w-[360px] max-h-[calc(100vh-6rem)] overflow-y-auto bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-xl p-6 animate-slide-in-right">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-[90vw] max-w-[360px] max-h-[calc(100vh-6rem)] overflow-y-auto bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-xl p-6 animate-slide-in-right">
 
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">

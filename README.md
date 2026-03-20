@@ -42,7 +42,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 docker compose up --build
 ```
 
-This builds and starts all five containers (MySQL, backend, AI service, frontend, and database backup). The first build takes a few minutes to download dependencies. Subsequent runs are much faster.
+This builds and starts four containers (MySQL, AI service, backend, and frontend). The first build takes a few minutes to download dependencies. Subsequent runs are much faster. The database backup container is optional — see step 6.
 
 ### 3. Wait for services to be ready
 
@@ -172,7 +172,7 @@ python -m pytest tests/ -v     # Run all tests (49 tests)
 
 | Service | Tests | Framework |
 |---------|-------|-----------|
-| Backend | 58 | JUnit 5 + Spring Boot Test (H2 in-memory DB) |
+| Backend | 67 | JUnit 5 + Spring Boot Test (H2 in-memory DB) |
 | Frontend | 55 | Vitest + React Testing Library (jsdom) |
 | AI Service | 49 | pytest + FastAPI TestClient |
 
@@ -188,6 +188,6 @@ All tests run in CI on every push/PR to `main` (see `.github/workflows/ci.yml`).
 | [`ai-service/README.md`](ai-service/README.md) | AI endpoints, ML models |
 | [`ai-service/AI_SERVICE_CHANGES.md`](ai-service/AI_SERVICE_CHANGES.md) | AI service restructuring details |
 | [`UI_UX_DESIGN.md`](UI_UX_DESIGN.md) | Design system, theming, components, accessibility |
-| [`API_AND_TESTING.md`](API_AND_TESTING.md) | Full API reference, 164 tests, CI/CD pipeline |
+| [`API_AND_TESTING.md`](API_AND_TESTING.md) | Full API reference, 171 tests, CI/CD pipeline |
 | [`SECURITY_NETWORK.md`](SECURITY_NETWORK.md) | Security architecture, TLS, headers, audit |
 | [`load-testing/README.md`](load-testing/README.md) | k6 load testing and NFR targets |

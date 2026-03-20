@@ -153,11 +153,11 @@ backend/
 │   │   └── service/                            # UserService (admin operations)
 │   │
 │   ├── wallet/                                 # Gold Krakens wallet system
-│   │   ├── controller/                         # Balance, transactions, top-up endpoints
-│   │   ├── dto/
+│   │   ├── controller/                         # Balance, transactions, top-up, topup-request endpoints
+│   │   ├── dto/                                # PendingTopUp (in-memory DTO, not a JPA entity)
 │   │   │   ├── request/                        # TopUpRequest, StudentTopUpRequest
 │   │   │   └── response/                       # WalletResponse, TransactionResponse
-│   │   └── service/                            # KrakensWalletService (debit, credit, pessimistic lock)
+│   │   └── service/                            # KrakensWalletService (debit, credit, pessimistic lock), TopUpRequestService (ConcurrentHashMap, approve/reject)
 │   │
 │   └── ws/                                     # WebSocket configuration
 │       └── WebSocketConfig.java                # SockJS + STOMP broker, JWT auth on CONNECT
@@ -165,7 +165,7 @@ backend/
 ├── src/main/resources/
 │   └── application.yml                         # All configuration (DB, JWT, AI, uploads, Swagger)
 │
-├── src/test/java/com/demeter/backend/          # Test classes (H2, 58 tests)
+├── src/test/java/com/demeter/backend/          # Test classes (H2, 67 tests)
 ├── src/test/resources/
 │   └── application.properties                  # H2 config for tests
 │
@@ -202,7 +202,7 @@ The server starts on **port 8080**. Swagger UI is available at `http://localhost
 ### Run tests
 
 ```bash
-mvn test                           # All 58 tests (uses H2, no MySQL needed)
+mvn test                           # All 67 tests (uses H2, no MySQL needed)
 mvn test -Dtest=AuthServiceTest    # Single test class
 mvn test -Dtest=AuthServiceTest#testLogin  # Single test method
 ```
@@ -328,7 +328,7 @@ Error responses use `ErrorResponse`:
 |---|---|---|
 | `POST` | `/api/orders` | Place a new order (debits wallet) |
 | `GET` | `/api/orders/user/{userId}` | List orders for a user |
-| `POST` | `/api/wallet/student-topup` | Self-service wallet top-up (max 500 GK) |
+| `POST` | `/api/wallet/student-topup` | Submit a wallet top-up request (max 500 GK, creates pending request — no instant credit) |
 
 ### Staff/Admin Endpoints
 
@@ -368,7 +368,10 @@ Error responses use `ErrorResponse`:
 | `GET` | `/api/admin/analytics/revenue` | Revenue analytics. Query params: `period`, `startDate`, `endDate` |
 | `GET` | `/api/admin/analytics/export` | Export analytics as CSV. Query param: `period` |
 | `GET` | `/api/admin/audit` | View audit log entries |
-| `POST` | `/api/wallet/topup` | Admin wallet top-up for any user |
+| `POST` | `/api/wallet/topup` | Admin direct wallet top-up for any user (instant credit) |
+| `GET` | `/api/wallet/topup-requests` | List all pending student top-up requests |
+| `PUT` | `/api/wallet/topup-requests/{id}/approve` | Approve a pending top-up request (credits wallet, notifies student) |
+| `PUT` | `/api/wallet/topup-requests/{id}/reject` | Reject a pending top-up request |
 
 ---
 
@@ -472,6 +475,7 @@ Available error codes:
 | `REVIEW_WINDOW_EXPIRED` | 400 | Past the 1-hour review window |
 | `ORDER_CANNOT_BE_CANCELLED` | 400 | Order past the cancellable state |
 | `INVALID_ORDER_TRANSITION` | 400 | Invalid state machine transition |
+| `TOPUP_REQUEST_NOT_FOUND` | 404 | Top-up request not found |
 | `RATE_LIMITED` | 429 | Too many requests |
 | `AI_SERVICE_UNAVAILABLE` | 503 | AI service unreachable |
 | `INTERNAL_ERROR` | 500 | Unexpected server error |
@@ -480,7 +484,7 @@ Available error codes:
 
 A custom `@LogActivity` annotation combined with `AuditLogAspect` provides automatic audit logging. The aspect extracts the `userId` from the JWT token (or from `LoginResponseDTO` for login events) and writes an `AuditLog` entry with action type, target table, old/new values, IP address, and status.
 
-**20 annotated methods across 7 services:**
+**22 annotated methods across 8 services:**
 
 | Service | Annotated Methods | Count |
 |---|---|---|
@@ -489,7 +493,8 @@ A custom `@LogActivity` annotation combined with `AuditLogAspect` provides autom
 | `AuthService` | register, login | 2 |
 | `OrderService` | placeOrder, updateStatus | 2 |
 | `UserService` | createStaff, deleteUser | 2 |
-| `KrakensWalletService` | topUp, studentTopUp | 2 |
+| `KrakensWalletService` | debit, credit | 2 |
+| `TopUpRequestService` | approveRequest, rejectRequest | 2 |
 | `ReviewService` | submitReview | 1 |
 
 ### Order State Machine
@@ -546,7 +551,8 @@ The WebSocket CONNECT frame is authenticated via a `ChannelInterceptor` that ext
 |---|---|---|
 | `/topic/staff` | Broadcast | New order placed -- notifies staff dashboard |
 | `/topic/orders` | Broadcast | Order status changed -- notifies all subscribers |
-| `/user/{username}/queue/notifications` | User-specific | Targeted notification to the order's student (via `sendToUser()`) |
+| `/topic/admin` | Broadcast | Admin-relevant events (e.g., new top-up requests) |
+| `/user/{username}/queue/notifications` | User-specific | Targeted notification (order status changes, top-up approval/rejection via `sendToUser()`) |
 
 ### Frontend Integration
 
@@ -591,7 +597,7 @@ Query parameters:
 
 ## Testing
 
-58 tests across 8 test classes. All tests use H2 in-memory database -- no MySQL required.
+67 tests across 9 test classes. All tests use H2 in-memory database -- no MySQL required.
 
 ### Test Classes
 
@@ -600,8 +606,9 @@ Query parameters:
 | `auth/AuthServiceTest` | 9 | Registration validation, password strength enforcement, login flows (username + university ID), duplicate username rejection |
 | `orders/OrderServiceTest` | 11 | Place order with wallet debit, status updates through full lifecycle, cancellation with auto-refund, invalid state transition rejection |
 | `menu/MenuServiceTest` | 6 | CRUD operations, category validation, availability toggle |
-| `promotions/DiscountServiceTest` | 11 | Create, approve, reject, deactivate discounts, validation edge cases |
+| `promotions/DiscountServiceTest` | 13 | Create, approve, reject, deactivate, activate discounts, validation edge cases |
 | `wallet/KrakensWalletServiceTest` | 6 | Balance check, debit, credit, insufficient balance rejection, transaction history recording |
+| `wallet/TopUpRequestServiceTest` | 7 | Submit top-up request, approve (credits wallet + sends notification), reject, list pending, not-found handling |
 | `config/security/JwtUtilTest` | 7 | Token generation, username/role extraction, expiry validation |
 | `config/security/SecurityConfigTest` | 7 | Endpoint access control (public vs protected), input validation via MockMvc, weak password rejection on register |
 | `DemeterBackendApplicationTests` | 1 | Spring context loads successfully |

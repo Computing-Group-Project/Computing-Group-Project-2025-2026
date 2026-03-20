@@ -81,7 +81,7 @@ src/
 │   │   ├── CafeteriaCard.jsx         # Cafeteria summary card for homepage
 │   │   ├── ErrorBoundary.jsx         # React error boundary — catches render errors gracefully
 │   │   ├── ThemeToggle.jsx           # Dark/light mode toggle button (floating)
-│   │   ├── PaymentGatewayModal.jsx   # Payment confirmation modal for wallet top-ups
+│   │   ├── PaymentGatewayModal.jsx   # Payment confirmation modal for wallet top-ups — shows "Request Submitted" with amber icon after student top-up (pending approval flow)
 │   │   ├── NotFound.jsx              # 404 page for unmatched routes
 │   │   └── __tests__/                # Tests for Navbar, ProtectedRoute
 │   │
@@ -97,7 +97,7 @@ src/
 │   ├── admin/                        # Admin-specific components
 │   │   ├── AnalyticsDashboard.jsx    # Charts and metrics — daily/weekly/monthly/quarterly + custom ranges
 │   │   ├── StaffCard.jsx             # Staff member card with edit/delete actions
-│   │   ├── WalletTable.jsx           # Student wallet top-up table
+│   │   ├── WalletTable.jsx           # Student wallet top-up table with pending requests section (approve/reject buttons, WebSocket auto-refresh)
 │   │   └── AuditLogTable.jsx         # Audit log viewer with search and action-type filtering
 │   │
 │   └── promotions/                   # Promotion management components (used by Staff + Admin)
@@ -232,7 +232,7 @@ This ordering ensures that inner contexts can consume outer ones (e.g., `CartCon
 | Order tracking | `Orders` with real-time status | `GET /api/orders/user/{userId}`, WebSocket |
 | Reorder | `Orders` reorder button | `POST /api/orders` (prefilled) |
 | Submit review | `Orders` review form (1-5 stars, 200 chars) | `POST /api/reviews` |
-| Wallet | `Wallet`, `PaymentGatewayModal` | `GET /api/wallet/balance`, `POST /api/wallet/student-topup` |
+| Wallet | `Wallet`, `PaymentGatewayModal` | `GET /api/wallet/balance`, `POST /api/wallet/student-topup` (creates pending request, shows "Request Submitted" amber confirmation) |
 | Notifications | `NotificationBell` in Navbar | WebSocket `/user/{username}/queue/notifications` |
 
 ### Staff Interface
@@ -253,7 +253,7 @@ This ordering ensures that inner contexts can consume outer ones (e.g., `CartCon
 |---------|-------------|------------------|
 | Staff management | `AdminConsole`, `StaffCard` | `GET /api/admin/users?role=STAFF`, `POST /api/admin/staff`, `DELETE /api/admin/users/{id}` |
 | Student list | `AdminConsole` | `GET /api/admin/users?role=STUDENT` |
-| Wallet top-ups | `WalletTable` | `POST /api/wallet/topup` |
+| Wallet top-ups | `WalletTable` | `POST /api/wallet/topup` (direct credit), `GET /api/wallet/topup-requests`, `PUT /api/wallet/topup-requests/{id}/approve`, `PUT /api/wallet/topup-requests/{id}/reject` |
 | Analytics dashboard | `AnalyticsDashboard` | `GET /api/admin/analytics/dashboard`, `/revenue` |
 | CSV export | `AnalyticsDashboard` | `GET /api/admin/analytics/export` |
 | Audit log | `AuditLogTable` | `GET /api/admin/audit` |
@@ -285,7 +285,7 @@ Five React Context providers manage global state. Each exports a provider compon
 |---------|------|--------------|
 | `AuthContext` | `useAuth()` | JWT token, userId, username, role, assignedCafeteriaId, login/logout functions |
 | `CartContext` | `useCart()` | Cart items array, add/remove/update/clear, cafeteria scoping (items locked to one cafeteria), subtotal calculation |
-| `WalletContext` | `useWallet()` | Gold Krakens balance, `refreshBalance()` for post-transaction updates |
+| `WalletContext` | `useWallet()` | Gold Krakens balance, `refreshBalance()` for post-transaction updates; subscribes to `/user/{username}/queue/notifications` WebSocket topic for `TOPUP_APPROVED` events to auto-refresh balance |
 | `ThemeContext` | `useTheme()` | Dark/light mode string, `toggleTheme()`, persisted to `localStorage("theme")` |
 | `ToastContext` | `useToast()` | Toast notification queue, `showToast(message, type)`, auto-dismiss with configurable duration |
 
@@ -308,7 +308,7 @@ The frontend connects to the backend via SockJS (HTTP fallback for environments 
 |-------|-----------|---------|
 | `/topic/orders` | `NotificationBell` | Broadcast order status changes (all users) |
 | `/topic/staff` | `StaffDashboard` | New order alerts for staff queue |
-| `/user/{username}/queue/notifications` | `NotificationBell` | User-specific order status notifications |
+| `/user/{username}/queue/notifications` | `NotificationBell`, `WalletContext` | User-specific notifications: order status changes (`ORDER_STATUS` type) and top-up approval (`TOPUP_APPROVED` type — triggers balance refresh) |
 
 **SockJS global shim:** The `index.html` includes `var global = globalThis;` because `sockjs-client` references Node's `global` object, which does not exist in Vite's ESM dev mode.
 

@@ -26,12 +26,12 @@ Demeter has **three independently running services**, each with its own test sui
 
 | Service | Tech Stack | Port | Tests |
 |---------|-----------|------|-------|
-| **Backend** | Java 17, Spring Boot 3.5.10, Maven | 8080 | 60 |
+| **Backend** | Java 17, Spring Boot 3.5.10, Maven | 8080 | 67 |
 | **Frontend** | React 19, Vite 7, Tailwind CSS 3 | 5173 | 55 |
 | **AI Service** | Python 3.11, FastAPI | 8001 | 49 |
-| **Total** | | | **164** |
+| **Total** | | | **171** |
 
-All 164 tests run automatically in CI (GitHub Actions) on every push and pull request to `main`. No external database or running server is required — the backend uses H2 in-memory, the frontend uses jsdom, and the AI service uses FastAPI TestClient.
+All 171 tests run automatically in CI (GitHub Actions) on every push and pull request to `main`. No external database or running server is required — the backend uses H2 in-memory, the frontend uses jsdom, and the AI service uses FastAPI TestClient.
 
 ---
 
@@ -128,6 +128,7 @@ Example error response:
 | `AI_SERVICE_UNAVAILABLE` | 503 | AI service is temporarily unavailable |
 | `ORDER_CANNOT_BE_CANCELLED` | 400 | Order can only be cancelled before staff confirmation |
 | `INVALID_ORDER_TRANSITION` | 400 | Invalid order status transition |
+| `TOPUP_REQUEST_NOT_FOUND` | 404 | Top-up request not found |
 | `INTERNAL_ERROR` | 500 | Internal server error |
 
 ### Rate Limiting
@@ -296,8 +297,11 @@ PLACED -> CONFIRMED -> PREPARING -> READY -> COMPLETED
 |--------|------|------|-------------|
 | `GET` | `/api/wallet/balance` | Authenticated | Get current user's Gold Krakens balance |
 | `GET` | `/api/wallet/transactions` | Authenticated | Get current user's transaction history |
-| `POST` | `/api/wallet/topup` | ADMIN | Top up a user's wallet |
-| `POST` | `/api/wallet/student-topup` | STUDENT | Self-service top-up (max 500 GK) |
+| `POST` | `/api/wallet/topup` | ADMIN | Direct wallet top-up for any user (instant credit) |
+| `POST` | `/api/wallet/student-topup` | STUDENT | Submit a top-up request (max 500 GK) — creates a `PendingTopUp` entry, no instant credit |
+| `GET` | `/api/wallet/topup-requests` | ADMIN | List all pending student top-up requests |
+| `PUT` | `/api/wallet/topup-requests/{id}/approve` | ADMIN | Approve a pending request, credit the student's wallet, notify via WebSocket |
+| `PUT` | `/api/wallet/topup-requests/{id}/reject` | ADMIN | Reject a pending request (no wallet change) |
 
 **POST /api/wallet/topup** — Request body:
 
@@ -316,7 +320,11 @@ PLACED -> CONFIRMED -> PREPARING -> READY -> COMPLETED
 }
 ```
 
-Response: `ApiResponse<BalanceResponse>` with `{ userId, balance }`
+Response: `ApiResponse<PendingTopUp>` with `{ requestId, userId, username, amount, requestedAt }` confirming the request was submitted (no balance data returned — credit is deferred until admin approval).
+
+**GET /api/wallet/topup-requests** — Response: `ApiResponse<List<PendingTopUp>>` with each entry containing `{ requestId, userId, username, amount, requestedAt }`
+
+**PUT /api/wallet/topup-requests/{id}/approve** — On approval: credits the student's wallet via `KrakensWalletService.credit()` and sends a `TOPUP_APPROVED` WebSocket message to `/user/{username}/queue/notifications`.
 
 Transactions response: `ApiResponse<List<TransactionResponse>>` with each entry containing `{ transactionId, transactionType, amount, balanceBefore, balanceAfter, description, referenceId, createdAt }`
 
@@ -656,7 +664,7 @@ The server validates the JWT on connection and assigns the user principal for us
 | `/topic/staff` | Staff dashboards | New order placed |
 | `/topic/orders` | Student order tracking | Order status updated |
 | `/topic/admin` | Admin dashboards | Admin-relevant events |
-| `/user/{username}/queue/notifications` | Specific user | Personal notifications (order status changes for their orders) |
+| `/user/{username}/queue/notifications` | Specific user | Personal notifications (order status changes, top-up approval/rejection) |
 
 ### Message Format
 
@@ -675,7 +683,7 @@ All WebSocket messages use the `NotificationMessage` schema:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `type` | String | Message type: `NEW_ORDER`, `ORDER_STATUS`, `TEST` |
+| `type` | String | Message type: `NEW_ORDER`, `ORDER_STATUS`, `TOPUP_REQUEST`, `TOPUP_APPROVED`, `TOPUP_REJECTED`, `TEST` |
 | `title` | String | Short notification title |
 | `message` | String | Full notification text |
 | `orderId` | String | Associated order ID (optional) |
@@ -692,7 +700,7 @@ WebSocket connections are restricted to:
 
 ## 6. Backend Test Suite
 
-**60 tests** across 8 test classes. All tests use JUnit 5 with Mockito or Spring Boot Test.
+**67 tests** across 9 test classes. All tests use JUnit 5 with Mockito or Spring Boot Test.
 
 ### Test Infrastructure
 
@@ -780,6 +788,20 @@ WebSocket connections are restricted to:
 | `debit_insufficientBalance_shouldThrow` | Debiting more than available balance throws `AppException` |
 | `credit_shouldAddAndRecordTransaction` | Crediting adds to balance and records a transaction |
 | `getTransactionHistory_shouldReturnTransactions` | Returns transaction history ordered by creation date descending |
+
+### TopUpRequestServiceTest (7 tests)
+
+`@ExtendWith(MockitoExtension.class)` — Unit tests for `TopUpRequestService`.
+
+| Test Method | What It Verifies |
+|-------------|-----------------|
+| `createRequest_shouldStoreAndNotifyAdmin` | Creating a top-up request stores a `PendingTopUp` with correct fields and notifies admin via WebSocket |
+| `createRequest_shouldIncrementIds` | Successive requests get incrementing request IDs |
+| `getPendingRequests_shouldReturnAll` | Returns all pending requests from the in-memory store |
+| `approveRequest_shouldCreditAndNotifyStudent` | Approving credits the student's wallet via `KrakensWalletService.credit()`, sends a `TOPUP_APPROVED` WebSocket notification, and removes from pending |
+| `approveRequest_notFound_shouldThrow` | Non-existent request ID throws `AppException` |
+| `rejectRequest_shouldRemoveAndNotifyStudent` | Rejecting removes from pending, notifies student, and does not touch the wallet |
+| `rejectRequest_notFound_shouldThrow` | Non-existent request ID throws `AppException` |
 
 ### JwtUtilTest (7 tests)
 
@@ -970,7 +992,7 @@ Three independent jobs run in parallel:
 │ Java 17     │  │ Node 20      │  │ Python 3.11   │
 │ Maven cache │  │ npm cache    │  │ pip cache     │
 │ mvn verify  │  │ lint + test  │  │ pytest        │
-│ (60 tests)  │  │ + build      │  │ (49 tests)    │
+│ (67 tests)  │  │ + build      │  │ (49 tests)    │
 │             │  │ (55 tests)   │  │               │
 └─────────────┘  └──────────────┘  └──────────────┘
 ```
@@ -979,7 +1001,7 @@ Three independent jobs run in parallel:
 
 1. Checkout code
 2. Set up Java 17 (Eclipse Temurin) with Maven cache
-3. `cd backend && mvn clean verify` — compiles, runs 60 tests with H2 in-memory database, packages
+3. `cd backend && mvn clean verify` — compiles, runs 67 tests with H2 in-memory database, packages
 
 No external database required. Tests use H2 configured in `src/test/resources/application.properties`.
 
@@ -1009,7 +1031,7 @@ No external database required. Tests use H2 configured in `src/test/resources/ap
 ```bash
 cd backend
 
-# Run all 60 tests
+# Run all 67 tests
 mvn test
 
 # Run a single test class

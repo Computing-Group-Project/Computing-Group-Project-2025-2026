@@ -3,3 +3,6 @@ target/
 *.iml
 .git
 .mvn/wrapper/maven-wrapper.jar
+.env
+*.log
+src/test/

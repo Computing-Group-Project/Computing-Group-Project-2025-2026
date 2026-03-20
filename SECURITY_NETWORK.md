@@ -65,8 +65,9 @@ Each service has a **health check** so Docker knows when it's ready before start
 
 When a student places an order or staff updates its status, the other side gets notified instantly through **WebSocket** — a persistent connection between the browser and the backend.
 
-- Students receive updates on `/topic/orders` and personal notifications on `/user/queue/notifications` — displayed via the NotificationBell component (bell icon with unread count badge and scrollable notification history dropdown)
+- Students receive updates on `/topic/orders` and personal notifications on `/user/{username}/queue/notifications` — displayed via the NotificationBell component (bell icon with unread count badge and scrollable notification history dropdown)
 - Staff receive updates on `/topic/staff`
+- Admins receive updates on `/topic/admin` (e.g., new top-up requests)
 - The connection requires a valid login token (JWT) — you can't eavesdrop without being logged in
 - If the connection drops, the browser automatically retries (up to 10 times, waiting longer each time)
 
@@ -113,9 +114,11 @@ This prevents accidental deployment with a weak secret.
 | Role | Can Access |
 |---|---|
 | **Anyone** (not logged in) | View cafeterias, menus, and reviews |
-| **Student** | Place orders, manage wallet, submit reviews |
+| **Student** | Place orders, manage wallet (request top-ups), submit reviews |
 | **Staff** | Manage orders, menu, and discounts for their assigned cafeteria |
-| **Admin** | Manage users, top up wallets, view analytics, view audit logs |
+| **Admin** | Manage users, approve/reject wallet top-up requests, direct top-up, view analytics, view audit logs |
+
+**Student top-up approval as a security control:** Students cannot credit their own wallets directly. Submitting `POST /api/wallet/student-topup` creates a pending request in memory; an admin must explicitly approve it via `PUT /api/wallet/topup-requests/{id}/approve` before any credit is applied. This prevents unauthorized balance inflation and ensures all credits are admin-verified. Approve and reject actions are both `@LogActivity`-audited (`APPROVE_TOPUP`, `REJECT_TOPUP`).
 
 The backend enforces these rules on **every request**. The frontend also hides buttons/pages based on role, but the real security is on the backend — even if someone bypasses the frontend, the backend will reject unauthorized requests.
 
@@ -189,7 +192,7 @@ Swagger UI (interactive API documentation) is available for development. In prod
 
 ### Audit Logging
 
-Every important action is recorded in an audit log via `@LogActivity` annotations (20 methods covered across 7 services: auth, menu, orders, discounts, users, wallet, reviews). Each entry records:
+Every important action is recorded in an audit log via `@LogActivity` annotations (22 methods covered across 8 services: auth, menu, orders, discounts, users, wallet, reviews, top-up requests). Each entry records:
 - Who did it (user ID)
 - What they did
 - When they did it
@@ -285,7 +288,7 @@ A cafeteria ordering system for Bastion University. Students browse menus, place
 
 6. **No secrets are stored in the code.** Database passwords, signing keys, and API keys are all loaded from environment variables that are never committed to Git.
 
-7. **Everything important is logged.** 20 audited operations across 7 services — order placements, status changes, user management, wallet transactions, reviews, discounts — all recorded with who, what, when, and from where (IP address).
+7. **Everything important is logged.** 22 audited operations across 8 services — order placements, status changes, user management, wallet transactions, top-up request approvals/rejections, reviews, discounts — all recorded with who, what, when, and from where (IP address).
 
 8. **The AI service is locked down.** It only accepts requests from the backend (via API key), runs as a non-root user, and never exposes internal error details to users.
 
