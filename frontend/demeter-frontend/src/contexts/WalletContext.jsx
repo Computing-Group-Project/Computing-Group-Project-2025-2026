@@ -52,7 +52,7 @@ export const WalletProvider = ({ children }) => {
     });
 
     return () => disconnectWebSocket();
-  }, [isAuthenticated, user?.role, fetchBalance]);
+  }, [isAuthenticated, user?.role, user?.username, fetchBalance]);
 
   const refreshBalance = fetchBalance;
 
