@@ -8,6 +8,5 @@ import lombok.Getter;
 public class ImageUploadResponse {
 
     private String relativePath;
-
     private String url;
 }
