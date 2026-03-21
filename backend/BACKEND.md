@@ -515,7 +515,7 @@ PLACED ──────> CONFIRMED ──────> PREPARING ────�
 - `READY` -> `COMPLETED`
 - `COMPLETED` and `CANCELLED` are terminal (no outbound transitions)
 
-When an order is cancelled, `OrderService` automatically issues a wallet refund via `KrakensWalletService.credit()` and creates a `REFUND` Payment record.
+When an order is cancelled, `OrderService` automatically issues a wallet refund via `KrakensWalletService.credit()`. The refund is tracked in `TransactionHistory` only (no separate REFUND Payment record is created — the original PURCHASE Payment remains as the sole payment record for the order).
 
 ### Pessimistic Locking on Wallet
 
@@ -528,6 +528,26 @@ Entity-to-DTO conversion uses ModelMapper throughout. Configured as a Spring Bea
 ### Lombok
 
 All entity classes use Lombok annotations (`@Getter`, `@Setter`, `@Data`, `@Builder`, `@NoArgsConstructor`, `@AllArgsConstructor`). Do not write manual getters/setters.
+
+### DiscountApplicationService
+
+`DiscountApplicationService` handles discount calculation for cart checkout. It resolves the best applicable discount for a set of cart items and computes the effective price. The service handles the `COMBO` alias alongside `COMBO_FIXED_PRICE` — both are treated as the same discount type (combo fixed price) when matching and calculating discounts.
+
+### Staff Order Queue States
+
+The staff dashboard order queue displays orders in 4 active states: **Pending** (PLACED), **Confirmed**, **Preparing**, and **Ready**. Each state has action buttons to advance to the next state. COMPLETED and CANCELLED orders are excluded from the active queue view (`activeOnly=true`).
+
+### Database Performance Indexes
+
+16 indexes are defined in `schema.sql` to optimize common query patterns. In addition to the 11 core indexes documented in DATABASE.md, 5 additional indexes were added for query performance:
+
+| Index | Table | Columns | Optimizes |
+|---|---|---|---|
+| `idx_review_user` | Review | `(user_id)` | User review history lookup |
+| `idx_audit_user` | AuditLog | `(user_id)` | Audit log filtering by actor |
+| `idx_payment_user` | Payment | `(user_id)` | Payment history by user |
+| `idx_menuitem_category` | MenuItem | `(category_id)` | Menu filtering by category |
+| `idx_menuitemtag_tag` | MenuItemTag | `(tag_id)` | Tag-based menu item lookup |
 
 ---
 

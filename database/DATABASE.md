@@ -25,7 +25,7 @@ MySQL 8 database for the Demeter Smart Cafeteria System. The schema is fully man
 
 | File | Purpose | Contents |
 |---|---|---|
-| `schema.sql` | DDL — table definitions and indexes | 19 `CREATE TABLE` statements + 11 performance indexes |
+| `schema.sql` | DDL — table definitions and indexes | 19 `CREATE TABLE` statements + 16 performance indexes |
 | `data.sql` | DML — seed data and synthetic order generation | Categories, cafeterias, users, menu items, tags, orders (via stored procedure), reviews, discounts, payments, audit log, transaction history |
 
 **Load order matters.** `schema.sql` must be loaded before `data.sql` because the seed data references tables and foreign keys defined in the schema.
@@ -387,6 +387,11 @@ All indexes are defined at the bottom of `schema.sql`. They optimize the most co
 | `idx_order_item_item_id` | OrderItem | `(item_id)` | Analytics — finding all orders containing a specific item |
 | `idx_menu_item_cafeteria` | MenuItem | `(cafeteria_id)` | Menu page loading items for a cafeteria |
 | `idx_discount_cafeteria_active` | Discount | `(cafeteria_id, is_active)` | Loading active discounts for a specific cafeteria |
+| `idx_review_user` | Review | `(user_id)` | User review history lookup |
+| `idx_audit_user` | AuditLog | `(user_id)` | Audit log filtering by actor |
+| `idx_payment_user` | Payment | `(user_id)` | Payment history by user |
+| `idx_menuitem_category` | MenuItem | `(category_id)` | Menu filtering by category |
+| `idx_menuitemtag_tag` | MenuItemTag | `(tag_id)` | Tag-based menu item lookup |
 
 ---
 
@@ -422,7 +427,7 @@ All users share the password `pass` (BCrypt hash: `$2b$12$6Yrg35Rp8rQ92WLygPMfzO
 | Staff | 23, 43, 45, 48 | 4 | STAFF | 0 GK | swain (Last Drop), jayce + heimerdinger (Hex Core), viktor (Skyline Sips) |
 | Admin | 61 | 1 | ADMIN | 0 GK | admin_user |
 
-All 56 students have a university ID in format `BU-1XXXX` (e.g., garen = `BU-10001`, lux = `BU-10002`). Students can log in with either their username or university ID.
+All 56 students have a university ID in format `BU-1XXXX` (e.g., garen = `BU-10001`, lux = `BU-10002`). Students can log in with either their username or university ID. 10 students now have `dietary_preferences` set in seed data (e.g., "Vegan", "Gluten-Free", "High-Protein", "Vegetarian", etc.) for AI recommendation personalization.
 
 ### Menu Items (54)
 
@@ -430,6 +435,7 @@ All 56 students have a university ID in format `BU-1XXXX` (e.g., garen = `BU-100
 
 - **Per cafeteria:** 5 Healthy items, 5 Fast Food items, 5 Breakfast items, 2 Combo items (frequently bought together), 1 Failing item (declining sales for AI discount training)
 - Prices range from 10 GK (Overpriced Tap Water) to 180 GK (Council Smash Burger)
+- All 54 menu items now have `description`, `image_url`, and `preparation_time` populated in seed data (no NULL values for these fields)
 - Full item listing with IDs and prices is documented in `ai-service/AI_SERVICE_CHANGES.md` under "Menu Item Reference"
 
 ### Menu Item Customizations (32)

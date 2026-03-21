@@ -125,7 +125,7 @@ function WalletTable() {
 
   return (
     <div className="space-y-6">
-      {/* Pending Top-Up Requests */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div className="bg-white dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-8">
         <div className="mb-6">
           <div className="flex items-center gap-2 mb-2">
@@ -289,6 +289,7 @@ function WalletTable() {
         {searchQuery && filteredStudents.length === 0 && !selectedStudent && (
           <div className="text-center py-8 text-light-textMuted dark:text-dark-textMuted">No students found matching &quot;{searchQuery}&quot;</div>
         )}
+      </div>
       </div>
     </div>
   );

@@ -7,30 +7,43 @@ const AuditLogTable = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterAction, setFilterAction] = useState('');
+  const [userNames, setUserNames] = useState({});
 
   useEffect(() => {
-    const fetchLogs = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get('/api/admin/audit');
-        const data = Array.isArray(res.data) ? res.data : (res.data.data || []);
+        const [auditRes, staffRes, studentRes] = await Promise.all([
+          api.get('/api/admin/audit'),
+          api.get('/api/admin/users?role=STAFF'),
+          api.get('/api/admin/users?role=STUDENT'),
+        ]);
+        const data = Array.isArray(auditRes.data) ? auditRes.data : (auditRes.data.data || []);
         data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setLogs(data);
+
+        const nameMap = {};
+        for (const u of [...(staffRes.data.data || []), ...(studentRes.data.data || [])]) {
+          nameMap[u.id] = u.username;
+        }
+        setUserNames(nameMap);
       } catch {
         setLogs([]);
       } finally {
         setLoading(false);
       }
     };
-    fetchLogs();
+    fetchData();
   }, []);
 
   const actionTypes = [...new Set(logs.map(l => l.action).filter(Boolean))].sort();
 
   const filtered = logs.filter(log => {
+    const s = search.toLowerCase();
     const matchSearch = !search ||
-      (log.action || '').toLowerCase().includes(search.toLowerCase()) ||
-      (log.targetTable || '').toLowerCase().includes(search.toLowerCase()) ||
+      (log.action || '').toLowerCase().includes(s) ||
+      (log.targetTable || '').toLowerCase().includes(s) ||
       String(log.userId || '').includes(search) ||
+      (userNames[log.userId] || '').toLowerCase().includes(s) ||
       (log.ipAddress || '').includes(search);
     const matchAction = !filterAction || log.action === filterAction;
     return matchSearch && matchAction;
@@ -70,7 +83,7 @@ const AuditLogTable = () => {
             <thead>
               <tr className="border-b border-light-border dark:border-dark-border">
                 <th className="text-left py-3 px-2 text-light-textMuted dark:text-dark-textMuted font-medium">Timestamp</th>
-                <th className="text-left py-3 px-2 text-light-textMuted dark:text-dark-textMuted font-medium">User ID</th>
+                <th className="text-left py-3 px-2 text-light-textMuted dark:text-dark-textMuted font-medium">User</th>
                 <th className="text-left py-3 px-2 text-light-textMuted dark:text-dark-textMuted font-medium">Action</th>
                 <th className="text-left py-3 px-2 text-light-textMuted dark:text-dark-textMuted font-medium">Target</th>
                 <th className="text-left py-3 px-2 text-light-textMuted dark:text-dark-textMuted font-medium">Status</th>
@@ -83,14 +96,26 @@ const AuditLogTable = () => {
                   <td className="py-3 px-2 text-light-text dark:text-dark-text whitespace-nowrap">
                     {log.createdAt ? new Date(log.createdAt).toLocaleString() : 'N/A'}
                   </td>
-                  <td className="py-3 px-2 text-light-text dark:text-dark-text">{log.userId ?? 'N/A'}</td>
+                  <td className="py-3 px-2 text-light-text dark:text-dark-text">
+                    {userNames[log.userId] ? (
+                      <span>{userNames[log.userId]} <span className="text-xs text-light-textMuted dark:text-dark-textMuted">#{log.userId}</span></span>
+                    ) : (log.userId ?? 'N/A')}
+                  </td>
                   <td className="py-3 px-2">
                     <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
                       {log.action || 'N/A'}
                     </span>
                   </td>
                   <td className="py-3 px-2 text-light-text dark:text-dark-text">
-                    {log.targetTable || '-'}{log.targetId ? ` #${log.targetId}` : ''}
+                    {log.targetTable || '-'}
+                    {log.targetId ? (
+                      <span>
+                        {' #'}{log.targetId}
+                        {(log.targetTable === 'USER' || log.targetTable === 'STUDENT' || log.targetTable === 'STAFF') && userNames[log.targetId] && (
+                          <span className="text-xs text-light-textMuted dark:text-dark-textMuted ml-1">({userNames[log.targetId]})</span>
+                        )}
+                      </span>
+                    ) : ''}
                   </td>
                   <td className="py-3 px-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${

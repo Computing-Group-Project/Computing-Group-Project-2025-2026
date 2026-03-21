@@ -287,7 +287,7 @@ PLACED -> CONFIRMED -> PREPARING -> READY -> COMPLETED
   +-> CANCELLED <-+
 ```
 
-- Cancellation is only allowed from `PLACED` or `CONFIRMED` states. Cancelling triggers an automatic wallet refund.
+- Cancellation is only allowed from `PLACED` or `CONFIRMED` states. Cancelling triggers an automatic wallet refund via `TransactionHistory` (REFUND type). Note: no separate REFUND Payment record is created — the original PURCHASE Payment remains as the sole payment record for the order.
 
 ---
 

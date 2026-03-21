@@ -70,6 +70,7 @@ When a student places an order or staff updates its status, the other side gets 
 - Admins receive updates on `/topic/admin` (e.g., new top-up requests)
 - The connection requires a valid login token (JWT) — you can't eavesdrop without being logged in
 - If the connection drops, the browser automatically retries (up to 10 times, waiting longer each time)
+- **Active order polling:** The student Navbar's active order indicator uses API polling (30-second interval via `setInterval`) instead of an additional WebSocket subscription. This avoids opening multiple concurrent WebSocket connections per client, reducing server resource usage and preventing potential rate limit exhaustion from parallel connection management.
 
 ---
 

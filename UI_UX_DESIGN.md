@@ -151,6 +151,10 @@ The theme system uses Tailwind's **class-based dark mode** (`darkMode: 'class'` 
 4. All components use Tailwind's `dark:` prefix to declare dark mode styles inline.
 5. A safety check (`useTheme` throws if used outside `ThemeProvider`) prevents silent failures.
 
+### 3.1.1 Synced Theme Transitions
+
+When toggling between dark and light mode, a `theme-transitioning` CSS class is temporarily added to `<html>`. This enables a global 300ms transition (`background-color`, `color`, `border-color`) on all elements so every component transitions in sync — preventing the jarring effect of some elements changing instantly while others lag behind. The class is automatically removed after the transition completes.
+
 ### 3.2 ThemeToggle Component
 
 The ThemeToggle is a **fixed-position** button (`fixed bottom-5 right-5 z-[9999]`) that floats above all content on every page:
@@ -203,6 +207,7 @@ The logo is a `w-9 h-9 rounded-lg` square showing the letter "D" by default, lin
 | Feature | Student | Staff | Admin |
 |---|---|---|---|
 | Wallet balance chip | Yes | No | No |
+| Active order indicator (clipboard icon with count badge) | Yes | No | No |
 | Cart icon with badge | Yes | No | No |
 | Notification bell | Yes | Yes | No |
 | Profile avatar | Yes | Yes | Yes |
@@ -238,9 +243,10 @@ A bottom-sheet modal for food customization:
 - **Backdrop:** Fixed overlay (`fixed inset-0 z-50`) with `bg-black/60 backdrop-blur-sm` and `animate-fade-in`
 - **Sheet:** Slides up from bottom (`translate-y-full` to `translate-y-0`), `rounded-t-3xl`, `max-w-lg`, `max-h-[90vh]`
 - **Hero image:** `h-[230px]` with close button (circular `w-10 h-10 rounded-full`)
+- **Discount-aware pricing:** If an active discount applies, displays the effective (discounted) price alongside the strikethrough original price. A green discount badge shows the discount type and value (e.g., "10% off", "BOGO", "Combo Deal"). The `effectivePrice` is computed from the best applicable discount.
 - **Extras selection:** Toggleable rows with checkbox indicators, `border-cyan-400` when active, `bg-cyan-400` checkbox fill
 - **Quantity picker:** Circular increment/decrement buttons (`w-10 h-10 rounded-full`) in a `rounded-xl` container
-- **Add to Order button:** Full-width `rounded-xl bg-teal-400 hover:bg-cyan-500` with scale effect (`hover:scale-[1.02]`)
+- **Add to Order button:** Full-width `rounded-xl bg-teal-400 hover:bg-cyan-500` with scale effect (`hover:scale-[1.02]`), displays total with effective price
 - **Close animation:** Sets `show` to false, waits 250ms, then calls `onClose`
 
 ### 4.4 CafeteriaCard
@@ -366,7 +372,8 @@ A React class component wrapping the entire application:
 #### CafeMenu (`/cafe/:id`)
 
 - **Floating navigation pill:** Portal-rendered fixed pill (`z-[60]`) at top center that morphs between "Back to Dashboard" and the cafeteria name as user scrolls. Uses a scroll event listener with `getBoundingClientRect()` to detect when the banner scrolls past the navbar (70px). Text swaps via dual overlapping spans with callback refs (`useCallback`) for width measurement, crossfade opacity + Y-translate animation over 500ms.
-- **Discount badges:** Menu items with active discounts show a green "X% off" or "GK X off" badge on the image and a strikethrough original price next to the discounted price.
+- **Deal type filter pills:** Green-tinted pills (`bg-emerald-400/20 text-emerald-400 border-emerald-400/30`) for filtering by discount type: "On Sale" (any active discount), "BOGO" (with partner item name), "Combo" (with partner item name), "% Off" (percentage discounts). Shown alongside teal category pills. Selecting a deal filter shows only menu items with matching active discounts.
+- **Discount badges on menu cards:** Menu items with active discounts show a green badge on the image. BOGO badges display "BOGO w/ {partner name}", Combo badges display "Combo w/ {partner name}", and percentage badges display "X% off". Strikethrough original price next to the discounted price.
 - **Hero banner:** `h-[180px] sm:h-[260px] rounded-2xl` with dark overlay and centered cafeteria name
 - **Search + category filters:** SearchBar alongside pill-shaped filter buttons (`rounded-full`). Active filter: `bg-teal-400 text-black`. Inactive: bordered outline.
 - **Menu grid:** `md:grid-cols-2 lg:grid-cols-3 gap-8` of FoodCard (menu variant)
@@ -376,7 +383,7 @@ A React class component wrapping the entire application:
 
 - **Empty state:** Centered icon (`Sparkles` in gray circle), heading, subtext, and "Browse Cafeterias" teal button
 - **Cart items:** Left column with horizontal card layout (image + details + quantity controls + price + delete icon). Quantity editing via +/− buttons; minus at qty=1 shows trash icon and removes item. Shows "GK X each" subtitle when qty > 1.
-- **Order summary:** Right column sticky card with subtotal, available discounts (radio buttons), discount amount, total, current balance display, and "Pay with Gold Krakens" button (`bg-yellow-400`)
+- **Order summary:** Right column sticky card with subtotal, auto-applied best discount (no manual selection — the system automatically picks the highest-value applicable discount and displays it with a green badge), discount amount, total, current balance display, and "Pay with Gold Krakens" button (`bg-yellow-400`)
 - **Recommendations:** "You might also like" section below cart with mini cards from AI (same-cafeteria, not-in-cart filtering)
 - **Layout:** `lg:grid-cols-[1.65fr_1fr]` — items get more space than summary
 
@@ -408,6 +415,7 @@ A React class component wrapping the entire application:
 - **Tab system:** Three buttons — Orders (active by default), Menu, and Promotions (navigates to `/admin/promotions`). Active tab: `bg-teal-400 text-gray-900`. Inactive: bordered white/gray.
 - **Orders tab:**
   - Stat cards row: Pending Orders (highlighted), Completed Today (emerald), Today's Revenue (yellow with GK prefix). Grid: `md:grid-cols-3`.
+  - **4-state order queue:** Orders progress through Pending (PLACED) -> Confirmed -> Preparing -> Ready. Each state has color-coded action buttons. COMPLETED and CANCELLED orders are filtered out of the active queue.
   - Two-column layout (`lg:grid-cols-2`): QueueList (live order queue) + DiscountSuggestion (AI-generated discount proposals)
 - **Menu tab:** MenuEditor component for CRUD operations on menu items
 

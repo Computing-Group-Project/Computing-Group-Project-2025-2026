@@ -50,8 +50,8 @@ src/
 │
 ├── student/                          # Student page components
 │   ├── StudentHome.jsx               # Landing page — cafeteria cards, AI recommendations
-│   ├── CafeMenu.jsx                  # Cafeteria menu browser with search, tags, categories, discount badges
-│   ├── Cart.jsx                      # Shopping cart — customizations, discounts, GK checkout
+│   ├── CafeMenu.jsx                  # Cafeteria menu browser with search, tags, categories, deal type filters, discount badges
+│   ├── Cart.jsx                      # Shopping cart — customizations, auto-applied best discount, GK checkout
 │   ├── Orders.jsx                    # Order history — status tracking, reorder, review submission
 │   ├── Wallet.jsx                    # Gold Krakens balance, transaction history, self-top-up
 │   └── __tests__/                    # Tests for all student pages
@@ -73,7 +73,7 @@ src/
 │   ├── common/                       # Shared UI components
 │   │   ├── Navbar.jsx                # Role-aware navigation bar (different colors/links per role)
 │   │   ├── FoodCard.jsx              # Menu item card — image, price, tags, discount badge, add-to-cart
-│   │   ├── FoodModal.jsx             # Item detail modal — customizations, quantity selector
+│   │   ├── FoodModal.jsx             # Item detail modal — customizations, quantity selector, discount-aware pricing (effectivePrice, discount badge)
 │   │   ├── SearchBar.jsx             # Search input with debounced filtering
 │   │   ├── NotificationBell.jsx      # WebSocket-powered notification dropdown with unread badge
 │   │   ├── ProfileModal.jsx          # User profile overlay
@@ -227,8 +227,8 @@ This ordering ensures that inner contexts can consume outer ones (e.g., `CartCon
 | Browse cafeterias | `StudentHome`, `CafeteriaCard` | `GET /api/cafeterias` |
 | AI recommendations | `StudentHome` (session-cached, dietary/category tags) | `GET /api/recommendations` |
 | Browse menu + discounts | `CafeMenu`, `FoodCard`, `FoodModal` | `GET /api/menus/cafeteria/{id}`, `GET /api/discounts/cafeteria/{id}/active` |
-| Search and filter | `SearchBar`, category tabs, tag badges | Client-side filtering |
-| Shopping cart | `Cart` with customizations and discounts | Client-side (CartContext) |
+| Search and filter | `SearchBar`, category tabs, tag badges, deal type filter pills (On Sale, BOGO, Combo, % Off) | Client-side filtering |
+| Shopping cart | `Cart` with customizations and auto-applied best discount (no manual selection) | Client-side (CartContext) |
 | Place order | `Cart` checkout | `POST /api/orders` |
 | Order tracking | `Orders` with real-time status | `GET /api/orders/user/{userId}`, WebSocket |
 | Reorder | `Orders` reorder button | `POST /api/orders` (prefilled) |
@@ -270,6 +270,7 @@ The `Navbar` component is role-aware. It renders different navigation links, log
 |---------|---------|-------|-------|
 | Logo accent color | Green | Blue | Red |
 | Wallet balance display | Yes | No | No |
+| Active order indicator (clipboard icon with count badge) | Yes | No | No |
 | Cart icon with item count | Yes | No | No |
 | Notification bell | Yes | No | No |
 | Profile modal | Yes | Yes | Yes |
@@ -285,9 +286,9 @@ Five React Context providers manage global state. Each exports a provider compon
 | Context | Hook | State Managed |
 |---------|------|--------------|
 | `AuthContext` | `useAuth()` | JWT token, userId, username, role, assignedCafeteriaId, login/logout functions |
-| `CartContext` | `useCart()` | Cart items array, add/remove/updateQuantity/clear, cafeteria scoping (items locked to one cafeteria with confirmation dialog on switch), subtotal calculation |
+| `CartContext` | `useCart()` | Cart items array, add/remove/updateQuantity/clear, cafeteria scoping (items locked to one cafeteria with confirmation dialog on switch), subtotal calculation. **Cart persistence:** items are saved to `localStorage` per user (`cart_{userId}`) and restored on login/refresh; cleared on logout. |
 | `WalletContext` | `useWallet()` | Gold Krakens balance, `refreshBalance()` for post-transaction updates; subscribes to `/user/{username}/queue/notifications` WebSocket topic for `TOPUP_APPROVED` events to auto-refresh balance |
-| `ThemeContext` | `useTheme()` | Dark/light mode string, `toggleTheme()`, persisted to `localStorage("theme")` |
+| `ThemeContext` | `useTheme()` | Dark/light mode string, `toggleTheme()`, persisted to `localStorage("theme")`. Adds `html.theme-transitioning` class during theme switch to enable a global 300ms transition on all elements, then removes it after the transition completes to avoid interfering with normal interactions. |
 | `ToastContext` | `useToast()` | Toast notification queue, `showToast(message, type)`, auto-dismiss with configurable duration |
 
 ---
@@ -343,6 +344,11 @@ Defined in `tailwind.config.js` under `theme.extend.colors`:
 | `success` | — | `#10B981` (green) | Success states |
 
 The `ThemeToggle` component renders as a floating button accessible from all pages.
+
+### Global CSS Fixes
+
+- **Horizontal scrollbar prevention:** `html, body { overflow-x: hidden; }` in `index.css` prevents unwanted horizontal scrollbars caused by full-width elements or animations.
+- **Theme transition sync:** When toggling dark/light mode, a `theme-transitioning` class is temporarily added to `<html>`, enabling `* { transition: background-color 300ms, color 300ms, border-color 300ms; }` globally so all elements transition smoothly in sync. The class is removed after the transition completes.
 
 ---
 
