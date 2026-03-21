@@ -22,18 +22,19 @@ function saveCart(key, cart) {
 
 export function CartProvider({ children }) {
   const { user } = useAuth();
-  const keyRef = useRef(getKey(user?.userId));
-  keyRef.current = getKey(user?.userId);
+  const storageKey = getKey(user?.userId);
+  const keyRef = useRef(storageKey);
 
-  const [cart, setCart] = useState(() => readCart(keyRef.current));
+  const [cart, setCart] = useState(() => readCart(storageKey));
   const [pendingItem, setPendingItem] = useState(null);
   const { showToast } = useToast();
   const showToastRef = useRef(showToast);
   useEffect(() => { showToastRef.current = showToast; }, [showToast]);
 
   useEffect(() => {
-    setCart(readCart(keyRef.current));
-  }, [user?.userId]);
+    keyRef.current = storageKey;
+    setCart(readCart(storageKey)); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [storageKey]);
 
   const setCartAndSave = useCallback((updater) => {
     setCart((prev) => {
