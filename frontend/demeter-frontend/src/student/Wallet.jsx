@@ -4,6 +4,7 @@ import StudentLayout from "../layouts/StudentLayout.jsx";
 import { useWallet } from "../contexts/WalletContext.jsx";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api.js";
+import LoadingSpinner from "../components/common/LoadingSpinner.jsx";
 import PaymentGatewayModal from "../components/common/PaymentGatewayModal.jsx";
 
 const Wallet = () => {
@@ -95,9 +96,7 @@ const Wallet = () => {
           </div>
 
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin h-8 w-8 border-4 border-teal-400 border-t-transparent rounded-full mx-auto"></div>
-            </div>
+            <LoadingSpinner />
           ) : (
             <div className="overflow-x-auto">
 

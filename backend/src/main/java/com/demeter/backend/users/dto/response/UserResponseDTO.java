@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -16,6 +17,7 @@ public class UserResponseDTO {
     private String role;
     private BigDecimal krakensBalance;
     private Integer assignedCafeteriaId;
+    private LocalDateTime createdAt;
 
     public UserResponseDTO(Long id, String username, String role) {
         this.id = id;

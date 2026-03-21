@@ -5,6 +5,7 @@ import {
   BarChart, Bar,
 } from 'recharts';
 import api from '../../utils/api.js';
+import LoadingSpinner from '../common/LoadingSpinner.jsx';
 
 const PERIODS = [
   { key: 'daily', label: 'Daily' },
@@ -83,12 +84,7 @@ function AnalyticsDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="text-center py-16">
-        <div className="animate-spin h-8 w-8 border-4 border-light-accent dark:border-dark-accent border-t-transparent rounded-full mx-auto mb-4"></div>
-        <p className="text-light-textMuted dark:text-dark-textMuted">Loading analytics...</p>
-      </div>
-    );
+    return <LoadingSpinner label="Loading analytics" />;
   }
 
   if (error) {

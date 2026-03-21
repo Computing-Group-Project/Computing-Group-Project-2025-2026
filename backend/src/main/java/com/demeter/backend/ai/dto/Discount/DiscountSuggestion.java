@@ -7,9 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-import java.util.Map;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,16 +16,14 @@ public class DiscountSuggestion {
     @JsonProperty("discount_type")
     private DiscountType discountType;
 
-    @JsonProperty("discount_value")
-    private Double discountValue;
+    @JsonProperty("target_item_id")
+    private Integer targetItemId;
 
-    @JsonProperty("applicable_items")
-    private List<Integer> applicableItems;
+    @JsonProperty("associated_item_id")
+    private Integer associatedItemId;
 
-    private Map<String, Object> requirements;
+    @JsonProperty("suggested_value")
+    private Double suggestedValue;
 
-    @JsonProperty("expected_impact")
-    private Map<String, Double> expectedImpact;
-
-    private String reasoning;
+    private String reason;
 }

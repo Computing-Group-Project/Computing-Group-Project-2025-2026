@@ -33,6 +33,7 @@ public class UserController {
         List<UserResponseDTO> dtos = users.stream()
                 .map(u -> {
                     UserResponseDTO dto = new UserResponseDTO(u.getId(), u.getUsername(), u.getRole());
+                    dto.setCreatedAt(u.getCreatedAt());
                     if ("STUDENT".equals(role)) {
                         dto.setKrakensBalance(u.getKrakensBalance());
                     }

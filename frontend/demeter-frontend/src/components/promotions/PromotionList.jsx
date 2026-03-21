@@ -13,6 +13,7 @@ const PromotionList = () => {
   const [selectedDiscount, setSelectedDiscount] = useState(null);
   const [filter, setFilter] = useState('ALL');
   const [cafeteriaMap, setCafeteriaMap] = useState({});
+  const [menuMap, setMenuMap] = useState({});
 
   useEffect(() => {
     const fetchCafeterias = async () => {
@@ -21,6 +22,16 @@ const PromotionList = () => {
         const map = {};
         (res.data.data || []).forEach(c => { map[c.cafeteriaId] = c.name; });
         setCafeteriaMap(map);
+
+        // Fetch menus for all cafeterias to resolve item IDs to names
+        const allMenus = {};
+        await Promise.all(Object.keys(map).map(async (cId) => {
+          try {
+            const menuRes = await api.get(`/api/menus/cafeteria/${cId}`);
+            (menuRes.data.data || []).forEach(item => { allMenus[item.menuId] = item.name; });
+          } catch { /* skip */ }
+        }));
+        setMenuMap(allMenus);
       } catch {
         // Keep empty map
       }
@@ -104,6 +115,18 @@ const PromotionList = () => {
     setShowForm(false);
     setSelectedDiscount(null);
     fetchDiscounts();
+  };
+
+  const resolveItemNames = (applicableItems) => {
+    if (!applicableItems) return null;
+    try {
+      const ids = typeof applicableItems === 'string' ? JSON.parse(applicableItems) : applicableItems;
+      if (!Array.isArray(ids) || ids.length === 0) return applicableItems;
+      const uniqueNames = [...new Set(ids.map(id => menuMap[id] || `Item #${id}`))];
+      return uniqueNames.join(' + ');
+    } catch {
+      return applicableItems;
+    }
   };
 
   const getStatusLabel = (discount) => {
@@ -232,7 +255,7 @@ const PromotionList = () => {
                   {/* Details */}
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
                     {discount.applicableItems && (
-                      <span>Items: {discount.applicableItems}</span>
+                      <span>Items: {resolveItemNames(discount.applicableItems)}</span>
                     )}
                     {discount.requirements && (
                       <span>Req: {discount.requirements}</span>

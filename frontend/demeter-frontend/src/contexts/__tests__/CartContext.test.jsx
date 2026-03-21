@@ -87,9 +87,8 @@ describe("CartContext", () => {
     expect(screen.getByTestId("total").textContent).toBe("0");
   });
 
-  it("auto-clears cart and shows toast when adding from a different cafeteria", async () => {
+  it("shows confirmation dialog when adding from a different cafeteria", async () => {
     const user = userEvent.setup();
-    mockShowToast.mockClear();
 
     render(
       <CartProvider>
@@ -102,14 +101,16 @@ describe("CartContext", () => {
     expect(screen.getByTestId("count").textContent).toBe("1");
     expect(screen.getByTestId("item-0").textContent).toBe("Burger");
 
-    // Add from cafeteria 2 — auto-clears and replaces
+    // Add from cafeteria 2 — shows confirmation dialog, cart unchanged
     await user.click(screen.getByText("Add Other Cafe"));
     expect(screen.getByTestId("count").textContent).toBe("1");
+    expect(screen.getByTestId("item-0").textContent).toBe("Burger");
+    expect(screen.getByText("Switch cafeteria?")).toBeInTheDocument();
+
+    // Confirm switch — clears cart and adds new item
+    await user.click(screen.getByText("Switch & Add"));
+    expect(screen.getByTestId("count").textContent).toBe("1");
     expect(screen.getByTestId("item-0").textContent).toBe("Smoothie");
-    expect(mockShowToast).toHaveBeenCalledWith(
-      "Cart cleared — switched to a different cafeteria.",
-      "info"
-    );
   });
 
   it("throws when useCart is used outside CartProvider", () => {

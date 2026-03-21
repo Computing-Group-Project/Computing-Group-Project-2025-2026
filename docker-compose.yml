@@ -30,7 +30,7 @@ services:
       mysql:
         condition: service_healthy
       ai-service:
-        condition: service_healthy
+        condition: service_started
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/demeter_db
       SPRING_DATASOURCE_USERNAME: root

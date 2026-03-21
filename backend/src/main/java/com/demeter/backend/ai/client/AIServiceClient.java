@@ -9,6 +9,7 @@ import com.demeter.backend.ai.dto.Review.ReviewAnalysisRequest;
 import com.demeter.backend.ai.dto.Review.ReviewAnalysisResponse;
 import com.demeter.backend.ai.exception.AIServiceException;
 import com.demeter.backend.ai.exception.AIServiceUnavailableException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
@@ -21,11 +22,14 @@ public class AIServiceClient {
 
     private final RestTemplate restTemplate;
     private final AIServiceConfig config;
+    private final ObjectMapper objectMapper;
 
     public AIServiceClient(@Qualifier("aiServiceRestTemplate") RestTemplate restTemplate,
-                           AIServiceConfig config) {
+                           AIServiceConfig config,
+                           ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.config = config;
+        this.objectMapper = objectMapper;
     }
 
     private HttpHeaders buildHeaders() {
@@ -70,9 +74,10 @@ public class AIServiceClient {
     public DiscountGenerationResponse generateDiscounts(DiscountGenerationRequest request) {
         return executeWithRetry(() -> {
             try {
-                log.info("Calling AI Service for discount generation - Cafeteria: {}", request.getCafeteriaId());
+                String jsonBody = objectMapper.writeValueAsString(request);
+                log.info("Calling AI Service for discount generation - Cafeteria: {} | JSON: {}", request.getCafeteriaId(), jsonBody);
 
-                HttpEntity<DiscountGenerationRequest> entity = new HttpEntity<>(request, buildHeaders());
+                HttpEntity<String> entity = new HttpEntity<>(jsonBody, buildHeaders());
                 ResponseEntity<DiscountGenerationResponse> response = restTemplate.exchange(
                         config.getBaseUrl() + config.getDiscountsEndpoint(),
                         HttpMethod.POST,
@@ -83,6 +88,7 @@ public class AIServiceClient {
                 return response.getBody();
 
             } catch (HttpClientErrorException | HttpServerErrorException e) {
+                log.error("AI Service error response [{}]: {}", e.getStatusCode(), e.getResponseBodyAsString());
                 throw new AIServiceException(
                         "Failed to generate discounts: " + e.getMessage(),
                         e,
@@ -143,7 +149,7 @@ public class AIServiceClient {
                 attempts++;
 
                 if (attempts < config.getMaxRetries()) {
-                    log.warn("Retry attempt {} for {}", attempts, opName);
+                    log.warn("Retry attempt {} for {} - {}", attempts, opName, e.getMessage());
                     try {
                         Thread.sleep(config.getRetryDelayMs() * attempts);
                     } catch (InterruptedException ie) {
@@ -153,7 +159,11 @@ public class AIServiceClient {
                 }
             }
         }
-        throw (AIServiceUnavailableException) lastException;
+        if (lastException instanceof AIServiceUnavailableException) {
+            throw (AIServiceUnavailableException) lastException;
+        }
+        throw new AIServiceException("AI service call failed after " + config.getMaxRetries() + " retries",
+                lastException, opName, 500);
     }
 
     @FunctionalInterface

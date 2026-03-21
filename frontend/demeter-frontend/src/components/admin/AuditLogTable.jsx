@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api.js';
+import LoadingSpinner from '../common/LoadingSpinner.jsx';
 
 const AuditLogTable = () => {
   const [logs, setLogs] = useState([]);
@@ -36,11 +37,7 @@ const AuditLogTable = () => {
   });
 
   if (loading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin h-8 w-8 border-4 border-teal-400 border-t-transparent rounded-full mx-auto"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

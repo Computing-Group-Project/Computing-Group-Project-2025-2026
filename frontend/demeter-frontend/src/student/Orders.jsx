@@ -7,6 +7,7 @@ import { useToast } from "../contexts/ToastContext.jsx";
 import { useWallet } from "../contexts/WalletContext.jsx";
 import { useCart } from "../contexts/CartContext.jsx";
 import api from "../utils/api.js";
+import LoadingSpinner from "../components/common/LoadingSpinner.jsx";
 import { connectWebSocket, subscribe, disconnectWebSocket } from "../utils/websocket.js";
 
 const statusToStep = {
@@ -159,7 +160,7 @@ export default function Orders() {
     return (
       <StudentLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="animate-spin h-10 w-10 border-4 border-teal-400 border-t-transparent rounded-full"></div>
+          <LoadingSpinner label="Loading orders" />
         </div>
       </StudentLayout>
     );

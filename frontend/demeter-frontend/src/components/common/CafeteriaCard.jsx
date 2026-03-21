@@ -27,6 +27,7 @@ function CafeteriaCard({ cafe }) {
     <div
       className="
       group
+      flex flex-col
       overflow-hidden
       rounded-2xl
       bg-white dark:bg-slate-800
@@ -84,7 +85,7 @@ function CafeteriaCard({ cafe }) {
 
 
       {/* BODY */}
-      <div className="p-6 transition-colors duration-300 group-hover:bg-gray-50 dark:group-hover:bg-slate-700/40">
+      <div className="flex-1 flex flex-col p-6 transition-colors duration-300 group-hover:bg-gray-50 dark:group-hover:bg-slate-700/40">
 
         {/* rating */}
         <Stars value={cafe.rating} />
@@ -120,6 +121,8 @@ function CafeteriaCard({ cafe }) {
 
         </div>
 
+        {/* spacer pushes button to bottom */}
+        <div className="flex-1" />
 
         {/* button */}
         <button

@@ -12,7 +12,7 @@ import { getFoodImage } from "../utils/foodImages.js";
 
 export default function Cart() {
 
-  const { cart, removeFromCart, clearCart } = useCart();
+  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
   const { balance, refreshBalance } = useWallet();
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -63,11 +63,13 @@ export default function Cart() {
           const cafeteriaId = cart[0].cafeteriaId;
           const cartItemIds = new Set(cart.map(i => i.menuItemId || i.id));
           const items = await Promise.all(recs
-            .filter(rec => !cartItemIds.has(rec.itemId))
+            .filter(rec => !cartItemIds.has(rec.item_id ?? rec.itemId))
             .slice(0, 3)
             .map(async (rec) => {
+              const itemId = rec.item_id ?? rec.itemId;
+              if (!itemId) return null;
               try {
-                const menuRes = await api.get(`/api/menus/${rec.itemId}`);
+                const menuRes = await api.get(`/api/menus/${itemId}`);
                 const item = menuRes.data?.data;
                 if (item && item.cafeteriaId === cafeteriaId) {
                   return {
@@ -215,17 +217,36 @@ export default function Cart() {
                           </p>
                         )}
 
-                        <p className="text-sm text-gray-500 dark:text-slate-400">
-                          Qty: {item.qty}
-                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <button
+                            onClick={() => item.qty <= 1 ? removeFromCart(index) : updateQuantity(index, item.qty - 1)}
+                            className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600 flex items-center justify-center text-sm font-bold transition-colors"
+                          >
+                            {item.qty <= 1 ? <Trash2 size={13} className="text-red-400" /> : '−'}
+                          </button>
+                          <span className="w-8 text-center text-sm font-semibold text-gray-900 dark:text-white">{item.qty}</span>
+                          <button
+                            onClick={() => updateQuantity(index, item.qty + 1)}
+                            className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600 flex items-center justify-center text-sm font-bold transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
 
                       </div>
 
                       <div className="flex items-center gap-6">
 
-                        <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                          GK {item.total}
-                        </p>
+                        <div className="text-right">
+                          <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                            GK {item.total.toFixed(2)}
+                          </p>
+                          {item.qty > 1 && (
+                            <p className="text-xs text-gray-400 dark:text-slate-500">
+                              GK {item.price} each
+                            </p>
+                          )}
+                        </div>
 
                         <Trash2
                           onClick={() => removeFromCart(index)}

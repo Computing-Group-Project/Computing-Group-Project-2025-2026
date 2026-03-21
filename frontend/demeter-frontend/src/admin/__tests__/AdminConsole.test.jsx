@@ -54,7 +54,7 @@ describe("AdminConsole", () => {
   });
 
   it("renders admin console header and tabs", async () => {
-    api.get.mockResolvedValueOnce({
+    api.get.mockResolvedValue({
       data: { data: [] },
     });
 
@@ -69,14 +69,18 @@ describe("AdminConsole", () => {
   });
 
   it("renders staff list from API", async () => {
-    api.get.mockResolvedValueOnce({
-      data: {
-        data: [
-          { id: 1, username: "swain" },
-          { id: 2, username: "chef_mike" },
-        ],
-      },
-    });
+    api.get
+      .mockResolvedValueOnce({
+        data: { data: [{ cafeteriaId: 1, name: "The Last Drop" }] },
+      })
+      .mockResolvedValueOnce({
+        data: {
+          data: [
+            { id: 1, username: "swain", assignedCafeteriaId: 1, createdAt: "2026-01-15T10:00:00" },
+            { id: 2, username: "chef_mike", assignedCafeteriaId: 1, createdAt: "2026-02-01T10:00:00" },
+          ],
+        },
+      });
 
     render(<AdminConsole />);
 
@@ -87,7 +91,7 @@ describe("AdminConsole", () => {
   });
 
   it("renders audit log tab", async () => {
-    api.get.mockResolvedValueOnce({ data: { data: [] } });
+    api.get.mockResolvedValue({ data: { data: [] } });
 
     render(<AdminConsole />);
 

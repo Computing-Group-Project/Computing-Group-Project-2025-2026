@@ -47,10 +47,13 @@ const mockRefreshBalance = vi.fn().mockResolvedValue(undefined);
 
 let mockCart = [];
 
+const mockUpdateQuantity = vi.fn();
+
 vi.mock("../../contexts/CartContext.jsx", () => ({
   useCart: () => ({
     cart: mockCart,
     removeFromCart: mockRemoveFromCart,
+    updateQuantity: mockUpdateQuantity,
     clearCart: mockClearCart,
   }),
 }));
@@ -93,7 +96,7 @@ describe("Cart", () => {
     expect(screen.getByText("Shopping Cart")).toBeInTheDocument();
     expect(screen.getByText("Neuro-Burger")).toBeInTheDocument();
     expect(screen.getByText("Quantum Quinoa")).toBeInTheDocument();
-    expect(screen.getByText("Qty: 2")).toBeInTheDocument();
+    expect(screen.getByText("2")).toBeInTheDocument();
   });
 
   it("calls API and navigates to orders on successful checkout", async () => {

@@ -9,6 +9,7 @@ import { useCart } from "../contexts/CartContext.jsx";
 import { useToast } from "../contexts/ToastContext.jsx";
 import api from "../utils/api.js";
 import { getFoodImage, getCafeteriaImage } from "../utils/foodImages.js";
+import LoadingSpinner from "../components/common/LoadingSpinner.jsx";
 
 // Fallback recommended items (used when API not available)
 const fallbackRecommended = [
@@ -58,8 +59,10 @@ export default function StudentHome() {
         const recs = res.data?.data?.recommendations || [];
         if (recs.length > 0) {
           const items = await Promise.all(recs.map(async (rec) => {
+            const itemId = rec.item_id ?? rec.itemId;
+            if (!itemId) return null;
             try {
-              const menuRes = await api.get(`/api/menus/${rec.itemId}`);
+              const menuRes = await api.get(`/api/menus/${itemId}`);
               const item = menuRes.data?.data;
               if (item) {
                 return {
@@ -69,7 +72,7 @@ export default function StudentHome() {
                   image: getFoodImage(item.name, item.imageUrl),
                   price: item.basePrice,
                   description: item.description || '',
-                  tag: rec.recommendationType?.toLowerCase() || 'recommended',
+                  tag: (rec.recommendation_type ?? rec.recommendationType ?? 'recommended').toLowerCase(),
                 };
               }
             } catch { /* skip failed items */ }
@@ -160,7 +163,7 @@ export default function StudentHome() {
                       price: item.price,
                       total: item.price,
                       extras: [],
-                      quantity: 1,
+                      qty: 1,
                     });
                     showToast(`${item.name} added to cart!`, "success");
                   }}
@@ -179,9 +182,7 @@ export default function StudentHome() {
             <p className="text-sm text-yellow-500 mb-2">Using cached data - couldn't reach server</p>
           )}
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin h-10 w-10 border-4 border-teal-400 border-t-transparent rounded-full mx-auto"></div>
-            </div>
+            <LoadingSpinner />
           ) : (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               {cafeterias.map((cafe) => (

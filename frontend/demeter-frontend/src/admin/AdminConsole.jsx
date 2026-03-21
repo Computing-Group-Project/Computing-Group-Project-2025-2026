@@ -7,6 +7,7 @@ import WalletTable from '../components/admin/WalletTable';
 const AnalyticsDashboard = React.lazy(() => import('../components/admin/AnalyticsDashboard'));
 import AuditLogTable from '../components/admin/AuditLogTable';
 import api from '../utils/api.js';
+import LoadingSpinner from '../components/common/LoadingSpinner.jsx';
 
 function AdminConsole() {
 
@@ -21,8 +22,8 @@ function AdminConsole() {
   const [cafeterias, setCafeterias] = useState([]);
 
   useEffect(() => {
-    if (activeTab === 'staff') fetchStaff();
-  }, [activeTab]);
+    if (activeTab === 'staff' && cafeterias.length > 0) fetchStaff();
+  }, [activeTab, cafeterias]);
 
   useEffect(() => {
     const fetchCafeterias = async () => {
@@ -48,8 +49,9 @@ function AdminConsole() {
         id: u.id,
         name: u.username.charAt(0).toUpperCase() + u.username.slice(1),
         status: 'Active',
-        joinedDate: 'N/A',
+        joinedDate: u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A',
         cafeteria: u.assignedCafeteriaId ? getCafeteriaName(u.assignedCafeteriaId) : 'Unassigned',
+        cafeteriaId: u.assignedCafeteriaId,
       })));
     } catch {
       setStaffList([]);
@@ -149,9 +151,7 @@ function AdminConsole() {
             )}
 
             {loadingStaff ? (
-              <div className="text-center py-8">
-                <div className="animate-spin h-8 w-8 border-4 border-teal-400 border-t-transparent rounded-full mx-auto"></div>
-              </div>
+              <LoadingSpinner />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {staffList.map(staff => (
@@ -165,7 +165,7 @@ function AdminConsole() {
         {activeTab === 'wallets' && <WalletTable />}
 
         {activeTab === 'analytics' && (
-          <React.Suspense fallback={<div className="text-center py-16"><div className="animate-spin h-8 w-8 border-4 border-light-accent dark:border-dark-accent border-t-transparent rounded-full mx-auto"></div></div>}>
+          <React.Suspense fallback={<LoadingSpinner label="Loading Analytics" />}>
             <AnalyticsDashboard />
           </React.Suspense>
         )}

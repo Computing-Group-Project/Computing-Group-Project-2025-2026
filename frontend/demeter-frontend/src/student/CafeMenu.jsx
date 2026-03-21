@@ -6,6 +6,7 @@ import SearchBar from "../components/common/SearchBar.jsx";
 import FoodCard from "../components/common/FoodCard.jsx";
 import FoodModal from "../components/common/FoodModal.jsx";
 import api from "../utils/api.js";
+import LoadingSpinner from "../components/common/LoadingSpinner.jsx";
 import { getFoodImage, getCafeteriaImage } from "../utils/foodImages.js";
 
 export default function CafeMenu() {
@@ -97,7 +98,7 @@ export default function CafeMenu() {
     return (
       <StudentLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="animate-spin h-10 w-10 border-4 border-teal-400 border-t-transparent rounded-full"></div>
+          <LoadingSpinner label="Loading menu" />
         </div>
       </StudentLayout>
     );

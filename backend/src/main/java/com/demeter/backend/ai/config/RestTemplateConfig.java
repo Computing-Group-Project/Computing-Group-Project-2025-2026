@@ -3,8 +3,8 @@ package com.demeter.backend.ai.config;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import java.time.Duration;
 
 @Configuration
 public class RestTemplateConfig {
@@ -17,15 +17,12 @@ public class RestTemplateConfig {
 
     @Bean(name = "aiServiceRestTemplate")
     public RestTemplate aiServiceRestTemplate(RestTemplateBuilder builder) {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(config.getConnectTimeout());
+        factory.setReadTimeout(config.getReadTimeout());
+
         return builder
-                .rootUri(config.getBaseUrl())
-                .setConnectTimeout(Duration.ofMillis(config.getConnectTimeout()))
-                .setReadTimeout(Duration.ofMillis(config.getReadTimeout()))
-                .additionalInterceptors((request, body, execution) -> {
-                    request.getHeaders().set("X-API-Key", config.getApiKey());
-                    request.getHeaders().set("Content-Type", "application/json");
-                    return execution.execute(request, body);
-                })
+                .requestFactory(() -> factory)
                 .build();
     }
 }

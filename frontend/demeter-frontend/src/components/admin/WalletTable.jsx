@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useToast } from '../../contexts/ToastContext.jsx';
 import api from '../../utils/api.js';
+import LoadingSpinner from '../common/LoadingSpinner.jsx';
 import { connectWebSocket, subscribe, disconnectWebSocket } from '../../utils/websocket.js';
 
 function WalletTable() {
@@ -146,9 +147,7 @@ function WalletTable() {
         </div>
 
         {pendingLoading && (
-          <div className="text-center py-8">
-            <div className="animate-spin h-8 w-8 border-4 border-amber-400 border-t-transparent rounded-full mx-auto"></div>
-          </div>
+          <LoadingSpinner />
         )}
 
         {!pendingLoading && pendingRequests.length === 0 && (
@@ -227,9 +226,7 @@ function WalletTable() {
         </div>
 
         {loading && (
-          <div className="text-center py-8">
-            <div className="animate-spin h-8 w-8 border-4 border-teal-400 border-t-transparent rounded-full mx-auto"></div>
-          </div>
+          <LoadingSpinner />
         )}
 
         {/* Results */}
