@@ -114,7 +114,7 @@ This prevents accidental deployment with a weak secret.
 | Role | Can Access |
 |---|---|
 | **Anyone** (not logged in) | View cafeterias, menus, and reviews |
-| **Student** | Place orders, manage wallet (request top-ups), submit reviews |
+| **Student** | Place orders, manage wallet (request top-ups), submit reviews, view active discounts on menus |
 | **Staff** | Manage orders, menu, and discounts for their assigned cafeteria |
 | **Admin** | Manage users, approve/reject wallet top-up requests, direct top-up, view analytics, view audit logs |
 

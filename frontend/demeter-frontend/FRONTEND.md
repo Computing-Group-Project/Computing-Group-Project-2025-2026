@@ -50,7 +50,7 @@ src/
 │
 ├── student/                          # Student page components
 │   ├── StudentHome.jsx               # Landing page — cafeteria cards, AI recommendations
-│   ├── CafeMenu.jsx                  # Cafeteria menu browser with search, tags, categories
+│   ├── CafeMenu.jsx                  # Cafeteria menu browser with search, tags, categories, discount badges
 │   ├── Cart.jsx                      # Shopping cart — customizations, discounts, GK checkout
 │   ├── Orders.jsx                    # Order history — status tracking, reorder, review submission
 │   ├── Wallet.jsx                    # Gold Krakens balance, transaction history, self-top-up
@@ -72,7 +72,7 @@ src/
 ├── components/
 │   ├── common/                       # Shared UI components
 │   │   ├── Navbar.jsx                # Role-aware navigation bar (different colors/links per role)
-│   │   ├── FoodCard.jsx              # Menu item card — image, price, tags, add-to-cart
+│   │   ├── FoodCard.jsx              # Menu item card — image, price, tags, discount badge, add-to-cart
 │   │   ├── FoodModal.jsx             # Item detail modal — customizations, quantity selector
 │   │   ├── SearchBar.jsx             # Search input with debounced filtering
 │   │   ├── NotificationBell.jsx      # WebSocket-powered notification dropdown with unread badge
@@ -225,8 +225,8 @@ This ordering ensures that inner contexts can consume outer ones (e.g., `CartCon
 | Feature | Component(s) | Backend Endpoint |
 |---------|-------------|------------------|
 | Browse cafeterias | `StudentHome`, `CafeteriaCard` | `GET /api/cafeterias` |
-| AI recommendations | `StudentHome` (session-cached) | `GET /api/recommendations` |
-| Browse menu | `CafeMenu`, `FoodCard`, `FoodModal` | `GET /api/menus/cafeteria/{id}` |
+| AI recommendations | `StudentHome` (session-cached, dietary/category tags) | `GET /api/recommendations` |
+| Browse menu + discounts | `CafeMenu`, `FoodCard`, `FoodModal` | `GET /api/menus/cafeteria/{id}`, `GET /api/discounts/cafeteria/{id}/active` |
 | Search and filter | `SearchBar`, category tabs, tag badges | Client-side filtering |
 | Shopping cart | `Cart` with customizations and discounts | Client-side (CartContext) |
 | Place order | `Cart` checkout | `POST /api/orders` |

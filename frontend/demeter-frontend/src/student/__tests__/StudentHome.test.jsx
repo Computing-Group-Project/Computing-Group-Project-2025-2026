@@ -87,7 +87,8 @@ describe("StudentHome", () => {
     render(<StudentHome />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Welcome back, John/)).toBeInTheDocument();
+      expect(screen.getByText(/Welcome back,/)).toBeInTheDocument();
+      expect(screen.getByText("John")).toBeInTheDocument();
     });
   });
 

@@ -370,7 +370,7 @@ All write operations are STAFF-only. Read operations are STAFF or ADMIN.
 | `GET` | `/api/discounts/{id}` | STAFF, ADMIN | Get discount by ID |
 | `GET` | `/api/discounts/active` | STAFF, ADMIN | List active discounts |
 | `GET` | `/api/discounts/cafeteria/{cafeteriaId}` | STAFF, ADMIN | List discounts by cafeteria |
-| `GET` | `/api/discounts/cafeteria/{cafeteriaId}/active` | STAFF, ADMIN | List active discounts by cafeteria |
+| `GET` | `/api/discounts/cafeteria/{cafeteriaId}/active` | STUDENT, STAFF, ADMIN | List active discounts by cafeteria (students use this for menu discount display) |
 | `GET` | `/api/discounts/pending` | STAFF, ADMIN | List pending AI-generated discounts |
 | `GET` | `/api/discounts/cafeteria/{cafeteriaId}/pending` | STAFF, ADMIN | List pending AI discounts by cafeteria |
 | `PUT` | `/api/discounts/{id}` | STAFF | Update a discount |

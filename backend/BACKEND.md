@@ -344,12 +344,13 @@ Error responses use `ErrorResponse`:
 | `DELETE` | `/api/menus/{id}` | Delete a menu item |
 | `POST` | `/api/ai/discounts/generate/{cafeteriaId}` | Generate AI discount suggestions |
 
-### Discount Management (staff/admin)
+### Discount Management (staff/admin, except where noted)
 
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/discounts` | List all discounts |
 | `GET` | `/api/discounts/active` | List active discounts |
+| `GET` | `/api/discounts/cafeteria/{cafeteriaId}/active` | List active discounts for a cafeteria (**also accessible to STUDENT** — used for menu discount display) |
 | `GET` | `/api/discounts/pending` | List pending (unapproved) discounts |
 | `POST` | `/api/discounts` | Create a discount |
 | `PUT` | `/api/discounts/{id}` | Update a discount |

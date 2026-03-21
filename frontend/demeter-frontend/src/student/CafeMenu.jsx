@@ -84,7 +84,8 @@ export default function CafeMenu() {
         // Fetch active discounts for this cafeteria
         try {
           const discRes = await api.get(`/api/discounts/cafeteria/${id}/active`);
-          setDiscounts(discRes.data || []);
+          const discData = discRes.data;
+          setDiscounts(Array.isArray(discData) ? discData : (Array.isArray(discData?.data) ? discData.data : []));
         } catch {
           setDiscounts([]);
         }
