@@ -1,4 +1,3 @@
-// AIServiceUnavailableException.java
 package com.demeter.backend.ai.exception;
 
 public class AIServiceUnavailableException extends AIServiceException {

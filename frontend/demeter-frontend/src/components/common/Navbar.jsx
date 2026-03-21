@@ -62,7 +62,6 @@ const Navbar = ({
         ${className}
       `}
     >
-      {/* LEFT SIDE */}
       <Link to={homeLinks[role] || "/"} className="flex items-center gap-3 cursor-pointer">
         <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold ${logoStyles[role] || logoStyles.STUDENT}`}>
           {logoLetter}
@@ -72,9 +71,7 @@ const Navbar = ({
         </h3>
       </Link>
 
-      {/* RIGHT SIDE */}
       <div className="flex items-center gap-4 md:gap-5">
-        {/* WALLET */}
         {showBalance && (
           <Link to="/wallet">
             <div
@@ -107,10 +104,8 @@ const Navbar = ({
           </Link>
         )}
 
-        {/* NOTIFICATIONS */}
         {showNotifications && <NotificationBell />}
 
-        {/* CART */}
         {showCart && (
           <Link to="/cart" aria-label="Shopping cart">
             <div className="relative w-6 h-6 flex items-center justify-center">
@@ -137,7 +132,6 @@ const Navbar = ({
           </Link>
         )}
 
-        {/* PROFILE */}
         {showProfile && (
           <div
             onClick={onProfileClick}
@@ -153,7 +147,6 @@ const Navbar = ({
           </div>
         )}
 
-        {/* LOGOUT */}
         {showExit && (
           <LogOut
             size={20}

@@ -54,7 +54,6 @@ const FoodCard = ({
       `}
     >
 
-      {/* IMAGE */}
       <div className="relative overflow-hidden">
         <img
           src={image}
@@ -62,14 +61,12 @@ const FoodCard = ({
           className={`w-full ${isMenu ? "h-[180px]" : "h-[220px]"} object-cover transition-transform duration-500 group-hover:scale-110`}
         />
 
-        {/* Badge for Home cards */}
         {!isMenu && badge && (
           <div className="absolute top-3 right-3 bg-black/70 text-white text-xs px-3 py-1 rounded-full backdrop-blur-sm">
             {badge}
           </div>
         )}
 
-        {/* Discount badge */}
         {discountLabel && (
           <div className="absolute top-3 left-3 bg-green-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-md">
             {discountLabel}
@@ -77,10 +74,8 @@ const FoodCard = ({
         )}
       </div>
 
-      {/* CONTENT */}
       <div className={`${isMenu ? "p-4" : "p-5"} group-hover:bg-gray-50 dark:group-hover:bg-slate-700/40 transition-colors`}>
 
-        {/* TITLE + PRICE */}
         <div className={`flex justify-between items-start ${isMenu ? "mb-1" : "mb-2"}`}>
           <h3 className={`${isMenu ? "text-base" : "text-lg"} font-semibold`}>
             {title}
@@ -100,24 +95,20 @@ const FoodCard = ({
           )}
         </div>
 
-        {/* SUBTITLE (e.g. cafeteria name) */}
         {!isMenu && subtitle && (
           <p className="text-xs text-teal-500 dark:text-teal-400 font-medium mb-1">
             {subtitle}
           </p>
         )}
 
-        {/* DESCRIPTION */}
         <p className={`text-gray-500 dark:text-slate-400 ${isMenu ? "text-xs mb-2" : "text-sm mb-3"}`}>
           {description}
         </p>
 
-        {/* PREP TIME */}
         {isMenu && preparationTime && (
           <p className="text-xs text-gray-400 dark:text-slate-500 mb-1">⏱ {preparationTime} min</p>
         )}
 
-        {/* TAGS */}
         {(() => {
           const tagList = isMenu
             ? (badge ? (Array.isArray(badge) ? badge : [badge]) : null)
@@ -136,7 +127,6 @@ const FoodCard = ({
           );
         })()}
 
-        {/* HOME CARD BUTTON AREA */}
         {!isMenu && (
           <div className="flex justify-between items-center">
             <span>
@@ -168,7 +158,6 @@ const FoodCard = ({
           </div>
         )}
 
-        {/* MENU ADD BUTTON */}
         {isMenu && (
           <button
             onClick={(e) => {

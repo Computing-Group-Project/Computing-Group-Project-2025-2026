@@ -1,4 +1,3 @@
-// AIIntegrationService.java (Interface)
 package com.demeter.backend.ai.Service;
 
 import com.demeter.backend.ai.dto.Recommendation.RecommendationRequest;

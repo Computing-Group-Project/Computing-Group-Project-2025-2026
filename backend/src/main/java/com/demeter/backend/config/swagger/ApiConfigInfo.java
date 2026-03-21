@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class ApiConfigInfo {
-//xd
     @Bean
     public OpenAPI computingProjectOpenAPI() {
         return new OpenAPI()

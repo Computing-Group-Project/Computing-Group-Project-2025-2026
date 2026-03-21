@@ -1,4 +1,3 @@
-// AIServiceException.java
 package com.demeter.backend.ai.exception;
 
 public class AIServiceException extends RuntimeException {

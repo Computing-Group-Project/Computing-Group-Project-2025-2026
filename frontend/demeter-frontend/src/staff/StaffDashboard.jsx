@@ -53,7 +53,6 @@ const StaffDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 p-4 md:p-8 transition-colors duration-300">
 
-      {/* header */}
       <div className="mb-8">
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white">
           Staff Dashboard
@@ -63,7 +62,6 @@ const StaffDashboard = () => {
         </p>
       </div>
 
-      {/* tab buttons */}
       <div className="flex gap-2 mb-8">
         <button
           onClick={() => setActiveTab('orders')}
@@ -87,7 +85,6 @@ const StaffDashboard = () => {
 
       {activeTab === 'orders' && (
         <>
-          {/* stat cards row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <StatCard
               value={String(stats.pending)}
@@ -109,7 +106,6 @@ const StaffDashboard = () => {
             />
           </div>
 
-          {/* queue + AI row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="w-full">
               <QueueList cafeteriaId={cafeteriaId} />

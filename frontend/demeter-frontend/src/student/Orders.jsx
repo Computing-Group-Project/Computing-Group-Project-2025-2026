@@ -185,12 +185,10 @@ export default function Orders() {
     <StudentLayout>
       <div className="max-w-4xl mx-auto px-4 sm:px-8 py-10">
 
-        {/* TITLE */}
         <h1 className="text-3xl font-semibold text-center text-gray-900 dark:text-white">
           Order Tracking
         </h1>
 
-        {/* Order selector */}
         {orders.length > 1 && (
           <div className="flex gap-2 justify-center mt-4 flex-wrap">
             {orders.slice(0, 5).map(o => (
@@ -220,7 +218,6 @@ export default function Orders() {
               )}
             </p>
 
-            {/* Cancel button for PLACED orders */}
             {selectedOrder.status === "PLACED" && (
               <div className="flex justify-center mt-3">
                 <button
@@ -232,7 +229,6 @@ export default function Orders() {
               </div>
             )}
 
-            {/* Reorder button for COMPLETED orders */}
             {selectedOrder.status === "COMPLETED" && (
               <div className="flex justify-center mt-3">
                 <button
@@ -244,7 +240,6 @@ export default function Orders() {
               </div>
             )}
 
-            {/* PROGRESS CARD */}
             {selectedOrder.status !== "CANCELLED" && (
               <div className="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-8 rounded-xl shadow-lg">
                 <div className="flex justify-between overflow-x-auto gap-2">
@@ -284,7 +279,6 @@ export default function Orders() {
               </div>
             )}
 
-            {/* RATE BUTTON */}
             {currentStep === steps.length - 1 && !showReview && !reviewSubmitted && (
               <button
                 onClick={() => setShowReview(true)}
@@ -294,7 +288,6 @@ export default function Orders() {
               </button>
             )}
 
-            {/* REVIEW CARD */}
             {showReview && !reviewSubmitted && (
               <div className="mt-8 bg-white dark:bg-slate-800 border border-yellow-300 dark:border-yellow-400/40 rounded-xl p-6 text-center">
                 <h2 className="text-gray-900 dark:text-white text-lg font-semibold mb-2">How was your meal?</h2>
@@ -337,7 +330,6 @@ export default function Orders() {
               </div>
             )}
 
-            {/* THANK YOU */}
             {reviewSubmitted && (
               <div className="mt-8 bg-green-900/40 border border-green-400 rounded-2xl p-8 text-center">
                 <div className="flex justify-center mb-4">
@@ -350,7 +342,6 @@ export default function Orders() {
               </div>
             )}
 
-            {/* ORDER DETAILS */}
             <div className="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-6 rounded-xl shadow-lg">
               <h2 className="text-gray-900 dark:text-white font-semibold mb-4">Order Details</h2>
 

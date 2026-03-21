@@ -4,7 +4,6 @@ import userEvent from "@testing-library/user-event";
 import { WalletProvider, useWallet } from "../WalletContext.jsx";
 import { AuthContext } from "../AuthContext.jsx";
 
-// Mock the api module
 vi.mock("../../utils/api.js", () => ({
   default: {
     get: vi.fn(),

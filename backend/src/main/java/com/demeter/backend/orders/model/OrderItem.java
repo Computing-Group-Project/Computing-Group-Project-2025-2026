@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "OrderItem")
 public class OrderItem {
-    // Getters and Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_item_id")
@@ -37,7 +36,6 @@ public class OrderItem {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    // Constructors
     public OrderItem() {}
 
     public OrderItem(Long menuItemId, int quantity, BigDecimal unitPrice, Order order) {

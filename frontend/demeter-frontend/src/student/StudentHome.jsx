@@ -132,7 +132,6 @@ export default function StudentHome() {
     <StudentLayout>
       <div className="w-screen relative left-1/2 -translate-x-1/2 px-6">
 
-        {/* Welcome Section */}
         <section className="flex flex-col items-center justify-center text-center py-16 mb-10">
           <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white">
             Welcome back, <span className="text-teal-400">{firstName}</span>
@@ -142,7 +141,6 @@ export default function StudentHome() {
           </p>
         </section>
 
-        {/* Recommended */}
         <section className="mb-14">
           <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">
             Recommended for You
@@ -180,7 +178,6 @@ export default function StudentHome() {
           </div>
         </section>
 
-        {/* Cafeterias */}
         <section>
           <h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white">
             Campus Cafeterias

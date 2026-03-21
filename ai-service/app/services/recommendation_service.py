@@ -41,7 +41,6 @@ def generate_recommendations(payload: RecommendationRequest) -> RecommendationRe
     time_bucket = get_time_bucket(payload.current_time.hour)
     raw_item_suggestions = []
 
-    # KNN-based personalized recommendations for known users
     user_known = payload.user_id in user_matrix.index
     if user_known:
         user_vector = user_matrix.loc[payload.user_id].values.reshape(1, -1)
@@ -63,7 +62,6 @@ def generate_recommendations(payload: RecommendationRequest) -> RecommendationRe
                 "reason": "People with similar tastes loved this!"
             })
 
-    # Time-based contextual fallback
     for item in time_rules[time_bucket]:
         if not any(d['item_id'] == item for d in raw_item_suggestions):
             raw_item_suggestions.append({
@@ -72,7 +70,6 @@ def generate_recommendations(payload: RecommendationRequest) -> RecommendationRe
                 "reason": f"Popular choice for {time_bucket}!"
             })
 
-    # Context filter (cart vs homepage)
     final_suggestions = []
     for suggestion in raw_item_suggestions:
         if len(final_suggestions) >= payload.limit:

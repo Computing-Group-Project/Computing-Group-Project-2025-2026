@@ -212,7 +212,6 @@ export default function CafeMenu() {
 
       <div className="w-screen relative left-1/2 -translate-x-1/2 px-6">
 
-        {/* Banner */}
         <div ref={bannerRef} className="relative w-full h-[180px] sm:h-[260px] rounded-2xl overflow-hidden mb-8">
           <img src={cafe.banner} alt={cafe.name} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center px-4">
@@ -221,7 +220,6 @@ export default function CafeMenu() {
           </div>
         </div>
 
-        {/* Search + Filters */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-8">
           <div className="flex-1">
             <SearchBar placeholder="Search menu..." value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -243,7 +241,6 @@ export default function CafeMenu() {
           </div>
         </div>
 
-        {/* Food cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredFoods.map((food) => {
             const discount = itemDiscountMap[food.id];

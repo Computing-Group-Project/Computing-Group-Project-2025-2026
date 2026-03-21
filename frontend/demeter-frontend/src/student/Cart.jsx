@@ -178,7 +178,6 @@ export default function Cart() {
 
             <div className="grid lg:grid-cols-[1.65fr_1fr] gap-10">
 
-              {/* LEFT SIDE */}
               <div className="space-y-6">
 
                 {cart.map((item, index) => (
@@ -264,7 +263,6 @@ export default function Cart() {
 
               </div>
 
-              {/* RIGHT SIDE */}
               <div className="bg-white dark:bg-slate-800/90 border border-gray-200 dark:border-slate-700 rounded-2xl p-8 shadow-xl h-fit">
 
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">

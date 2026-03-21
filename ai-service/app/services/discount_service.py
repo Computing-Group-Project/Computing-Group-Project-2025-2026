@@ -44,7 +44,6 @@ def generate_discounts(payload: DiscountRequest) -> DiscountResponse:
             ))
             used_items.update([buy_item, get_item])
 
-    # Combo discounts
     for combo in combo_rules.get(cid, []):
         if len(proposed_discounts) >= payload.limit:
             break
@@ -62,7 +61,6 @@ def generate_discounts(payload: DiscountRequest) -> DiscountResponse:
             ))
             used_items.update([item_a, item_b])
 
-    # Percentage discounts (failing items)
     for item_data in failing_items.get(cid, []):
         if len(proposed_discounts) >= payload.limit:
             break

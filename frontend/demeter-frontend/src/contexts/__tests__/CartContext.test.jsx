@@ -3,7 +3,6 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CartProvider, useCart } from "../CartContext.jsx";
 
-// Mock ToastContext
 const mockShowToast = vi.fn();
 vi.mock("../ToastContext.jsx", () => ({
   useToast: () => ({

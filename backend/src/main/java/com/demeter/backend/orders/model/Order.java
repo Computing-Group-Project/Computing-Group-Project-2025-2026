@@ -15,7 +15,6 @@ import java.util.List;
 @Entity
 @Table(name = "`Order`")
 public class Order {
-    // Getters and Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
@@ -61,7 +60,6 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderItem> items;
 
-    // Constructors
     public Order() {}
 
     public Order(Long userId, Long cafeteriaId, BigDecimal totalAmount) {

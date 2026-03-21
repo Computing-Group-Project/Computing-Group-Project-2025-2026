@@ -2,12 +2,10 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import ProtectedRoute from "../ProtectedRoute.jsx";
 
-// Mock react-router-dom
 vi.mock("react-router-dom", () => ({
   Navigate: ({ to }) => <div data-testid="navigate">{to}</div>,
 }));
 
-// Auth mock state
 let mockAuth = { isAuthenticated: true, user: { role: "STUDENT", token: "tok" } };
 
 vi.mock("../../../contexts/AuthContext.jsx", () => ({
@@ -48,7 +46,6 @@ describe("ProtectedRoute", () => {
       </ProtectedRoute>
     );
 
-    // Student gets redirected to /
     expect(screen.getByTestId("navigate")).toHaveTextContent("/");
   });
 

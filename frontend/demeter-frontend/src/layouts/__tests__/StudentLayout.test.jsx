@@ -2,24 +2,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import StudentLayout from "../StudentLayout.jsx";
 
-// Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
   Link: ({ children, to }) => <a href={to}>{children}</a>,
 }));
 
-// Mock Navbar
 vi.mock("../../components/common/Navbar.jsx", () => ({
   default: () => <nav data-testid="navbar">Navbar</nav>,
 }));
 
-// Mock ProfileModal
 vi.mock("../../components/common/ProfileModal.jsx", () => ({
   default: () => null,
 }));
 
-// Mock contexts
 const mockClearCart = vi.fn();
 vi.mock("../../contexts/CartContext.jsx", () => ({
   useCart: () => ({

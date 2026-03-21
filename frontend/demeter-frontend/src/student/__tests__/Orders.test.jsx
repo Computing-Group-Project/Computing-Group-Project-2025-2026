@@ -2,14 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import Orders from "../Orders.jsx";
 
-// Mock react-router-dom
 vi.mock("react-router-dom", () => ({
   useNavigate: () => vi.fn(),
   useLocation: () => ({ state: null }),
   Link: ({ children, to }) => <a href={to}>{children}</a>,
 }));
 
-// Mock api
 vi.mock("../../utils/api.js", () => ({
   default: {
     get: vi.fn(),
@@ -18,33 +16,28 @@ vi.mock("../../utils/api.js", () => ({
   },
 }));
 
-// Mock websocket
 vi.mock("../../utils/websocket.js", () => ({
   connectWebSocket: vi.fn(),
   subscribe: vi.fn(),
   disconnectWebSocket: vi.fn(),
 }));
 
-// Mock StudentLayout
 vi.mock("../../layouts/StudentLayout.jsx", () => ({
   default: ({ children }) => <div data-testid="student-layout">{children}</div>,
 }));
 
-// Mock ToastContext
 vi.mock("../../contexts/ToastContext.jsx", () => ({
   useToast: () => ({
     showToast: vi.fn(),
   }),
 }));
 
-// Mock AuthContext
 vi.mock("../../contexts/AuthContext.jsx", () => ({
   useAuth: () => ({
     user: { userId: 1, username: "student1", role: "STUDENT" },
   }),
 }));
 
-// Mock WalletContext
 vi.mock("../../contexts/WalletContext.jsx", () => ({
   useWallet: () => ({
     balance: 100,
@@ -54,7 +47,6 @@ vi.mock("../../contexts/WalletContext.jsx", () => ({
   }),
 }));
 
-// Mock CartContext
 vi.mock("../../contexts/CartContext.jsx", () => ({
   useCart: () => ({
     cart: [],

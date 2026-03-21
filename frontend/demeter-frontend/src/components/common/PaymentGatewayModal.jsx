@@ -119,7 +119,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-6 animate-fade-in">
       <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl w-full max-w-md p-6 max-h-[calc(100vh-3rem)] overflow-y-auto animate-fade-in-up">
 
-        {/* FORM STEP */}
         {step === "form" && (
           <>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
@@ -127,7 +126,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
             </h3>
 
             <form onSubmit={handleSubmit} noValidate className="space-y-3">
-              {/* Amount */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Amount (GK)
@@ -151,7 +149,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
                 )}
               </div>
 
-              {/* Quick-select pills */}
               <div className="flex gap-2">
                 {PRESET_AMOUNTS.map((preset) => (
                   <button
@@ -169,7 +166,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
                 ))}
               </div>
 
-              {/* Card Number */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Card Number
@@ -188,7 +184,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
                 )}
               </div>
 
-              {/* Expiry + CVV row */}
               <div className="flex gap-3">
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -226,7 +221,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
                 </div>
               </div>
 
-              {/* Name on Card */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Name on Card
@@ -243,7 +237,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
                 )}
               </div>
 
-              {/* Actions */}
               <div className="flex gap-3 pt-1">
                 <button
                   type="button"
@@ -269,7 +262,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
           </>
         )}
 
-        {/* PROCESSING STEP */}
         {step === "processing" && (
           <div className="flex flex-col items-center py-8 animate-fade-in-up">
             <div className="animate-spin h-12 w-12 border-4 border-teal-400 border-t-transparent rounded-full mb-4"></div>
@@ -282,7 +274,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
           </div>
         )}
 
-        {/* SUCCESS STEP */}
         {step === "success" && (
           <div className="flex flex-col items-center py-8 animate-fade-in-up">
             <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-4">
@@ -305,7 +296,6 @@ const PaymentGatewayModal = ({ isOpen, onClose, onSuccess }) => {
           </div>
         )}
 
-        {/* ERROR STEP */}
         {step === "error" && (
           <div className="flex flex-col items-center py-8 animate-fade-in-up">
             <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">

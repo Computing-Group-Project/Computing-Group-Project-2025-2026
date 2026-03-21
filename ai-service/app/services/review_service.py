@@ -36,7 +36,6 @@ def analyze_review(payload: ReviewAnalysisRequest) -> ReviewAnalysisResponse:
             analysis_notes="Flagged as potential gibberish/nonsense text."
         )
 
-    # VADER sentiment analysis
     scores = ml_resources['sia'].polarity_scores(payload.review_text)
     compound_score = scores['compound']
 
@@ -47,7 +46,6 @@ def analyze_review(payload: ReviewAnalysisRequest) -> ReviewAnalysisResponse:
     else:
         sentiment_type = SentimentType.NEUTRAL
 
-    # Dynamic confidence
     confidence = 0.5 + (abs(compound_score) * 0.4)
 
     # Boost if star rating matches sentiment
@@ -58,12 +56,10 @@ def analyze_review(payload: ReviewAnalysisRequest) -> ReviewAnalysisResponse:
     if star_consistent:
         confidence = min(0.99, confidence + 0.1)
 
-    # Keyword extraction
     stop_words = set(stopwords.words('english'))
     filtered_words = [w for w in meaningful_words if w not in stop_words]
     keywords = [word for word, _ in Counter(filtered_words).most_common(5)]
 
-    # Approval logic
     is_approved = (
         confidence > 0.6
         and not (sentiment_type == SentimentType.NEGATIVE and payload.star_rating >= 4)

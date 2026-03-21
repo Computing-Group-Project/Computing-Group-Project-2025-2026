@@ -3,7 +3,6 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Cart from "../Cart.jsx";
 
-// Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
@@ -18,29 +17,24 @@ vi.mock("../../utils/api.js", () => ({
   },
 }));
 
-// Mock StudentLayout
 vi.mock("../../layouts/StudentLayout.jsx", () => ({
   default: ({ children }) => <div data-testid="student-layout">{children}</div>,
 }));
 
-// Mock FoodModal
 vi.mock("../../components/common/FoodModal.jsx", () => ({
   default: () => <div data-testid="food-modal" />,
 }));
 
-// Mock foodImages
 vi.mock("../../utils/foodImages.js", () => ({
   getFoodImage: (name, url) => url || "test-image.svg",
 }));
 
-// Mock ToastContext
 vi.mock("../../contexts/ToastContext.jsx", () => ({
   useToast: () => ({
     showToast: vi.fn(),
   }),
 }));
 
-// Mock contexts
 const mockRemoveFromCart = vi.fn();
 const mockClearCart = vi.fn();
 const mockRefreshBalance = vi.fn().mockResolvedValue(undefined);

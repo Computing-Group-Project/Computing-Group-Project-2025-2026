@@ -97,11 +97,9 @@ export default function Login() {
 
   const portal = portals.find((p) => p.role === selectedPortal);
 
-  // ── Portal Selector ──
   if (!selectedPortal) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gradient-to-br dark:from-[#0f172a] dark:to-[#1e293b] transition-colors px-4">
-        {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Demeter</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-2">
@@ -109,7 +107,6 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Portal cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 w-full max-w-3xl">
           {portals.map((p) => {
             const Icon = p.icon;
@@ -138,16 +135,13 @@ export default function Login() {
     );
   }
 
-  // ── Login Form ──
   const Icon = portal.icon;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gradient-to-br dark:from-[#0f172a] dark:to-[#1e293b] transition-colors px-4">
       <div className="w-full max-w-[430px] bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-[#334155] shadow-2xl rounded-2xl p-6 sm:p-10 text-gray-900 dark:text-white relative overflow-hidden">
-        {/* Accent top bar */}
         <div className={`absolute top-0 left-0 w-full h-[3px] ${portal.glowColor} rounded-t-2xl`}></div>
 
-        {/* Back button */}
         <button
           onClick={handleBack}
           className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-6"
@@ -155,7 +149,6 @@ export default function Login() {
           <ArrowLeft size={16} /> Back
         </button>
 
-        {/* Icon + Title */}
         <div className="flex justify-center mb-5">
           <div className={`${portal.bgLight} w-14 h-14 flex items-center justify-center rounded-full`}>
             <Icon className={portal.textAccent} size={28} />
@@ -167,14 +160,12 @@ export default function Login() {
           {portal.label} Portal
         </p>
 
-        {/* Error */}
         {error && (
           <div className="bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg mb-4 text-sm">
             {error}
           </div>
         )}
 
-        {/* Username */}
         <label className="text-sm text-gray-600 dark:text-gray-300 mb-2 block">
           {selectedPortal === "STUDENT" ? "Username or University ID" : "Username"}
         </label>
@@ -186,7 +177,6 @@ export default function Login() {
           className={`w-full p-3 rounded-lg border border-gray-300 dark:border-[#334155] bg-gray-50 dark:bg-[#0f172a] text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none ${portal.focusRing} mb-4`}
         />
 
-        {/* Password */}
         <label className="text-sm text-gray-600 dark:text-gray-300 mb-2 block">Password</label>
         <input
           type="password"
@@ -198,7 +188,6 @@ export default function Login() {
           className={`w-full p-3 rounded-lg border border-gray-300 dark:border-[#334155] bg-gray-50 dark:bg-[#0f172a] text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none ${portal.focusRing} mb-5`}
         />
 
-        {/* Login button */}
         <button
           onClick={handleLogin}
           disabled={loading}

@@ -2,24 +2,20 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import Wallet from "../Wallet.jsx";
 
-// Mock react-router-dom
 vi.mock("react-router-dom", () => ({
   useNavigate: () => vi.fn(),
 }));
 
-// Mock api
 vi.mock("../../utils/api.js", () => ({
   default: {
     get: vi.fn(),
   },
 }));
 
-// Mock StudentLayout
 vi.mock("../../layouts/StudentLayout.jsx", () => ({
   default: ({ children }) => <div data-testid="student-layout">{children}</div>,
 }));
 
-// Mock WalletContext
 vi.mock("../../contexts/WalletContext.jsx", () => ({
   useWallet: () => ({
     balance: 150.75,
@@ -27,7 +23,6 @@ vi.mock("../../contexts/WalletContext.jsx", () => ({
   }),
 }));
 
-// Mock PaymentGatewayModal (rendered via portal)
 vi.mock("../../components/common/PaymentGatewayModal.jsx", () => ({
   default: () => null,
 }));

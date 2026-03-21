@@ -2,12 +2,10 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import Navbar from "../Navbar.jsx";
 
-// Mock react-router-dom
 vi.mock("react-router-dom", () => ({
   Link: ({ children, to }) => <a href={to}>{children}</a>,
 }));
 
-// Mock contexts
 vi.mock("../../../contexts/CartContext.jsx", () => ({
   useCart: () => ({
     cart: [{ title: "Burger", total: 45 }],
@@ -40,13 +38,11 @@ describe("Navbar", () => {
 
   it("displays user initials from username", () => {
     render(<Navbar />);
-    // john_doe -> JD
     expect(screen.getByText("JD")).toBeInTheDocument();
   });
 
   it("shows cart item count badge", () => {
     render(<Navbar />);
-    // Cart has 1 item
     expect(screen.getByText("1")).toBeInTheDocument();
   });
 });

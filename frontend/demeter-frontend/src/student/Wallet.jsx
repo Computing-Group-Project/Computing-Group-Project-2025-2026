@@ -44,7 +44,6 @@ const Wallet = () => {
 
       <div className="w-screen relative left-1/2 -translate-x-1/2 px-6">
 
-        {/* BACK BUTTON */}
         <button
           onClick={() => navigate("/")}
           className="mb-6 px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-white bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700"
@@ -53,7 +52,6 @@ const Wallet = () => {
         </button>
 
 
-        {/* BALANCE CARD */}
         <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-sm rounded-xl p-6 flex flex-col sm:flex-row justify-between items-center gap-4">
 
           <div>
@@ -86,7 +84,6 @@ const Wallet = () => {
         </div>
 
 
-        {/* TRANSACTION TABLE */}
         <div className="mt-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-sm rounded-xl overflow-hidden">
 
           <div className="p-6 border-b border-gray-200 dark:border-slate-700">

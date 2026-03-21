@@ -53,13 +53,11 @@ export default function FoodModal({ food, onClose }) {
 };
   return (
 
-    /* BACKGROUND */
     <div
       onClick={handleClose}
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
     >
 
-      {/* MODAL */}
       <div
         onClick={(e) => e.stopPropagation()}
         className={`
@@ -75,7 +73,6 @@ export default function FoodModal({ food, onClose }) {
         `}
       >
 
-        {/* IMAGE */}
         <div className="relative">
           <img
             src={food.image}
@@ -91,10 +88,8 @@ export default function FoodModal({ food, onClose }) {
           </button>
         </div>
 
-        {/* CONTENT */}
         <div className="flex-1 overflow-y-auto p-6">
 
-          {/* TITLE */}
           <div className="flex justify-between">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
               {food.title}
@@ -119,12 +114,10 @@ export default function FoodModal({ food, onClose }) {
             </div>
           </div>
 
-          {/* DESCRIPTION */}
           <p className="text-gray-500 dark:text-slate-400 mt-2 text-sm">
             {food.description}
           </p>
 
-          {/* EXTRAS */}
           {food.extras?.length > 0 && (
             <>
               <h3 className="mt-6 mb-3 font-semibold text-gray-900 dark:text-white">
@@ -184,7 +177,6 @@ export default function FoodModal({ food, onClose }) {
             </>
           )}
 
-          {/* QUANTITY + TOTAL */}
           <div className="mt-6 bg-gray-100 dark:bg-slate-700/40 rounded-xl p-4 flex justify-between items-center">
 
             <div className="flex items-center gap-4">
@@ -220,7 +212,6 @@ export default function FoodModal({ food, onClose }) {
 
         </div>
 
-        {/* ADD BUTTON */}
         <div className="p-4 border-t border-gray-200 dark:border-slate-700">
           <button
   onClick={handleAdd}

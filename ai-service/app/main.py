@@ -30,7 +30,6 @@ def create_app() -> FastAPI:
         lifespan=lifespan
     )
 
-    # Middleware
     app.add_middleware(
         CORSMiddleware,
         allow_origins=CORS_ORIGINS,
@@ -39,11 +38,9 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # Rate limiting
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-    # Routers
     app.include_router(health.router)
     app.include_router(recommendations.router)
     app.include_router(discounts.router)

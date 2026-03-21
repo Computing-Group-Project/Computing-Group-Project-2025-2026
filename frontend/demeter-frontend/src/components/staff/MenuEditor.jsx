@@ -148,7 +148,6 @@ const MenuEditor = ({ cafeteriaId }) => {
         </button>
       </div>
 
-      {/* Add Item Form */}
       {showAddForm && (
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl">
           <h3 className="text-sm font-semibold text-gray-800 dark:text-white mb-3">New Menu Item</h3>
@@ -209,7 +208,6 @@ const MenuEditor = ({ cafeteriaId }) => {
         </div>
       )}
 
-      {/* Edit Modal */}
       {editingItem && (
         <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl">
           <h3 className="text-sm font-semibold text-gray-800 dark:text-white mb-3">Edit Item</h3>
@@ -264,7 +262,6 @@ const MenuEditor = ({ cafeteriaId }) => {
         </div>
       )}
 
-      {/* Menu Items Table */}
       {menuItems.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400 text-center py-8">No menu items found.</p>
       ) : (

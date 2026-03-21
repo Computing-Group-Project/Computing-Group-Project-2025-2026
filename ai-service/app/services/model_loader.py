@@ -15,7 +15,6 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 
 from ..config import DATA_DIR
 
-# Global dictionary to hold all AI models in memory
 ml_resources = {}
 
 

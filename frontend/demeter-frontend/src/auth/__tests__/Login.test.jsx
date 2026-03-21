@@ -3,13 +3,11 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Login from "../Login.jsx";
 
-// Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-// Mock AuthContext
 const mockLogin = vi.fn();
 vi.mock("../../contexts/AuthContext.jsx", () => ({
   useAuth: () => ({

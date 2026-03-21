@@ -109,7 +109,6 @@ const DiscountSuggestion = ({ cafeteriaId }) => {
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6 h-full">
 
-      {/* header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
@@ -149,7 +148,6 @@ const DiscountSuggestion = ({ cafeteriaId }) => {
         </button>
       </div>
 
-      {/* card list */}
       <div className="space-y-3">
         {loading ? (
           <div className="text-center py-8">

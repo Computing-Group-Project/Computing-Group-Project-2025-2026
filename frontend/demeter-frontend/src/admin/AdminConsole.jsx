@@ -95,7 +95,6 @@ function AdminConsole() {
           <p className="text-base text-light-textMuted dark:text-dark-textMuted">Manage staff, students, and system finances.</p>
         </div>
 
-        {/* Tabs */}
         <div className="mb-8">
           <div className="inline-flex flex-wrap gap-1 rounded-full bg-gray-200 dark:bg-dark-card p-1">
             <button onClick={() => setActiveTab('staff')} className={`px-6 py-2 rounded-full font-medium transition-all ${activeTab === 'staff' ? 'bg-white dark:bg-white text-gray-900 shadow-sm' : 'bg-transparent text-light-textMuted dark:text-dark-textMuted hover:text-light-text dark:hover:text-dark-text'}`}>Staff Management</button>
@@ -105,7 +104,6 @@ function AdminConsole() {
           </div>
         </div>
 
-        {/* Content */}
         {activeTab === 'staff' && (
           <div>
             <div className="flex items-center justify-between mb-6">

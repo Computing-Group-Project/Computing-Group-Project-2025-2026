@@ -3,24 +3,20 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import StudentHome from "../StudentHome.jsx";
 
-// Mock react-router-dom
 vi.mock("react-router-dom", () => ({
   Link: ({ children, to }) => <a href={to}>{children}</a>,
 }));
 
-// Mock api
 vi.mock("../../utils/api.js", () => ({
   default: {
     get: vi.fn(),
   },
 }));
 
-// Mock StudentLayout to render children directly
 vi.mock("../../layouts/StudentLayout.jsx", () => ({
   default: ({ children }) => <div data-testid="student-layout">{children}</div>,
 }));
 
-// Mock CafeteriaCard
 vi.mock("../../components/common/CafeteriaCard.jsx", () => ({
   default: ({ cafe }) => <div data-testid="cafe-card">{cafe.name}</div>,
 }));
@@ -32,7 +28,6 @@ vi.mock("../../components/common/FoodCard.jsx", () => ({
   ),
 }));
 
-// Mock FoodModal
 vi.mock("../../components/common/FoodModal.jsx", () => ({
   default: ({ food, onClose }) => (
     <div data-testid="food-modal">
@@ -42,7 +37,6 @@ vi.mock("../../components/common/FoodModal.jsx", () => ({
   ),
 }));
 
-// Mock AuthContext
 vi.mock("../../contexts/AuthContext.jsx", () => ({
   useAuth: () => ({
     user: { username: "john_doe", userId: 1, role: "STUDENT", token: "tok" },
@@ -50,7 +44,6 @@ vi.mock("../../contexts/AuthContext.jsx", () => ({
   }),
 }));
 
-// Mock CartContext
 vi.mock("../../contexts/CartContext.jsx", () => ({
   useCart: () => ({
     cart: [],
@@ -61,14 +54,12 @@ vi.mock("../../contexts/CartContext.jsx", () => ({
   }),
 }));
 
-// Mock ToastContext
 vi.mock("../../contexts/ToastContext.jsx", () => ({
   useToast: () => ({
     showToast: vi.fn(),
   }),
 }));
 
-// Mock foodImages utility
 vi.mock("../../utils/foodImages.js", () => ({
   getFoodImage: (name) => `mock-image-${name}`,
   getCafeteriaImage: (id) => `mock-cafe-image-${id}`,

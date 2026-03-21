@@ -5,7 +5,6 @@ public class ApiResponse<T> {
     private String message;
     private T data;
 
-    // Constructors
     public ApiResponse() {}
 
     public ApiResponse(boolean success, String message, T data) {
@@ -14,7 +13,6 @@ public class ApiResponse<T> {
         this.data = data;
     }
 
-    // Getters and Setters
     public boolean isSuccess() { return success; }
     public void setSuccess(boolean success) { this.success = success; }
 

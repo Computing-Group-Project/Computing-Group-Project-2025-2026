@@ -2,26 +2,22 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import CafeMenu from "../CafeMenu.jsx";
 
-// Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
   useParams: () => ({ id: "1" }),
 }));
 
-// Mock api
 vi.mock("../../utils/api.js", () => ({
   default: {
     get: vi.fn(),
   },
 }));
 
-// Mock StudentLayout
 vi.mock("../../layouts/StudentLayout.jsx", () => ({
   default: ({ children }) => <div data-testid="student-layout">{children}</div>,
 }));
 
-// Mock child components
 vi.mock("../../components/common/SearchBar.jsx", () => ({
   default: (props) => <input data-testid="search-bar" placeholder={props.placeholder} onChange={props.onChange} />,
 }));

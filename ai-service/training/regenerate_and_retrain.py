@@ -110,7 +110,6 @@ def generate_csvs():
         days_ago = np.random.randint(0, 30)
         base_date = pd.Timestamp.now() - pd.Timedelta(days=days_ago)
 
-        # Skip staff/admin
         if user_id in STAFF_IDS or user_id in ADMIN_IDS:
             continue
 
@@ -119,7 +118,6 @@ def generate_csvs():
         cluster = get_cluster(user_id)
         items_in_order = []
 
-        # Pick a primary item from the user's cluster
         item_range = list(CLUSTER_ITEMS[cafeteria_id][cluster])
         v_item_id = item_range[np.random.randint(0, len(item_range))]
         v_price = MENU_ITEMS[v_item_id][1]
@@ -190,7 +188,6 @@ def train_recommendation_model(orders_df, items_df):
     orders_df["placed_at"] = pd.to_datetime(orders_df["placed_at"])
     df = pd.merge(items_df, orders_df, on="order_id")
 
-    # Item-canteen map
     unique_items = df.drop_duplicates(subset=["item_id"])
     item_canteen_map = pd.Series(
         unique_items.cafeteria_id.values, index=unique_items.item_id
@@ -204,7 +201,6 @@ def train_recommendation_model(orders_df, items_df):
         json.dump({str(k): int(v) for k, v in item_canteen_map.items()}, f)
     print("item_canteen_map.json saved.")
 
-    # Time rules
     def get_time_bucket(hour):
         if 6 <= hour < 11:
             return "Morning"
@@ -223,7 +219,6 @@ def train_recommendation_model(orders_df, items_df):
         json.dump(time_rules, f)
     print("time_rules.json saved.")
 
-    # User-item matrix + KNN
     purchase_counts = (
         df.groupby(["user_id", "item_id"]).size().reset_index(name="purchase_count")
     )
@@ -270,7 +265,6 @@ def train_discount_models(df):
         canteen_data = df[df["cafeteria_id"] == canteen_id]
         cid_str = str(int(canteen_id))
 
-        # Combo rules via apriori
         basket = (
             canteen_data.groupby(["order_id", "item_id"])["quantity"]
             .sum()
@@ -308,7 +302,6 @@ def train_discount_models(df):
 
         combo_rules[cid_str] = canteen_combos
 
-        # Failing items
         item_sales = canteen_data.groupby("item_id")["quantity"].sum().reset_index()
         item_sales = item_sales.sort_values("quantity", ascending=True)
         low_threshold = item_sales["quantity"].quantile(0.25)
@@ -327,7 +320,6 @@ def train_discount_models(df):
             })
         failing_items[cid_str] = failing_list
 
-        # BOGO rules
         critical_items = item_sales[item_sales["quantity"] <= critical_threshold]["item_id"].tolist()
         popular_items = item_sales[item_sales["quantity"] >= high_threshold]["item_id"].tolist()
         canteen_bogos = []

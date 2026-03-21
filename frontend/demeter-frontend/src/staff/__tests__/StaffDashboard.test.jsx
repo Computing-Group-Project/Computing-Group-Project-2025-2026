@@ -2,20 +2,17 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import StaffDashboard from "../StaffDashboard.jsx";
 
-// Mock react-router-dom
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", () => ({
   useNavigate: () => mockNavigate,
 }));
 
-// Mock api
 vi.mock("../../utils/api.js", () => ({
   default: {
     get: vi.fn(),
   },
 }));
 
-// Mock child components
 vi.mock("../../components/staff/StatCard", () => ({
   default: ({ value, title }) => (
     <div data-testid="stat-card">
@@ -33,7 +30,6 @@ vi.mock("../../components/staff/DiscountSuggestion", () => ({
   default: () => <div data-testid="discount-suggestion">Discounts</div>,
 }));
 
-// Mock AuthContext
 const mockLogout = vi.fn();
 
 vi.mock("../../contexts/AuthContext.jsx", () => ({
@@ -71,7 +67,6 @@ describe("StaffDashboard", () => {
       expect(screen.getByText(/Staff: Swain/)).toBeInTheDocument();
     });
 
-    // Stat cards render
     const statCards = screen.getAllByTestId("stat-card");
     expect(statCards.length).toBe(3);
   });

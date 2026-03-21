@@ -14,7 +14,6 @@ export default function StudentLayout({ children }) {
   const { clearCart } = useCart();
   const { logout } = useAuth();
 
-  /* LOGOUT */
   const handleLogout = () => {
     clearCart();
     logout();
