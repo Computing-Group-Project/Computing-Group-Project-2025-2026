@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Navbar from "../components/common/Navbar.jsx";
 import ProfileModal from "../components/common/ProfileModal.jsx";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "../contexts/CartContext.jsx";
 import { useAuth } from "../contexts/AuthContext.jsx";
 
 export default function StudentLayout({ children }) {
@@ -11,11 +10,9 @@ export default function StudentLayout({ children }) {
   const [profilePhoto, setProfilePhoto] = useState(null);
 
   const navigate = useNavigate();
-  const { clearCart } = useCart();
   const { logout } = useAuth();
 
   const handleLogout = () => {
-    clearCart();
     logout();
     navigate("/login");
   };

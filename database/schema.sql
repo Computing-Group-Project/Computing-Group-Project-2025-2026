@@ -218,3 +218,8 @@ CREATE INDEX idx_order_item_order_id ON OrderItem(order_id);
 CREATE INDEX idx_order_item_item_id ON OrderItem(item_id);
 CREATE INDEX idx_menu_item_cafeteria ON MenuItem(cafeteria_id);
 CREATE INDEX idx_discount_cafeteria_active ON Discount(cafeteria_id, is_active);
+CREATE INDEX idx_review_user ON Review(user_id);
+CREATE INDEX idx_audit_user ON AuditLog(user_id);
+CREATE INDEX idx_payment_user ON Payment(user_id);
+CREATE INDEX idx_menuitem_category ON MenuItem(category_id);
+CREATE INDEX idx_menuitemtag_tag ON MenuItemTag(tag_id);

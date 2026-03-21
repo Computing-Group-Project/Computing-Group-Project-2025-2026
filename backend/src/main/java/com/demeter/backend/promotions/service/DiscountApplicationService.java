@@ -32,7 +32,7 @@ public class DiscountApplicationService {
 
         if ("PERCENTAGE".equals(type)) {
             return subtotal.multiply(value).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-        } else if ("FIXED_AMOUNT".equals(type) || "COMBO_FIXED_PRICE".equals(type)) {
+        } else if ("FIXED_AMOUNT".equals(type) || "COMBO_FIXED_PRICE".equals(type) || "COMBO".equals(type)) {
             return value.min(subtotal);
         } else if ("BOGO".equals(type) || "BUY_X_GET_Y".equals(type)) {
             // For BOGO, the discount value represents the percentage off the free item

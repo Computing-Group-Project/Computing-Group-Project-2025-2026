@@ -19,7 +19,6 @@ export default function Cart() {
   const navigate = useNavigate();
   const [checkingOut, setCheckingOut] = useState(false);
   const [discounts, setDiscounts] = useState([]);
-  const [selectedDiscount, setSelectedDiscount] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
 
@@ -28,16 +27,75 @@ export default function Cart() {
     [cart]
   );
 
-  const discountAmount = useMemo(() => {
-    if (!selectedDiscount) return 0;
-    const d = selectedDiscount;
-    if (d.discountType === 'PERCENTAGE') {
-      return subtotal * (Number(d.discountValue) / 100);
-    } else if (d.discountType === 'FIXED_AMOUNT') {
-      return Math.min(Number(d.discountValue), subtotal);
+  const cartItemIds = useMemo(() => new Set(cart.map(i => i.menuItemId || i.id)), [cart]);
+
+  const cartItemMap = useMemo(() => {
+    const m = {};
+    for (const item of cart) {
+      const id = item.menuItemId || item.id;
+      if (!m[id]) m[id] = { qty: 0, price: item.price };
+      m[id].qty += item.qty;
+      if (item.price < m[id].price) m[id].price = item.price;
     }
-    return 0;
-  }, [selectedDiscount, subtotal]);
+    return m;
+  }, [cart]);
+
+  const appliedDiscounts = useMemo(() => {
+    return discounts.filter(d => {
+      const items = d.applicableItems;
+      if (!items || items === 'ALL' || items === 'all') return true;
+      try {
+        const ids = JSON.parse(items);
+        if (!Array.isArray(ids)) return false;
+        const dt = d.discountType;
+        if (dt === 'BOGO' || dt === 'BUY_X_GET_Y') {
+          const uniqueIds = [...new Set(ids.map(Number))];
+          if (uniqueIds.length === 1) {
+            const info = cartItemMap[uniqueIds[0]];
+            return info && info.qty >= 2;
+          }
+          return uniqueIds.every(id => cartItemIds.has(id));
+        }
+        return ids.every(id => cartItemIds.has(Number(id)));
+      } catch { return false; }
+    });
+  }, [discounts, cartItemIds, cartItemMap]);
+
+  const { bestDiscount, discountAmount } = useMemo(() => {
+    let best = null;
+    let bestAmount = 0;
+    for (const d of appliedDiscounts) {
+      const dt = d.discountType;
+      const val = Number(d.discountValue);
+      let amount = 0;
+      if (dt === 'PERCENTAGE') {
+        amount = subtotal * (val / 100);
+      } else if (dt === 'FIXED_AMOUNT') {
+        amount = Math.min(val, subtotal);
+      } else if (dt === 'COMBO_FIXED_PRICE') {
+        amount = Math.max(0, subtotal - val);
+      } else if (dt === 'COMBO') {
+        amount = subtotal * (val / 100);
+      } else if (dt === 'BOGO' || dt === 'BUY_X_GET_Y') {
+        try {
+          const ids = JSON.parse(d.applicableItems);
+          const uniqueIds = [...new Set(ids.map(Number))];
+          if (uniqueIds.length === 1) {
+            const info = cartItemMap[uniqueIds[0]];
+            if (info && info.qty >= 2) amount = info.price;
+          } else if (uniqueIds.length >= 2) {
+            const prices = uniqueIds.map(id => cartItemMap[Number(id)]?.price || 0);
+            amount = Math.min(...prices);
+          }
+        } catch { amount = 0; }
+      }
+      if (amount > bestAmount) {
+        bestAmount = amount;
+        best = d;
+      }
+    }
+    return { bestDiscount: best, discountAmount: bestAmount };
+  }, [appliedDiscounts, subtotal, cartItemMap]);
 
   const total = subtotal - discountAmount;
 
@@ -49,7 +107,6 @@ export default function Cart() {
         .catch(() => setDiscounts([]));
     } else {
       setDiscounts([]);
-      setSelectedDiscount(null);
     }
   }, [cart]);
 
@@ -116,7 +173,7 @@ export default function Cart() {
         userId: user.userId,
         cafeteriaId: cafeteriaId,
         totalAmount: subtotal,
-        appliedDiscountId: selectedDiscount?.discountId || null,
+        appliedDiscountId: bestDiscount?.discountId || null,
         items: cart.map(item => ({
           menuItemId: item.menuItemId || item.id,
           quantity: item.qty,
@@ -240,6 +297,11 @@ export default function Cart() {
                           <p className="text-lg font-semibold text-gray-900 dark:text-white">
                             GK {item.total.toFixed(2)}
                           </p>
+                          {item.originalPrice && (
+                            <p className="text-xs text-gray-400 dark:text-slate-500 line-through">
+                              GK {item.originalPrice} each
+                            </p>
+                          )}
                           {item.qty > 1 && (
                             <p className="text-xs text-gray-400 dark:text-slate-500">
                               GK {item.price} each
@@ -274,34 +336,19 @@ export default function Cart() {
                   <span>GK {subtotal}</span>
                 </div>
 
-                {discounts.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Available Discounts</p>
-                    <div className="space-y-2">
-                      {discounts.map(d => (
-                        <label key={d.discountId} className="flex items-center gap-2 cursor-pointer text-sm text-gray-600 dark:text-slate-400">
-                          <input
-                            type="radio"
-                            name="discount"
-                            checked={selectedDiscount?.discountId === d.discountId}
-                            onChange={() => setSelectedDiscount(d)}
-                            className="accent-teal-400"
-                          />
-                          {d.discountType === 'PERCENTAGE' ? `${d.discountValue}% off` : `GK ${d.discountValue} off`}
-                        </label>
-                      ))}
-                      {selectedDiscount && (
-                        <button onClick={() => setSelectedDiscount(null)} className="text-xs text-red-400 hover:text-red-500">
-                          Remove discount
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {selectedDiscount && (
+                {bestDiscount && (
                   <div className="flex justify-between text-green-500 mb-4">
-                    <span>Discount</span>
+                    <span>
+                      {(() => {
+                        const dt = bestDiscount.discountType;
+                        if (dt === 'PERCENTAGE') return `${bestDiscount.discountValue}% off`;
+                        if (dt === 'FIXED_AMOUNT') return `GK ${bestDiscount.discountValue} off`;
+                        if (dt === 'COMBO_FIXED_PRICE') return `Combo deal`;
+                        if (dt === 'COMBO') return `Combo deal`;
+                        if (dt === 'BOGO' || dt === 'BUY_X_GET_Y') return `BOGO deal`;
+                        return 'Discount';
+                      })()}
+                    </span>
                     <span>-GK {discountAmount.toFixed(2)}</span>
                   </div>
                 )}

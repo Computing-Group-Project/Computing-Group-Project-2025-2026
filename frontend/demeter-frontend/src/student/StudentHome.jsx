@@ -45,7 +45,6 @@ export default function StudentHome() {
 
   useEffect(() => {
     const fetchRecommendations = async () => {
-      // Enforce 3-per-session limit
       const cached = sessionStorage.getItem('recs_shown');
       if (cached) {
         try {
@@ -115,7 +114,6 @@ export default function StudentHome() {
         })));
       } catch {
         setFetchError(true);
-        // Fallback if API unavailable
         setCafeterias([
           { id: 1, name: "The Last Drop", hours: "08:00 – 22:00", status: "Open", rating: 4, description: "Cozy atmosphere for study sessions.", image: getCafeteriaImage(1), popularItems: [] },
           { id: 2, name: "Hex Core Cafe", hours: "07:00 – 20:00", status: "Open", rating: 4, description: "Industrial chic meets molecular gastronomy.", image: getCafeteriaImage(2), popularItems: [] },
@@ -160,7 +158,7 @@ export default function StudentHome() {
                   buttonText="Add to Cart"
                   variant="home"
                   onClick={() => {
-                    addToCart({
+                    const added = addToCart({
                       menuItemId: item.id,
                       cafeteriaId: item.cafeId,
                       title: item.name,
@@ -170,7 +168,7 @@ export default function StudentHome() {
                       extras: [],
                       qty: 1,
                     });
-                    showToast(`${item.name} added to cart!`, "success");
+                    if (added) showToast(`${item.name} added to cart!`, "success");
                   }}
                 />
               );

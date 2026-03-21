@@ -28,9 +28,16 @@ export default function FoodModal({ food, onClose }) {
     0
   );
 
-  const total = (food.price + extrasTotal) * qty;
+  const effectivePrice = food.discount ? (() => {
+    const dt = food.discount.discountType;
+    const val = Number(food.discount.discountValue);
+    if (dt === 'PERCENTAGE') return food.price - (food.price * val / 100);
+    if (dt === 'FIXED_AMOUNT') return Math.max(0, food.price - val);
+    return food.price;
+  })() : food.price;
 
-  // Smooth closing animation
+  const total = (effectivePrice + extrasTotal) * qty;
+
   const handleClose = () => {
     setShow(false);
     setTimeout(onClose, 250);
@@ -38,18 +45,21 @@ export default function FoodModal({ food, onClose }) {
 
 
   const handleAdd = () => {
-  addToCart({
+  const added = addToCart({
     menuItemId: food.menuItemId || food.id,
     cafeteriaId: food.cafeteriaId,
     title: food.title,
     image: food.image,
-    price: food.price,
+    price: effectivePrice,
+    originalPrice: effectivePrice < food.price ? food.price : undefined,
     extras: selectedExtras,
     qty: qty,
     total: total
   });
 
-  handleClose();
+  if (added !== false) {
+    handleClose();
+  }
 };
   return (
 
@@ -96,9 +106,14 @@ export default function FoodModal({ food, onClose }) {
             </h2>
 
             <div className="text-right">
-              <p className="text-yellow-400 font-semibold text-lg">
-                GK {food.price}
-              </p>
+              {effectivePrice < food.price ? (
+                <>
+                  <p className="text-yellow-400 font-semibold text-lg">GK {effectivePrice.toFixed(0)}</p>
+                  <p className="text-gray-400 dark:text-slate-500 text-xs line-through">GK {food.price}</p>
+                </>
+              ) : (
+                <p className="text-yellow-400 font-semibold text-lg">GK {food.price}</p>
+              )}
 
               {food.preparationTime && (
                 <p className="text-xs text-gray-500 dark:text-slate-400">
@@ -113,6 +128,19 @@ export default function FoodModal({ food, onClose }) {
               )}
             </div>
           </div>
+
+          {food.discount && (
+            <span className="inline-block mt-2 px-2.5 py-1 rounded-full bg-green-500/10 text-green-500 text-xs font-semibold">
+              {(() => {
+                const dt = food.discount.discountType;
+                if (dt === 'PERCENTAGE') return `${food.discount.discountValue}% off`;
+                if (dt === 'FIXED_AMOUNT') return `GK ${food.discount.discountValue} off`;
+                if (dt === 'BOGO' || dt === 'BUY_X_GET_Y') return food.comboPartner ? `Buy 1 Get 1 Free w/ ${food.comboPartner}` : 'Buy 1 Get 1 Free';
+                if (dt === 'COMBO' || dt === 'COMBO_FIXED_PRICE') return food.comboPartner ? `Combo Deal w/ ${food.comboPartner}` : 'Combo Deal';
+                return 'Discount';
+              })()}
+            </span>
+          )}
 
           <p className="text-gray-500 dark:text-slate-400 mt-2 text-sm">
             {food.description}
@@ -204,7 +232,7 @@ export default function FoodModal({ food, onClose }) {
             <div className="text-right">
               <p className="text-xs text-gray-500 dark:text-slate-400">Total</p>
               <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                GK {total}
+                GK {total.toFixed(2)}
               </p>
             </div>
 

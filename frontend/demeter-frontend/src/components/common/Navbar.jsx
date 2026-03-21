@@ -1,9 +1,11 @@
-import { ShoppingBag, Plus, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ShoppingBag, Plus, LogOut, ClipboardList } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart } from "../../contexts/CartContext.jsx";
 import { useWallet } from "../../contexts/WalletContext.jsx";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import NotificationBell from "./NotificationBell.jsx";
+import api from "../../utils/api.js";
 
 const logoStyles = {
   STUDENT: "bg-gradient-to-br from-lime-400 to-cyan-400 text-slate-900",
@@ -38,6 +40,26 @@ const Navbar = ({
   const { cart = [] } = useCart() || {};
   const { balance = 0 } = useWallet() || {};
   const { user } = useAuth();
+
+  const [activeOrderCount, setActiveOrderCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.userId || user?.role !== "STUDENT") return;
+    const fetchActive = () => {
+      api.get(`/api/orders/user/${user.userId}`)
+        .then(res => {
+          const active = (res.data.data || []).filter(o =>
+            ["PLACED", "CONFIRMED", "PREPARING", "READY"].includes(o.status)
+          );
+          setActiveOrderCount(active.length);
+        })
+        .catch(() => {});
+    };
+    fetchActive();
+
+    const interval = setInterval(fetchActive, 30000);
+    return () => clearInterval(interval);
+  }, [user?.userId, user?.role]);
 
   const role = user?.role || "STUDENT";
   const name = user?.username || "User";
@@ -105,6 +127,31 @@ const Navbar = ({
         )}
 
         {showNotifications && <NotificationBell />}
+
+        {showCart && <Link to="/orders" aria-label="Orders">
+          <div className="relative w-6 h-6 flex items-center justify-center">
+            <ClipboardList
+              size={20}
+              className="text-gray-500 dark:text-slate-300 hover:text-gray-700 dark:hover:text-white transition"
+            />
+            {activeOrderCount > 0 && (
+              <span className="
+                absolute -top-1 -right-1
+                bg-amber-500
+                text-white
+                text-[9px]
+                font-semibold
+                rounded-full
+                w-4 h-4
+                flex items-center justify-center
+                border border-white dark:border-slate-900
+                animate-pulse
+              ">
+                {activeOrderCount}
+              </span>
+            )}
+          </div>
+        </Link>}
 
         {showCart && (
           <Link to="/cart" aria-label="Shopping cart">

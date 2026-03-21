@@ -1,50 +1,89 @@
 import { createContext, useContext, useState, useRef, useEffect, useCallback } from "react";
 import { useToast } from "./ToastContext.jsx";
+import { useAuth } from "./AuthContext.jsx";
 
 const CartContext = createContext();
 
+function getKey(userId) {
+  return userId ? `cart_${userId}` : null;
+}
+
+function readCart(key) {
+  if (!key) return [];
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : [];
+  } catch { return []; }
+}
+
+function saveCart(key, cart) {
+  if (key) localStorage.setItem(key, JSON.stringify(cart));
+}
+
 export function CartProvider({ children }) {
-  const [cart, setCart] = useState([]);
+  const { user } = useAuth();
+  const keyRef = useRef(getKey(user?.userId));
+  keyRef.current = getKey(user?.userId);
+
+  const [cart, setCart] = useState(() => readCart(keyRef.current));
   const [pendingItem, setPendingItem] = useState(null);
   const { showToast } = useToast();
   const showToastRef = useRef(showToast);
   useEffect(() => { showToastRef.current = showToast; }, [showToast]);
 
+  useEffect(() => {
+    setCart(readCart(keyRef.current));
+  }, [user?.userId]);
+
+  const setCartAndSave = useCallback((updater) => {
+    setCart((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      saveCart(keyRef.current, next);
+      return next;
+    });
+  }, []);
+
   const addToCart = useCallback((item) => {
+    let added = false;
     setCart((prev) => {
       if (prev.length > 0 && prev[0].cafeteriaId !== item.cafeteriaId) {
-        // Don't clear — queue the item for confirmation
         setPendingItem(item);
         return prev;
       }
-      return [...prev, item];
+      added = true;
+      const next = [...prev, item];
+      saveCart(keyRef.current, next);
+      return next;
     });
+    return added;
   }, []);
 
   const confirmSwitch = useCallback(() => {
     if (pendingItem) {
-      setCart([pendingItem]);
+      setCartAndSave([pendingItem]);
       setPendingItem(null);
     }
-  }, [pendingItem]);
+  }, [pendingItem, setCartAndSave]);
 
   const cancelSwitch = useCallback(() => {
     setPendingItem(null);
   }, []);
 
-  const removeFromCart = (index) => {
-    setCart((prev) => prev.filter((_, i) => i !== index));
-  };
+  const removeFromCart = useCallback((index) => {
+    setCartAndSave((prev) => prev.filter((_, i) => i !== index));
+  }, [setCartAndSave]);
 
   const updateQuantity = useCallback((index, newQty) => {
     if (newQty < 1) return;
-    setCart((prev) => prev.map((item, i) => {
+    setCartAndSave((prev) => prev.map((item, i) => {
       if (i !== index) return item;
       return { ...item, qty: newQty, total: item.price * newQty };
     }));
-  }, []);
+  }, [setCartAndSave]);
 
-  const clearCart = () => setCart([]);
+  const clearCart = useCallback(() => {
+    setCartAndSave([]);
+  }, [setCartAndSave]);
 
   const total = cart.reduce((sum, item) => sum + item.total, 0);
 

@@ -56,7 +56,6 @@ public class OrderService {
         order.setStatus(OrderStatus.PLACED);
         order.setCreatedAt(LocalDateTime.now());
 
-        // Set back-reference for each item
         if (order.getItems() != null) {
             for (OrderItem item : order.getItems()) {
                 item.setOrder(order);
@@ -66,7 +65,6 @@ public class OrderService {
             }
         }
 
-        // Apply discount if provided
         BigDecimal chargeAmount = order.getTotalAmount();
         if (order.getAppliedDiscountId() != null && chargeAmount != null) {
             try {
@@ -87,7 +85,6 @@ public class OrderService {
         // Save order first to get the orderId for reference
         Order saved = repo.save(order);
 
-        // Then debit wallet with the final (discounted) amount
         if (chargeAmount != null && saved.getUserId() != null) {
             walletService.debit(
                     saved.getUserId(),
@@ -96,7 +93,6 @@ public class OrderService {
                     saved.getOrderId() != null ? saved.getOrderId().intValue() : null
             );
 
-            // Record payment
             Payment payment = new Payment();
             payment.setUserId(saved.getUserId());
             payment.setOrderId(saved.getOrderId());
@@ -107,7 +103,6 @@ public class OrderService {
             paymentRepository.save(payment);
         }
 
-        // Notify staff
         notificationService.sendToStaff(new NotificationMessage(
                 "NEW_ORDER", "New Order",
                 "New order #" + saved.getOrderId() + " placed",
@@ -124,7 +119,6 @@ public class OrderService {
         Order order = repo.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        // Validate state transition
         if (!OrderStatus.isValidTransition(order.getStatus(), status)) {
             if (status == OrderStatus.CANCELLED) {
                 throw new AppException(ErrorCode.ORDER_CANNOT_BE_CANCELLED);
@@ -132,7 +126,6 @@ public class OrderService {
             throw new AppException(ErrorCode.INVALID_ORDER_TRANSITION);
         }
 
-        // Handle cancellation refund
         if (status == OrderStatus.CANCELLED) {
             // Refund the actual charged amount by looking up the original debit transaction,
             // since finalAmount is @Transient and not persisted
@@ -147,16 +140,6 @@ public class OrderService {
                         "Refund for cancelled order #" + order.getOrderId(),
                         order.getOrderId().intValue()
                 );
-
-                // Record refund payment
-                Payment refundPayment = new Payment();
-                refundPayment.setUserId(order.getUserId());
-                refundPayment.setOrderId(order.getOrderId());
-                refundPayment.setTransactionType("REFUND");
-                refundPayment.setAmount(refundAmount);
-                refundPayment.setPaymentMethod("GOLD_KRAKENS");
-                refundPayment.setTransactionStatus("COMPLETED");
-                paymentRepository.save(refundPayment);
             }
         }
 
@@ -170,7 +153,6 @@ public class OrderService {
 
         Order updated = repo.save(order);
 
-        // Notify clients
         notificationService.sendOrderUpdate(new NotificationMessage(
                 "ORDER_STATUS", "Order Updated",
                 "Order #" + updated.getOrderId() + " is now " + status.name(),
@@ -178,7 +160,6 @@ public class OrderService {
                 status.name()
         ));
 
-        // Send user-specific notification
         try {
             User orderUser = userRepository.findById(order.getUserId()).orElse(null);
             if (orderUser != null) {

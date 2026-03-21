@@ -7,6 +7,7 @@ const FoodCard = ({
   description = "Food description goes here.",
   price = 0,
   discount = null,
+  comboPartner = null,
   badge = null,
   tags = null,
   preparationTime = null,
@@ -18,7 +19,6 @@ const FoodCard = ({
 
   const isMenu = variant === "menu";
 
-  // Calculate discounted price
   const discountedPrice = discount ? (() => {
     const val = Number(discount.discountValue);
     if (discount.discountType === 'PERCENTAGE') {
@@ -30,8 +30,11 @@ const FoodCard = ({
   })() : null;
 
   const discountLabel = discount ? (() => {
-    if (discount.discountType === 'PERCENTAGE') return `${discount.discountValue}% off`;
-    if (discount.discountType === 'FIXED_AMOUNT') return `GK ${discount.discountValue} off`;
+    const dt = discount.discountType;
+    if (dt === 'PERCENTAGE') return `${discount.discountValue}% off`;
+    if (dt === 'FIXED_AMOUNT') return `GK ${discount.discountValue} off`;
+    if (dt === 'BOGO' || dt === 'BUY_X_GET_Y') return comboPartner ? `BOGO w/ ${comboPartner}` : 'Buy 1 Get 1';
+    if (dt === 'COMBO' || dt === 'COMBO_FIXED_PRICE') return comboPartner ? `Combo w/ ${comboPartner}` : 'Combo Deal';
     return null;
   })() : null;
 

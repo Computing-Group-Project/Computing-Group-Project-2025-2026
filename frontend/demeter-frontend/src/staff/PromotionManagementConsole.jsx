@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PromotionList, DiscountCalculator } from '../components/promotions';
+import api from '../utils/api.js';
 
 const PromotionManagementConsole = () => {
   const [activeTab, setActiveTab] = useState('discounts');
+  const [cafeterias, setCafeterias] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    api.get('/api/cafeterias')
+      .then(res => setCafeterias(res.data.data || []))
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 p-4 md:p-8 transition-colors duration-300">
@@ -27,7 +35,6 @@ const PromotionManagementConsole = () => {
         </p>
       </div>
 
-      {/* Tabs — matches StaffDashboard style */}
       <div className="flex gap-2 mb-8">
         <button
           onClick={() => setActiveTab('discounts')}
@@ -54,9 +61,9 @@ const PromotionManagementConsole = () => {
       {activeTab === 'discounts' && <PromotionList />}
       {activeTab === 'active' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <DiscountCalculator cafeteriaId={1} />
-          <DiscountCalculator cafeteriaId={2} />
-          <DiscountCalculator cafeteriaId={3} />
+          {cafeterias.map(c => (
+            <DiscountCalculator key={c.cafeteriaId} cafeteriaId={c.cafeteriaId} cafeteriaName={c.name} />
+          ))}
         </div>
       )}
     </div>

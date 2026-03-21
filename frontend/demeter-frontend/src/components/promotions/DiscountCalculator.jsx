@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api.js';
 
-const DiscountCalculator = ({ cafeteriaId }) => {
+const DiscountCalculator = ({ cafeteriaId, cafeteriaName }) => {
   const [discounts, setDiscounts] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +40,7 @@ const DiscountCalculator = ({ cafeteriaId }) => {
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6">
-      <h3 className="text-lg font-bold mb-4 text-gray-800 dark:text-white">Active Discounts</h3>
+      <h3 className="text-lg font-bold mb-4 text-gray-800 dark:text-white">{cafeteriaName || 'Active Discounts'}</h3>
 
       {loading ? (
         <div className="text-center py-4">
@@ -65,7 +65,7 @@ const DiscountCalculator = ({ cafeteriaId }) => {
                 </div>
                 <div className="text-right">
                   {discount.aiGenerated && (
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                    <span className="px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                       AI Generated
                     </span>
                   )}

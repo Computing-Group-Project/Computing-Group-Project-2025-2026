@@ -12,7 +12,6 @@ const QueueList = ({ cafeteriaId = 1 }) => {
   const [menuItems, setMenuItems] = useState({});
   const fetchTimeoutRef = useRef(null);
 
-  // Fetch menu items for this cafeteria to resolve names
   useEffect(() => {
     const fetchMenu = async () => {
       try {
@@ -37,7 +36,8 @@ const QueueList = ({ cafeteriaId = 1 }) => {
         time: o.createdAt ? new Date(o.createdAt).toLocaleTimeString() : "N/A",
         rawItems: o.items || [],
         status: o.status === 'PLACED' ? 'Pending' :
-                o.status === 'CONFIRMED' || o.status === 'PREPARING' ? 'Preparing' :
+                o.status === 'CONFIRMED' ? 'Confirmed' :
+                o.status === 'PREPARING' ? 'Preparing' :
                 o.status === 'READY' ? 'Ready' : o.status,
         rawStatus: o.status,
       })));
@@ -60,7 +60,6 @@ const QueueList = ({ cafeteriaId = 1 }) => {
     fetchOrders();
   }, [fetchOrders]);
 
-  // WebSocket for real-time updates
   useEffect(() => {
     connectWebSocket((stompClient) => {
       subscribe(stompClient, "/topic/staff", () => {
@@ -89,13 +88,13 @@ const QueueList = ({ cafeteriaId = 1 }) => {
 
   const handleCancel = (id) => updateStatus(id, "CANCELLED", "cancel order");
   const handleAccept = (id) => updateStatus(id, "CONFIRMED", "accept order");
+  const handleStartPreparing = (id) => updateStatus(id, "PREPARING", "start preparing");
   const handleMarkReady = (id) => updateStatus(id, "READY", "mark ready");
   const handleMarkCompleted = (id) => updateStatus(id, "COMPLETED", "mark completed");
 
   return (
     <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-6 h-full">
 
-      {/* header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold text-gray-800 dark:text-white">
           Live Queue
@@ -107,7 +106,6 @@ const QueueList = ({ cafeteriaId = 1 }) => {
         )}
       </div>
 
-      {/* list */}
       {loading ? (
         <LoadingSpinner />
       ) : (
@@ -127,6 +125,7 @@ const QueueList = ({ cafeteriaId = 1 }) => {
                 }}
                 onCancel={() => handleCancel(order.id)}
                 onAccept={() => handleAccept(order.id)}
+                onStartPreparing={() => handleStartPreparing(order.id)}
                 onMarkReady={() => handleMarkReady(order.id)}
                 onMarkCompleted={() => handleMarkCompleted(order.id)}
               />

@@ -118,6 +118,17 @@ INSERT INTO Student (user_id, university_id) VALUES
     (55, 'BU-10055'), (56, 'BU-10056'), (57, 'BU-10057'), (58, 'BU-10058'), (59, 'BU-10059'),
     (60, 'BU-10060');
 
+UPDATE Student SET dietary_preferences = 'Vegetarian'   WHERE user_id = 1;
+UPDATE Student SET dietary_preferences = 'Vegan'        WHERE user_id = 4;
+UPDATE Student SET dietary_preferences = 'Gluten-Free'  WHERE user_id = 5;
+UPDATE Student SET dietary_preferences = 'Halal'        WHERE user_id = 8;
+UPDATE Student SET dietary_preferences = 'Vegetarian'   WHERE user_id = 12;
+UPDATE Student SET dietary_preferences = 'Dairy-Free'   WHERE user_id = 15;
+UPDATE Student SET dietary_preferences = 'Vegan'        WHERE user_id = 19;
+UPDATE Student SET dietary_preferences = 'Nut-Free'     WHERE user_id = 22;
+UPDATE Student SET dietary_preferences = 'Halal'        WHERE user_id = 30;
+UPDATE Student SET dietary_preferences = 'Gluten-Free'  WHERE user_id = 42;
+
 -- =========================================================================
 -- 3b. INSERT STAFF SUBCLASS ROWS
 -- Links each STAFF user to their assigned cafeteria
@@ -141,111 +152,111 @@ INSERT INTO Admin (user_id) VALUES
 -- -------------------------------------------------------------------------
 
 -- Cluster A - Healthy [IDs 1-5]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-                                                                       (1, 1, 'Soraka Star Salad',    120.00),
-                                                                       (1, 1, 'Ionian Spirit Juice',   45.00),
-                                                                       (1, 1, 'Xayah Feather Wrap',    85.00),
-                                                                       (1, 1, 'Karma Green Bowl',     110.00),
-                                                                       (1, 1, 'Irelia Blade Greens',   95.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (1, 1, 'Soraka Star Salad',   'Fresh mixed greens with starfruit, pomegranate seeds, and a citrus vinaigrette.',                 120.00, 8,  'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 1, 'Ionian Spirit Juice', 'Cold-pressed blend of green apple, cucumber, mint, and a hint of ginger.',                         45.00, 3,  'https://images.unsplash.com/photo-1622597467836-f3285f2131b8?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 1, 'Xayah Feather Wrap',  'Grilled chicken, avocado, mixed greens, and spicy aioli in a whole wheat wrap.',                   85.00, 7,  'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 1, 'Karma Green Bowl',    'Quinoa, roasted sweet potato, kale, chickpeas, and tahini dressing.',                              110.00, 10, 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 1, 'Irelia Blade Greens', 'Crisp romaine, edamame, shredded carrots, sesame seeds, and ginger-soy dressing.',                 95.00, 6,  'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- Cluster B - Fast Food [IDs 6-10]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-                                                                       (1, 2, 'Darius Dunk Burger',   150.00),
-                                                                       (1, 4, 'Noxian Coke',           30.00),
-                                                                       (1, 2, 'Draven Spinning Fries', 60.00),
-                                                                       (1, 2, 'Kled Spicy Tacos',     130.00),
-                                                                       (1, 2, 'Sion Smash Burger',    160.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (1, 2, 'Darius Dunk Burger',   'Double smash patty, cheddar, caramelised onions, pickles, and house sauce.',                     150.00, 12, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 4, 'Noxian Coke',          'Classic chilled cola served over ice.',                                                           30.00, 1,  'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 2, 'Draven Spinning Fries','Seasoned thick-cut fries with garlic aioli and parmesan dust.',                                    60.00, 5,  'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 2, 'Kled Spicy Tacos',     'Three soft-shell tacos with spiced beef, pico de gallo, and chipotle crema.',                    130.00, 10, 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 2, 'Sion Smash Burger',    'Triple smash patty, bacon, jalapeños, pepper jack, and smoky BBQ sauce.',                        160.00, 14, 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- Cluster C - Breakfast [IDs 11-15]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-                                                                       (1, 3, 'Piltover Coffee',        40.00),
-                                                                       (1, 5, 'Caitlyn Cupcake',        55.00),
-                                                                       (1, 3, 'Jayce Hammer Sandwich',  90.00),
-                                                                       (1, 3, 'Yordle Buns',            45.00),
-                                                                       (1, 3, 'Progress Day Toast',     60.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (1, 3, 'Piltover Coffee',       'Rich double-shot espresso with steamed milk and a caramel drizzle.',                              40.00, 3,  'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 5, 'Caitlyn Cupcake',       'Vanilla cupcake with buttercream frosting and edible flower petals.',                             55.00, 2,  'https://images.unsplash.com/photo-1587668178277-295251f900ce?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 3, 'Jayce Hammer Sandwich', 'Toasted sourdough, smoked turkey, brie, arugula, and cranberry aioli.',                          90.00, 8,  'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 3, 'Yordle Buns',           'Soft steamed buns filled with sweet red bean paste.',                                             45.00, 4,  'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 3, 'Progress Day Toast',    'Thick-cut brioche toast with butter, honey, and a sprinkle of cinnamon.',                         60.00, 5,  'https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- Combo Items [IDs 16-17]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-                                                                       (1, 2, 'Lee Sin Fried Rice',  110.00),
-                                                                       (1, 2, 'Dragon Chilli Paste',  15.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (1, 2, 'Lee Sin Fried Rice',  'Wok-fired jasmine rice with egg, spring onions, soy sauce, and sesame oil.',                      110.00, 12, 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=400&h=300&q=80'),
+  (1, 2, 'Dragon Chilli Paste', 'House-made chilli paste with roasted garlic and Sichuan peppercorns.',                              15.00, 2,  'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- Failing Item [ID 18]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-    (1, 2, 'Teemo Veggie Burger', 125.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (1, 2, 'Teemo Veggie Burger', 'Plant-based patty with lettuce, tomato, pickled onion, and vegan mayo.',                           125.00, 11, 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- -------------------------------------------------------------------------
 -- CANTEEN 2: Hex Core Cafe (cafeteria_id = 2)
 -- -------------------------------------------------------------------------
 
 -- Cluster A - Healthy [IDs 19-23]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-                                                                       (2, 1, 'Hex Core Salad',         105.00),
-                                                                       (2, 1, 'Zaunite Purified Water',  40.00),
-                                                                       (2, 1, 'Ekko Time-Wrap',          90.00),
-                                                                       (2, 1, 'Chem-Baron Veggie Bowl', 115.00),
-                                                                       (2, 1, 'Janna Breezy Greens',     95.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (2, 1, 'Hex Core Salad',         'Mixed greens, hextech-infused croutons, cherry tomatoes, and balsamic glaze.',                  105.00, 7,  'https://images.unsplash.com/photo-1607532941433-304659e8198a?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 1, 'Zaunite Purified Water', 'Triple-filtered mineral water from the depths of Zaun.',                                         40.00, 1,  'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 1, 'Ekko Time-Wrap',         'Grilled halloumi, roasted peppers, hummus, and rocket in a spinach tortilla.',                   90.00, 8,  'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 1, 'Chem-Baron Veggie Bowl', 'Brown rice, roasted broccoli, avocado, edamame, and miso-ginger dressing.',                     115.00, 10, 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 1, 'Janna Breezy Greens',    'Baby spinach, pear slices, candied walnuts, blue cheese, and honey dressing.',                   95.00, 6,  'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- Cluster B - Fast Food [IDs 24-28]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-                                                                       (2, 2, 'Evolution Burger',    140.00),
-                                                                       (2, 4, 'Shimmer Cola',         35.00),
-                                                                       (2, 2, 'Vi Punching Fries',    65.00),
-                                                                       (2, 2, 'Jinx Rocket Tacos',   135.00),
-                                                                       (2, 2, 'Urgot Grind Burger',  170.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (2, 2, 'Evolution Burger',    'Wagyu patty, truffle mayo, gruyère, crispy shallots, and brioche bun.',                            140.00, 13, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 4, 'Shimmer Cola',        'Sparkling cola infused with a hint of vanilla and lime.',                                            35.00, 1,  'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 2, 'Vi Punching Fries',   'Crispy sweet potato fries with sriracha mayo and spring onion.',                                     65.00, 6,  'https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 2, 'Jinx Rocket Tacos',   'Pulled pork tacos with mango salsa, slaw, and lime crema.',                                        135.00, 11, 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 2, 'Urgot Grind Burger',  'Massive double patty, bacon jam, fried egg, cheddar, and house relish.',                            170.00, 15, 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- Cluster C - Breakfast [IDs 29-33]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-                                                                       (2, 3, 'Viktor Black Coffee',         35.00),
-                                                                       (2, 3, 'Heimerdinger Sweet Roll',     50.00),
-                                                                       (2, 3, 'Academy Breakfast Sandwich',  95.00),
-                                                                       (2, 3, 'Gearbox Buns',               45.00),
-                                                                       (2, 3, 'Inventor Toast',             60.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (2, 3, 'Viktor Black Coffee',         'Strong black coffee brewed from single-origin Zaunite beans.',                               35.00, 3,  'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 3, 'Heimerdinger Sweet Roll',     'Warm cinnamon roll with cream cheese icing and toasted pecans.',                              50.00, 4,  'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 3, 'Academy Breakfast Sandwich',  'Fried egg, bacon, avocado, and hot sauce on a toasted English muffin.',                      95.00, 9,  'https://images.unsplash.com/photo-1553909489-cd47e0907980?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 3, 'Gearbox Buns',               'Fluffy steamed buns filled with BBQ pulled jackfruit.',                                       45.00, 4,  'https://images.unsplash.com/photo-1558303179-bce4b9a4db43?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 3, 'Inventor Toast',             'Sourdough toast topped with smashed avocado, chilli flakes, and a poached egg.',               60.00, 5,  'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- Combo Items [IDs 34-35]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-                                                                       (2, 2, 'Zaun Street Noodles', 105.00),
-                                                                       (2, 2, 'Spicy Shroom Skewer',  20.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (2, 2, 'Zaun Street Noodles', 'Stir-fried egg noodles with vegetables, tofu, and sweet chilli sauce.',                             105.00, 10, 'https://images.unsplash.com/photo-1569718212165-3a8922ada9a5?auto=format&fit=crop&w=400&h=300&q=80'),
+  (2, 2, 'Spicy Shroom Skewer', 'Grilled king oyster mushrooms with gochujang glaze and sesame.',                                     20.00, 3,  'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- Failing Item [ID 36]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-    (2, 5, 'Stale Trench Cake',   110.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (2, 5, 'Stale Trench Cake',   'Dense chocolate cake that has seen better days. Discount-worthy.',                                  110.00, 5,  'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- -------------------------------------------------------------------------
 -- CANTEEN 3: Skyline Sips (cafeteria_id = 3)
 -- -------------------------------------------------------------------------
 
 -- Cluster A - Healthy [IDs 37-41]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-                                                                       (3, 1, 'High-Altitude Green Bowl', 130.00),
-                                                                       (3, 1, 'Cloud Piercer Juice',       50.00),
-                                                                       (3, 1, 'Zephyr Wrap',               85.00),
-                                                                       (3, 1, 'Skyline Vegan Platter',    140.00),
-                                                                       (3, 1, 'Aero Salad',               100.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (3, 1, 'High-Altitude Green Bowl', 'Farro, roasted beetroot, goat cheese, rocket, and lemon-herb vinaigrette.',                   130.00, 10, 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 1, 'Cloud Piercer Juice',      'Fresh-pressed orange, carrot, turmeric, and a splash of coconut water.',                        50.00, 3,  'https://images.unsplash.com/photo-1534353473418-4cfa6c56fd38?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 1, 'Zephyr Wrap',              'Smoked salmon, cream cheese, capers, red onion, and dill in a flour tortilla.',                 85.00, 7,  'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 1, 'Skyline Vegan Platter',    'Grilled vegetables, falafel, tabbouleh, hummus, and warm pita bread.',                         140.00, 12, 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 1, 'Aero Salad',               'Mesclun greens, grilled halloumi, sun-dried tomatoes, olives, and basil pesto.',               100.00, 6,  'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- Cluster B - Fast Food [IDs 42-46]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-                                                                       (3, 2, 'Progress Gate Slider',  120.00),
-                                                                       (3, 4, 'Hex-Energy Drink',       45.00),
-                                                                       (3, 2, 'Gilded Fries',           70.00),
-                                                                       (3, 2, 'Piltovan Fried Chicken',150.00),
-                                                                       (3, 2, 'Council Smash Burger',  180.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (3, 2, 'Progress Gate Slider',   'Mini wagyu sliders with pickled cucumber, spicy mayo, and micro herbs.',                         120.00, 10, 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 4, 'Hex-Energy Drink',       'Citrus and guarana energy drink, served ice-cold.',                                               45.00, 2,  'https://images.unsplash.com/photo-1527960471264-932f39eb5846?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 2, 'Gilded Fries',           'Truffle-seasoned fries topped with parmesan shavings and fresh herbs.',                            70.00, 6,  'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 2, 'Piltovan Fried Chicken', 'Buttermilk-brined chicken, double-coated and fried, served with honey-mustard.',                 150.00, 15, 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 2, 'Council Smash Burger',   'Premium dry-aged beef, aged cheddar, truffle aioli, and caramelised onion jam.',                  180.00, 14, 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- Cluster C - Breakfast [IDs 47-51]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-                                                                       (3, 3, 'Skyline Espresso',      45.00),
-                                                                       (3, 3, 'Golden Muffin',         60.00),
-                                                                       (3, 3, 'Aristocrat Croissant',  75.00),
-                                                                       (3, 3, 'Sun-Gate Buns',         50.00),
-                                                                       (3, 3, 'Elite Morning Toast',   65.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (3, 3, 'Skyline Espresso',      'Single-origin espresso with a rich crema, served in a ceramic cup.',                                45.00, 3,  'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 3, 'Golden Muffin',         'Blueberry muffin with a golden sugar crust and lemon zest.',                                        60.00, 4,  'https://images.unsplash.com/photo-1558303179-bce4b9a4db43?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 3, 'Aristocrat Croissant',  'Flaky butter croissant with almond cream filling and toasted flakes.',                              75.00, 5,  'https://images.unsplash.com/photo-1555507036-ab1f4038024a?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 3, 'Sun-Gate Buns',         'Warm milk buns with a custard centre and black sesame glaze.',                                       50.00, 4,  'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 3, 'Elite Morning Toast',   'Thick sourdough toast with ricotta, honey, fig slices, and crushed pistachios.',                     65.00, 5,  'https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- Combo Items [IDs 52-53]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-                                                                       (3, 3, 'Premium Iced Latte', 80.00),
-                                                                       (3, 5, 'Macaron Set',        40.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (3, 3, 'Premium Iced Latte', 'Double-shot iced latte with oat milk and vanilla syrup.',                                              80.00, 4,  'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=400&h=300&q=80'),
+  (3, 5, 'Macaron Set',        'Assorted French macarons — pistachio, raspberry, and salted caramel.',                                  40.00, 2,  'https://images.unsplash.com/photo-1569864358642-9d1684040f43?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- Failing Item [ID 54]
-INSERT INTO MenuItem (cafeteria_id, category_id, name, base_price) VALUES
-    (3, 4, 'Overpriced Tap Water', 10.00);
+INSERT INTO MenuItem (cafeteria_id, category_id, name, description, base_price, preparation_time, image_url) VALUES
+  (3, 4, 'Overpriced Tap Water', 'It is water. From a tap. With a premium price tag.',                                                 10.00, 1,  'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&w=400&h=300&q=80');
 
 -- =========================================================================
 -- 5. GENERATE SYNTHETIC ORDER DATA

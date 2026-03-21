@@ -52,11 +52,9 @@ export default function Orders() {
     try {
       const res = await api.get(`/api/orders/user/${user.userId}`);
       const data = res.data.data || [];
-      // Sort by most recent
       data.sort((a, b) => (b.orderId || 0) - (a.orderId || 0));
       setOrders(data);
 
-      // Auto-select the passed order or the most recent
       if (passedState?.orderId) {
         const found = data.find(o => o.orderId === passedState.orderId);
         if (found) setSelectedOrder(found);
@@ -78,7 +76,6 @@ export default function Orders() {
     fetchOrders();
   }, [fetchOrders]);
 
-  // Fetch menu item names for all cafeterias referenced by orders
   useEffect(() => {
     if (orders.length === 0) return;
     const cafeteriaIds = [...new Set(orders.map(o => o.cafeteriaId).filter(Boolean))];
@@ -99,11 +96,9 @@ export default function Orders() {
     fetchMenuNames();
   }, [orders]);
 
-  // WebSocket for real-time updates
   useEffect(() => {
     connectWebSocket((stompClient) => {
       subscribe(stompClient, "/topic/orders", () => {
-        // Refresh orders when an update comes in
         fetchOrders();
       });
     });
@@ -147,7 +142,7 @@ export default function Orders() {
         price: item.unitPrice,
         total: item.subtotal || item.unitPrice * (item.quantity || 1),
         extras: [],
-        quantity: item.quantity || 1,
+        qty: item.quantity || 1,
       });
     });
     showToast("Items added to cart!", "success");

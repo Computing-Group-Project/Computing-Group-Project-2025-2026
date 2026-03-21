@@ -10,6 +10,12 @@ vi.mock("../ToastContext.jsx", () => ({
   }),
 }));
 
+vi.mock("../AuthContext.jsx", () => ({
+  useAuth: () => ({
+    user: { userId: 1, username: "testuser", role: "STUDENT" },
+  }),
+}));
+
 // Helper component to interact with cart context
 function CartConsumer() {
   const { cart, addToCart, removeFromCart, clearCart, total } = useCart();
@@ -29,6 +35,10 @@ function CartConsumer() {
 }
 
 describe("CartContext", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   it("starts with an empty cart", () => {
     render(
       <CartProvider>

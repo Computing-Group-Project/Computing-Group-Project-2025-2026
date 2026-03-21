@@ -21,6 +21,7 @@ export default function CafeMenu() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [discounts, setDiscounts] = useState([]);
+  const [dealFilter, setDealFilter] = useState("All");
   const [showStickyHeader, setShowStickyHeader] = useState(false);
   const bannerRef = useRef(null);
   const [dashWidth, setDashWidth] = useState(0);
@@ -81,7 +82,6 @@ export default function CafeMenu() {
 
         setCategories(catRes.data.data || []);
 
-        // Fetch active discounts for this cafeteria
         try {
           const discRes = await api.get(`/api/discounts/cafeteria/${id}/active`);
           const discData = discRes.data;
@@ -130,6 +130,22 @@ export default function CafeMenu() {
     return map;
   }, [discounts, foods]);
 
+  const foodNameMap = useMemo(() => {
+    const m = {};
+    for (const f of foods) m[f.id] = f.title;
+    return m;
+  }, [foods]);
+
+  const resolvePartnerName = (discount, currentFoodId) => {
+    if (!discount || !discount.applicableItems) return null;
+    try {
+      const ids = JSON.parse(discount.applicableItems);
+      if (!Array.isArray(ids)) return null;
+      const partnerId = ids.find(id => Number(id) !== currentFoodId);
+      return partnerId ? foodNameMap[Number(partnerId)] : null;
+    } catch { return null; }
+  };
+
   if (loading) {
     return (
       <StudentLayout>
@@ -150,10 +166,22 @@ export default function CafeMenu() {
     );
   }
 
+  const dealFilters = ["All", "On Sale", "BOGO", "Combo", "% Off"];
+
   const filteredFoods = foods.filter((food) => {
     const searchMatch = food.title.toLowerCase().includes(search.toLowerCase());
     const filterMatch = filter === "All" || food.category.includes(filter);
-    return searchMatch && filterMatch;
+    if (!searchMatch || !filterMatch) return false;
+
+    if (dealFilter === "All") return true;
+    const discount = itemDiscountMap[food.id];
+    if (!discount) return false;
+    const dt = discount.discountType;
+    if (dealFilter === "On Sale") return dt === "PERCENTAGE" || dt === "FIXED_AMOUNT";
+    if (dealFilter === "BOGO") return dt === "BOGO" || dt === "BUY_X_GET_Y";
+    if (dealFilter === "Combo") return dt === "COMBO" || dt === "COMBO_FIXED_PRICE";
+    if (dealFilter === "% Off") return dt === "PERCENTAGE";
+    return true;
   });
 
   return (
@@ -224,7 +252,7 @@ export default function CafeMenu() {
           <div className="flex-1">
             <SearchBar placeholder="Search menu..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
-          <div className="flex gap-2 sm:gap-3 flex-wrap">
+          <div className="flex gap-2 sm:gap-3 flex-wrap items-center">
             {filters.map((item) => (
               <button
                 key={item}
@@ -238,6 +266,25 @@ export default function CafeMenu() {
                 {item}
               </button>
             ))}
+
+            {discounts.length > 0 && (
+              <>
+                <div className="w-px h-6 bg-gray-300 dark:bg-slate-600 mx-1" />
+                {dealFilters.map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDealFilter(d)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition
+                    ${dealFilter === d
+                      ? "bg-green-500 text-white"
+                      : "border border-green-300 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20"
+                    }`}
+                  >
+                    {d === "All" ? "All Deals" : d}
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         </div>
 
@@ -252,11 +299,16 @@ export default function CafeMenu() {
                 description={food.description}
                 price={food.price}
                 discount={discount}
+                comboPartner={discount ? resolvePartnerName(discount, food.id) : null}
                 badge={[...food.category, ...food.tags]}
                 preparationTime={food.preparationTime}
                 buttonText="Add"
                 variant="menu"
-                onClick={() => setSelectedFood(food)}
+                onClick={() => setSelectedFood({
+                  ...food,
+                  discount,
+                  comboPartner: discount ? resolvePartnerName(discount, food.id) : null,
+                })}
               />
             );
           })}
