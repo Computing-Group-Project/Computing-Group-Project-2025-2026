@@ -161,6 +161,7 @@ backend/
 │   │
 │   └── ws/                                     # WebSocket configuration
 │       └── WebSocketConfig.java                # SockJS + STOMP broker, JWT auth on CONNECT
+│                                                # Allowed origins: localhost:5173, :3000, https://localhost, https://localhost:3443
 │
 ├── src/main/resources/
 │   └── application.yml                         # All configuration (DB, JWT, AI, uploads, Swagger)
@@ -407,7 +408,7 @@ public ApiResponse<OrderDTO> updateStatus(...) { ... }
 
 ### Rate Limiting
 
-`RateLimitingFilter` enforces **60 requests per minute per IP** using a sliding window implemented with `ConcurrentHashMap`. When exceeded, the filter returns HTTP 429 with an `ErrorResponse` containing `ErrorCode.RATE_LIMITED`.
+`RateLimitingFilter` enforces **60 requests per minute per IP** using a sliding window implemented with `ConcurrentHashMap`. When exceeded, the filter returns HTTP 429 with an `ErrorResponse` containing `ErrorCode.RATE_LIMITED`. Excluded paths: `/api/auth/`, `/api/health`, and `/ws/` (WebSocket excluded to prevent SockJS reconnect storms from consuming rate limit budget).
 
 ### CORS
 
@@ -539,7 +540,7 @@ Real-time order updates use **SockJS + STOMP** over WebSocket.
 - **Message broker prefixes:** `/topic` (broadcast), `/queue` (user-specific)
 - **Application destination prefix:** `/app`
 - **User destination prefix:** `/user`
-- **Allowed origins:** `http://localhost:5173`, `http://localhost:3000`
+- **Allowed origins:** `http://localhost:5173`, `http://localhost:3000`, `https://localhost`, `https://localhost:3443`
 
 ### JWT Authentication
 
@@ -711,6 +712,14 @@ To prevent circular JSON serialization, `@JsonIgnore` is applied on:
 - `MenuItemTag.menu` -- breaks Menu -> Tag -> Menu cycle
 - `OrderCustomization.orderItem` -- breaks OrderItem -> Customization -> OrderItem cycle
 - `Category.menus` -- prevents loading all menus when serializing a category
+
+### RestTemplate in Spring Boot 3.5.x
+
+The `RestTemplateConfig` for AI service communication uses explicit `SimpleClientHttpRequestFactory` instead of the default `JdkClientHttpRequestFactory`. The default factory silently drops POST request bodies — do NOT switch to `JdkClientHttpRequestFactory` or remove the factory configuration.
+
+### AI Service DTO Field Names
+
+The AI service (Python) uses snake_case (`cafeteria_id`, `proposed_discounts`, `target_item_id`). Backend DTOs use `@JsonProperty` annotations to map between camelCase Java fields and snake_case JSON. The `AIServiceClient` uses `ObjectMapper` for manual JSON serialization of discount generation requests to ensure correct field naming.
 
 ### Swagger Disabled in Tests
 

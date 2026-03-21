@@ -17,7 +17,7 @@ const Navbar = () => {
     <nav className="w-full bg-white dark:bg-[#0F172A] border-b border-gray-200 dark:border-[#334155] px-6 py-3 flex justify-between items-center transition-colors duration-300">
 
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-sm">
+        <div className="w-8 h-8 bg-gradient-to-br from-yellow-300 to-amber-500 rounded-lg flex items-center justify-center text-slate-900 font-bold text-xl shadow-sm">
           D
         </div>
         <span className="text-xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">

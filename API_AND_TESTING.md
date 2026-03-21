@@ -694,7 +694,11 @@ All WebSocket messages use the `NotificationMessage` schema:
 
 WebSocket connections are restricted to:
 - `http://localhost:5173` (dev)
-- `http://localhost:3000` (Docker)
+- `http://localhost:3000` (Docker HTTP)
+- `https://localhost` (Docker HTTPS)
+- `https://localhost:3443` (Docker HTTPS)
+
+**Important:** `SecurityConfig` CORS origins and `WebSocketConfig.setAllowedOriginPatterns()` are independent configs that must be kept in sync. If a new origin is added, update BOTH or WebSocket connections will get 403.
 
 ---
 

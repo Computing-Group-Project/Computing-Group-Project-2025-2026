@@ -16,14 +16,17 @@ const fallbackRecommended = [
   {
     id: 1, cafeId: 1, name: "Neuro-Burger", image: getFoodImage("Neuro-Burger"), price: 45,
     description: "Plant-based patty with smart-sauce and crispy sweet potato fries.", tag: "vegetarian",
+    tags: ["Fast Food", "Vegan"],
   },
   {
     id: 2, cafeId: 1, name: "Quantum Quinoa Bowl", image: getFoodImage("Quantum Quinoa Bowl"), price: 38,
     description: "Fresh quinoa, avocado, kale, and a lemon-tahini dressing.", tag: "vegan",
+    tags: ["Healthy/Vegan", "Gluten-Free"],
   },
   {
     id: 3, cafeId: 3, name: "Sunset Smoothie", image: getFoodImage("Sunset Smoothie"), price: 20,
     description: "Mango, pineapple, and strawberry blend with yogurt.", tag: "drink",
+    tags: ["Beverages"],
   },
 ];
 
@@ -47,7 +50,8 @@ export default function StudentHome() {
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
-          if (parsed.length > 0) {
+          // Invalidate cache if it lacks tags (old format)
+          if (parsed.length > 0 && parsed[0].tags) {
             setRecommendedItems(parsed);
             return;
           }
@@ -65,6 +69,8 @@ export default function StudentHome() {
               const menuRes = await api.get(`/api/menus/${itemId}`);
               const item = menuRes.data?.data;
               if (item) {
+                const categoryName = item.category?.name;
+                const tagNames = (item.tags || []).map(t => t.tag?.name).filter(Boolean);
                 return {
                   id: item.menuId,
                   cafeId: item.cafeteriaId,
@@ -73,6 +79,7 @@ export default function StudentHome() {
                   price: item.basePrice,
                   description: item.description || '',
                   tag: (rec.recommendation_type ?? rec.recommendationType ?? 'recommended').toLowerCase(),
+                  tags: [...(categoryName ? [categoryName] : []), ...tagNames],
                 };
               }
             } catch { /* skip failed items */ }
@@ -126,11 +133,11 @@ export default function StudentHome() {
       <div className="w-screen relative left-1/2 -translate-x-1/2 px-6">
 
         {/* Welcome Section */}
-        <section className="mb-10">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Welcome back, {firstName}
+        <section className="flex flex-col items-center justify-center text-center py-16 mb-10">
+          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+            Welcome back, <span className="text-teal-400">{firstName}</span>
           </h1>
-          <p className="mt-2 text-gray-500 dark:text-gray-300">
+          <p className="mt-4 text-lg text-gray-500 dark:text-gray-300">
             Your next meal is just a few taps away.
           </p>
         </section>
@@ -151,7 +158,7 @@ export default function StudentHome() {
                   subtitle={cafeName}
                   description={item.description}
                   price={`${item.price}`}
-                  badge={item.tag}
+                  tags={item.tags}
                   buttonText="Add to Cart"
                   variant="home"
                   onClick={() => {

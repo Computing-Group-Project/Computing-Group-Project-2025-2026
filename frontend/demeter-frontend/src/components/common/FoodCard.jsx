@@ -6,7 +6,9 @@ const FoodCard = ({
   subtitle = null,
   description = "Food description goes here.",
   price = 0,
+  discount = null,
   badge = null,
+  tags = null,
   preparationTime = null,
   buttonText = "Order Now",
   onClick,
@@ -15,6 +17,23 @@ const FoodCard = ({
 }) => {
 
   const isMenu = variant === "menu";
+
+  // Calculate discounted price
+  const discountedPrice = discount ? (() => {
+    const val = Number(discount.discountValue);
+    if (discount.discountType === 'PERCENTAGE') {
+      return price - (price * val / 100);
+    } else if (discount.discountType === 'FIXED_AMOUNT') {
+      return Math.max(0, price - val);
+    }
+    return null;
+  })() : null;
+
+  const discountLabel = discount ? (() => {
+    if (discount.discountType === 'PERCENTAGE') return `${discount.discountValue}% off`;
+    if (discount.discountType === 'FIXED_AMOUNT') return `GK ${discount.discountValue} off`;
+    return null;
+  })() : null;
 
   return (
     <div
@@ -49,6 +68,13 @@ const FoodCard = ({
             {badge}
           </div>
         )}
+
+        {/* Discount badge */}
+        {discountLabel && (
+          <div className="absolute top-3 left-3 bg-green-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-md">
+            {discountLabel}
+          </div>
+        )}
       </div>
 
       {/* CONTENT */}
@@ -61,8 +87,15 @@ const FoodCard = ({
           </h3>
 
           {isMenu && (
-            <span className="text-yellow-400 font-semibold text-sm">
-              GK {price}
+            <span className="text-right">
+              {discountedPrice != null ? (
+                <>
+                  <span className="text-yellow-400 font-semibold text-sm">GK {discountedPrice.toFixed(0)}</span>
+                  <span className="text-gray-400 dark:text-slate-500 text-xs line-through ml-1.5">GK {price}</span>
+                </>
+              ) : (
+                <span className="text-yellow-400 font-semibold text-sm">GK {price}</span>
+              )}
             </span>
           )}
         </div>
@@ -85,24 +118,36 @@ const FoodCard = ({
         )}
 
         {/* TAGS */}
-        {isMenu && badge && (
-          <div className="flex gap-2 mb-2 flex-wrap">
-            {(Array.isArray(badge) ? badge : [badge]).map((tag, i) => (
-              <span
-                key={i}
-                className="text-[10px] px-2 py-0.5 rounded bg-gray-100 dark:bg-slate-700/60 text-gray-600 dark:text-slate-200"
-              >
-                {tag.toUpperCase()}
-              </span>
-            ))}
-          </div>
-        )}
+        {(() => {
+          const tagList = isMenu
+            ? (badge ? (Array.isArray(badge) ? badge : [badge]) : null)
+            : (tags && tags.length > 0 ? tags : null);
+          return tagList && (
+            <div className="flex gap-2 mb-2 flex-wrap">
+              {tagList.map((tag, i) => (
+                <span
+                  key={i}
+                  className="text-[10px] px-2 py-0.5 rounded bg-gray-100 dark:bg-slate-700/60 text-gray-600 dark:text-slate-200"
+                >
+                  {tag.toUpperCase()}
+                </span>
+              ))}
+            </div>
+          );
+        })()}
 
         {/* HOME CARD BUTTON AREA */}
         {!isMenu && (
           <div className="flex justify-between items-center">
-            <span className="text-yellow-400 font-semibold">
-              GK {price}
+            <span>
+              {discountedPrice != null ? (
+                <>
+                  <span className="text-yellow-400 font-semibold">GK {discountedPrice.toFixed(0)}</span>
+                  <span className="text-gray-400 dark:text-slate-500 text-sm line-through ml-2">GK {price}</span>
+                </>
+              ) : (
+                <span className="text-yellow-400 font-semibold">GK {price}</span>
+              )}
             </span>
 
             {showButton && (

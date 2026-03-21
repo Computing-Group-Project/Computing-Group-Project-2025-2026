@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import StudentLayout from "../layouts/StudentLayout.jsx";
@@ -20,32 +20,27 @@ export default function CafeMenu() {
   const [foods, setFoods] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [discounts, setDiscounts] = useState([]);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
   const bannerRef = useRef(null);
-  const dashboardTextRef = useRef(null);
-  const cafeNameTextRef = useRef(null);
-  const [textWidth, setTextWidth] = useState(null);
+  const [dashWidth, setDashWidth] = useState(0);
+  const [cafeWidth, setCafeWidth] = useState(0);
+  const dashRef = useCallback(node => { if (node) setDashWidth(node.scrollWidth); }, []);
+  const cafeRef = useCallback(node => { if (node) setCafeWidth(node.scrollWidth); }, [cafe]);
 
   const filters = ["All", ...categories.map(c => c.name)];
 
-  // Measure text widths and animate pill size
-  useEffect(() => {
-    const target = showStickyHeader ? cafeNameTextRef.current : dashboardTextRef.current;
-    if (target) {
-      setTextWidth(target.scrollWidth);
-    }
-  }, [showStickyHeader, cafe]);
-
   // Show sticky header when banner scrolls out of view
   useEffect(() => {
-    const banner = bannerRef.current;
-    if (!banner) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setShowStickyHeader(!entry.isIntersecting),
-      { threshold: 0 }
-    );
-    observer.observe(banner);
-    return () => observer.disconnect();
+    const handleScroll = () => {
+      const banner = bannerRef.current;
+      if (!banner) return;
+      const rect = banner.getBoundingClientRect();
+      setShowStickyHeader(rect.bottom < 70);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [cafe]);
 
   useEffect(() => {
@@ -85,6 +80,14 @@ export default function CafeMenu() {
         })));
 
         setCategories(catRes.data.data || []);
+
+        // Fetch active discounts for this cafeteria
+        try {
+          const discRes = await api.get(`/api/discounts/cafeteria/${id}/active`);
+          setDiscounts(discRes.data || []);
+        } catch {
+          setDiscounts([]);
+        }
       } catch {
         setCafe(null);
       } finally {
@@ -93,6 +96,38 @@ export default function CafeMenu() {
     };
     fetchData();
   }, [id]);
+
+  // Build a map of item ID -> best discount for that item
+  const itemDiscountMap = useMemo(() => {
+    const map = {};
+    for (const d of discounts) {
+      const items = d.applicableItems;
+      const isAll = !items || items === 'ALL' || items === 'all';
+      const itemIds = isAll ? null : (() => {
+        try {
+          const parsed = JSON.parse(items);
+          return Array.isArray(parsed) ? parsed.map(Number) : null;
+        } catch {
+          return null;
+        }
+      })();
+
+      const applyToItem = (itemId) => {
+        if (!isAll && (!itemIds || !itemIds.includes(itemId))) return;
+        const existing = map[itemId];
+        if (!existing || Number(d.discountValue) > Number(existing.discountValue)) {
+          map[itemId] = d;
+        }
+      };
+
+      if (isAll) {
+        foods.forEach(f => applyToItem(f.id));
+      } else if (itemIds) {
+        itemIds.forEach(applyToItem);
+      }
+    }
+    return map;
+  }, [discounts, foods]);
 
   if (loading) {
     return (
@@ -124,7 +159,7 @@ export default function CafeMenu() {
     <StudentLayout>
       {/* Floating pill — morphs between "Back to Dashboard" and cafe name */}
       {createPortal(
-        <div className="fixed top-0 left-1/2 -translate-x-1/2 z-50 h-[70px] flex items-center">
+        <div className="fixed top-0 left-1/2 -translate-x-1/2 z-[60] h-[70px] flex items-center pointer-events-none">
           <div
             onClick={() => {
               if (showStickyHeader) {
@@ -133,7 +168,7 @@ export default function CafeMenu() {
                 navigate("/");
               }
             }}
-            className="relative flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-gray-200 dark:border-slate-700 shadow-lg shadow-black/10 cursor-pointer hover:shadow-xl transition-shadow duration-300"
+            className="pointer-events-auto relative flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-gray-200 dark:border-slate-700 shadow-lg shadow-black/10 cursor-pointer hover:shadow-xl transition-shadow duration-300"
           >
             <button
               onClick={(e) => { if (showStickyHeader) { e.stopPropagation(); navigate("/"); } }}
@@ -142,26 +177,29 @@ export default function CafeMenu() {
               &larr;
             </button>
             <span
-              className="relative overflow-hidden h-[1.5em]"
-              style={{ width: textWidth ? `${textWidth}px` : "auto", transition: "width 500ms ease-in-out" }}
+              className="relative overflow-hidden h-[1.5em] inline-block"
+              style={{
+                width: (showStickyHeader ? cafeWidth : dashWidth) || 'auto',
+                transition: 'width 500ms ease-in-out',
+              }}
             >
               <span
-                ref={dashboardTextRef}
-                className={`absolute left-0 text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap transition-all duration-500 ease-in-out ${
-                  showStickyHeader
-                    ? "opacity-0 -translate-y-full"
-                    : "opacity-100 translate-y-0"
-                }`}
+                ref={dashRef}
+                className="absolute left-0 text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap transition-all duration-500 ease-in-out"
+                style={{
+                  opacity: showStickyHeader ? 0 : 1,
+                  transform: showStickyHeader ? 'translateY(-100%)' : 'translateY(0)',
+                }}
               >
                 Back to Dashboard
               </span>
               <span
-                ref={cafeNameTextRef}
-                className={`absolute left-0 text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap transition-all duration-500 ease-in-out ${
-                  showStickyHeader
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-full"
-                }`}
+                ref={cafeRef}
+                className="absolute left-0 text-base font-semibold text-gray-900 dark:text-white whitespace-nowrap transition-all duration-500 ease-in-out"
+                style={{
+                  opacity: showStickyHeader ? 1 : 0,
+                  transform: showStickyHeader ? 'translateY(0)' : 'translateY(100%)',
+                }}
               >
                 {cafe.name}
               </span>
@@ -206,20 +244,24 @@ export default function CafeMenu() {
 
         {/* Food cards */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredFoods.map((food) => (
-            <FoodCard
-              key={food.id}
-              image={food.image}
-              title={food.title}
-              description={food.description}
-              price={food.price}
-              badge={[...food.category, ...food.tags]}
-              preparationTime={food.preparationTime}
-              buttonText="Add"
-              variant="menu"
-              onClick={() => setSelectedFood(food)}
-            />
-          ))}
+          {filteredFoods.map((food) => {
+            const discount = itemDiscountMap[food.id];
+            return (
+              <FoodCard
+                key={food.id}
+                image={food.image}
+                title={food.title}
+                description={food.description}
+                price={food.price}
+                discount={discount}
+                badge={[...food.category, ...food.tags]}
+                preparationTime={food.preparationTime}
+                buttonText="Add"
+                variant="menu"
+                onClick={() => setSelectedFood(food)}
+              />
+            );
+          })}
         </div>
 
       </div>

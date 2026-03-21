@@ -7,8 +7,8 @@ import NotificationBell from "./NotificationBell.jsx";
 
 const logoStyles = {
   STUDENT: "bg-gradient-to-br from-lime-400 to-cyan-400 text-slate-900",
-  STAFF: "bg-amber-400 text-slate-900",
-  ADMIN: "bg-red-500 text-white",
+  STAFF: "bg-gradient-to-br from-yellow-300 to-amber-500 text-slate-900",
+  ADMIN: "bg-gradient-to-br from-red-400 to-rose-600 text-white",
 };
 
 const homeLinks = {

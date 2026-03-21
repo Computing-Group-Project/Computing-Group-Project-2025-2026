@@ -78,7 +78,8 @@ src/
 │   │   ├── NotificationBell.jsx      # WebSocket-powered notification dropdown with unread badge
 │   │   ├── ProfileModal.jsx          # User profile overlay
 │   │   ├── ProtectedRoute.jsx        # Auth guard — redirects to /login if unauthorized
-│   │   ├── CafeteriaCard.jsx         # Cafeteria summary card for homepage
+│   │   ├── CafeteriaCard.jsx         # Cafeteria summary card for homepage (flex layout for consistent alignment)
+│   │   ├── LoadingSpinner.jsx        # Shared dual-ring loading animation with role-based colors (STUDENT=teal, STAFF=amber, ADMIN=red)
 │   │   ├── ErrorBoundary.jsx         # React error boundary — catches render errors gracefully
 │   │   ├── ThemeToggle.jsx           # Dark/light mode toggle button (floating)
 │   │   ├── PaymentGatewayModal.jsx   # Payment confirmation modal for wallet top-ups — shows "Request Submitted" with amber icon after student top-up (pending approval flow)
@@ -89,8 +90,8 @@ src/
 │   │   ├── QueueList.jsx             # Real-time order queue with status action buttons
 │   │   ├── QueueItem.jsx             # Individual order card in the queue
 │   │   ├── MenuEditor.jsx            # Menu item CRUD form (create, edit, delete, toggle availability)
-│   │   ├── DiscountSuggestion.jsx    # AI-generated discount suggestion cards for staff review
-│   │   ├── DiscountCard.jsx          # Individual discount display card
+│   │   ├── DiscountSuggestion.jsx    # AI-generated discount suggestion panel with menu item name resolution and pending count
+│   │   ├── DiscountCard.jsx          # Individual discount card with type-coded visuals (BOGO=emerald, COMBO=blue, PERCENTAGE=amber)
 │   │   ├── StatCard.jsx              # Dashboard statistic card (orders count, revenue, etc.)
 │   │   └── NavBar.jsx                # Staff-specific navigation bar
 │   │
@@ -284,7 +285,7 @@ Five React Context providers manage global state. Each exports a provider compon
 | Context | Hook | State Managed |
 |---------|------|--------------|
 | `AuthContext` | `useAuth()` | JWT token, userId, username, role, assignedCafeteriaId, login/logout functions |
-| `CartContext` | `useCart()` | Cart items array, add/remove/update/clear, cafeteria scoping (items locked to one cafeteria), subtotal calculation |
+| `CartContext` | `useCart()` | Cart items array, add/remove/updateQuantity/clear, cafeteria scoping (items locked to one cafeteria with confirmation dialog on switch), subtotal calculation |
 | `WalletContext` | `useWallet()` | Gold Krakens balance, `refreshBalance()` for post-transaction updates; subscribes to `/user/{username}/queue/notifications` WebSocket topic for `TOPUP_APPROVED` events to auto-refresh balance |
 | `ThemeContext` | `useTheme()` | Dark/light mode string, `toggleTheme()`, persisted to `localStorage("theme")` |
 | `ToastContext` | `useToast()` | Toast notification queue, `showToast(message, type)`, auto-dismiss with configurable duration |
@@ -365,7 +366,7 @@ The Nginx CSP header explicitly allows `img-src https://images.unsplash.com` for
 
 | Test File | Tests | What It Covers |
 |-----------|-------|----------------|
-| `contexts/__tests__/CartContext.test.jsx` | 6 | Add/remove items, quantity updates, cafeteria scoping, clear cart |
+| `contexts/__tests__/CartContext.test.jsx` | 6 | Add/remove items, quantity updates, cafeteria switch confirmation dialog, clear cart, context safety |
 | `contexts/__tests__/WalletContext.test.jsx` | 6 | Balance fetching, refresh, error handling, context safety |
 | `auth/__tests__/Login.test.jsx` | 8 | Portal selection, form validation, login success/failure, role routing |
 | `student/__tests__/StudentHome.test.jsx` | 5 | Cafeteria card rendering, AI recommendations display |

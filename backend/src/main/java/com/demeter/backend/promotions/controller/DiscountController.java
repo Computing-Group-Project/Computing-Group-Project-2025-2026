@@ -67,7 +67,7 @@ public class DiscountController {
     }
 
     @GetMapping("/cafeteria/{cafeteriaId}/active")
-    @PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'STAFF', 'ADMIN')")
     public ResponseEntity<List<DiscountDTO>> getActiveDiscountsByCafeteria(@PathVariable Integer cafeteriaId) {
         List<DiscountDTO> dtos = discountService.getActiveDiscountsByCafeteria(cafeteriaId).stream()
                 .map(d -> modelMapper.map(d, DiscountDTO.class))

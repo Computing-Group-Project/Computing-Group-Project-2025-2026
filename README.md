@@ -42,7 +42,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 docker compose up --build
 ```
 
-This builds and starts four containers (MySQL, AI service, backend, and frontend). The first build takes a few minutes to download dependencies. Subsequent runs are much faster. The database backup container is optional — see step 6.
+This builds and starts four containers (MySQL, AI service, backend, and frontend). The AI service starts in parallel with the backend build (`service_started` dependency) for faster startup. The first build takes a few minutes to download dependencies; subsequent runs are much faster. The database backup container is optional — see step 6.
 
 ### 3. Wait for services to be ready
 

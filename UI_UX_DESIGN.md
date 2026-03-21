@@ -374,7 +374,7 @@ A React class component wrapping the entire application:
 #### Cart (`/cart`)
 
 - **Empty state:** Centered icon (`Sparkles` in gray circle), heading, subtext, and "Browse Cafeterias" teal button
-- **Cart items:** Left column with horizontal card layout (image + details + price + delete icon)
+- **Cart items:** Left column with horizontal card layout (image + details + quantity controls + price + delete icon). Quantity editing via +/− buttons; minus at qty=1 shows trash icon and removes item. Shows "GK X each" subtitle when qty > 1.
 - **Order summary:** Right column sticky card with subtotal, available discounts (radio buttons), discount amount, total, current balance display, and "Pay with Gold Krakens" button (`bg-yellow-400`)
 - **Recommendations:** "You might also like" section below cart with mini cards from AI (same-cafeteria, not-in-cart filtering)
 - **Layout:** `lg:grid-cols-[1.65fr_1fr]` — items get more space than summary
@@ -504,11 +504,15 @@ After selecting a portal, the form card appears with role-specific theming:
 
 ### 8.2 Loading States
 
-All loading spinners follow the same pattern: `animate-spin` on a circle element with a role-appropriate border color:
+A shared `LoadingSpinner` component (`src/components/common/LoadingSpinner.jsx`) provides a dual-ring animation with role-based colors:
 
-- Student pages: `border-4 border-teal-400 border-t-transparent rounded-full`
-- Admin pages: `border-4 border-light-accent dark:border-dark-accent border-t-transparent rounded-full`
-- Standard sizes: `h-10 w-10` (page loading), `h-8 w-8` (section loading), `h-12 w-12` (payment processing)
+| Role | Ring Color | Inner Ring | Background |
+|---|---|---|---|
+| **Student** | `#14b8a6` (teal) | `rgba(20,184,166,0.4)` | `rgba(20,184,166,0.08)` |
+| **Staff** | `#f59e0b` (amber) | `rgba(245,158,11,0.4)` | `rgba(245,158,11,0.08)` |
+| **Admin** | `#ef4444` (red) | `rgba(239,68,68,0.4)` | `rgba(239,68,68,0.08)` |
+
+The spinner reads the user's role from `localStorage('authData')` (not `useAuth()`) to avoid context dependency issues in tests. Fixed 48px size. Used across all pages (AdminConsole, AnalyticsDashboard, StaffDashboard, CafeMenu, Cart, Orders, Wallet, etc.).
 
 ### 8.3 Empty States
 
@@ -525,6 +529,8 @@ Used in: Cart (Sparkles icon), Orders (text-only), Wallet transactions ("No tran
 Destructive actions use the native browser `window.confirm()` dialog:
 - Staff deletion: "Delete this staff member?"
 - Discount deletion: "Are you sure you want to delete this discount?"
+
+**Cart cafeteria switch:** When adding items from a different cafeteria, `CartContext` renders a custom confirmation dialog (not `window.confirm()`) with "Switch & Add" and "Keep Current Cart" buttons. The dialog is styled with an amber warning icon, explains the action, and shows the new item name. Confirming clears the existing cart and adds the new item.
 
 ### 8.5 Form Validation
 
