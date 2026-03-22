@@ -6,42 +6,29 @@ import api from '../../utils/api.js';
 const PromotionList = () => {
   const { user } = useAuth();
   const isStaff = user?.role === 'STAFF';
+  const cafeteriaId = user?.assignedCafeteriaId;
   const [discounts, setDiscounts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [selectedDiscount, setSelectedDiscount] = useState(null);
   const [filter, setFilter] = useState('ALL');
-  const [cafeteriaMap, setCafeteriaMap] = useState({});
   const [menuMap, setMenuMap] = useState({});
 
   useEffect(() => {
-    const fetchCafeterias = async () => {
-      try {
-        const res = await api.get('/api/cafeterias');
+    if (!cafeteriaId) return;
+    api.get(`/api/menus/cafeteria/${cafeteriaId}`)
+      .then(res => {
         const map = {};
-        (res.data.data || []).forEach(c => { map[c.cafeteriaId] = c.name; });
-        setCafeteriaMap(map);
-
-        // Fetch menus for all cafeterias to resolve item IDs to names
-        const allMenus = {};
-        await Promise.all(Object.keys(map).map(async (cId) => {
-          try {
-            const menuRes = await api.get(`/api/menus/cafeteria/${cId}`);
-            (menuRes.data.data || []).forEach(item => { allMenus[item.menuId] = item.name; });
-          } catch { /* skip */ }
-        }));
-        setMenuMap(allMenus);
-      } catch {
-        // Keep empty map
-      }
-    };
-    fetchCafeterias();
-  }, []);
+        (res.data.data || []).forEach(item => { map[item.menuId] = item.name; });
+        setMenuMap(map);
+      })
+      .catch(() => {});
+  }, [cafeteriaId]);
 
   useEffect(() => {
-    fetchDiscounts();
-  }, [filter]);
+    if (cafeteriaId) fetchDiscounts();
+  }, [filter, cafeteriaId]);
 
   const fetchDiscounts = async () => {
     setLoading(true);
@@ -49,10 +36,10 @@ const PromotionList = () => {
     try {
       const endpoint =
         filter === 'ACTIVE'
-          ? '/api/discounts/active'
+          ? `/api/discounts/cafeteria/${cafeteriaId}/active`
           : filter === 'PENDING'
-          ? '/api/discounts/pending'
-          : '/api/discounts';
+          ? `/api/discounts/cafeteria/${cafeteriaId}/pending`
+          : `/api/discounts/cafeteria/${cafeteriaId}`;
 
       const res = await api.get(endpoint);
       setDiscounts(res.data);
@@ -230,7 +217,7 @@ const PromotionList = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-gray-800 dark:text-white truncate">
-                          {cafeteriaMap[discount.cafeteriaId] || `Cafeteria #${discount.cafeteriaId}`}
+                          {discount.discountType.replace(/_/g, ' ')}
                         </h3>
                         {discount.aiGenerated && (
                           <span className="flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
@@ -238,9 +225,6 @@ const PromotionList = () => {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {discount.discountType.replace(/_/g, ' ')}
-                      </p>
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusStyle(discount)}`}>

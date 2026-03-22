@@ -58,11 +58,11 @@ src/
 │
 ├── staff/                            # Staff page components
 │   ├── StaffDashboard.jsx            # Order queue, menu editor, AI discount suggestions
+│   ├── PromotionManagementConsole.jsx # Discount management (scoped to staff's assigned cafeteria)
 │   └── __tests__/
 │
 ├── admin/                            # Admin page components
 │   ├── AdminConsole.jsx              # Staff CRUD, student list, wallet top-ups, analytics, audit log
-│   ├── PromotionManagementConsole.jsx # Discount/promotion management (shared with STAFF role)
 │   └── __tests__/
 │
 ├── auth/                             # Authentication pages
@@ -101,10 +101,9 @@ src/
 │   │   ├── WalletTable.jsx           # Student wallet top-up table with pending requests section (approve/reject buttons, WebSocket auto-refresh)
 │   │   └── AuditLogTable.jsx         # Audit log viewer with search and action-type filtering
 │   │
-│   └── promotions/                   # Promotion management components (used by Staff + Admin)
-│       ├── PromotionList.jsx         # Active/pending discount list
+│   └── promotions/                   # Promotion management components (staff only, scoped to assigned cafeteria)
+│       ├── PromotionList.jsx         # Active/pending discount list (filtered to staff's cafeteria)
 │       ├── PromotionForm.jsx         # Create/edit discount form
-│       ├── DiscountCalculator.jsx    # Discount value calculator/preview
 │       └── index.js                  # Barrel exports
 │
 ├── contexts/                         # React Context providers
@@ -197,7 +196,7 @@ In Docker, both are set to empty strings (`""`) so that relative URLs are used, 
 | `/orders` | `Orders` | STUDENT | StudentLayout | Order history + status tracking |
 | `/staff` | `StaffDashboard` | STAFF, ADMIN | StaffLayout | Order queue + menu + discounts |
 | `/admin` | `AdminConsole` | ADMIN | AdminLayout | Staff/student management, analytics |
-| `/admin/promotions` | `PromotionManagementConsole` | ADMIN, STAFF | AdminLayout | Discount/promotion management |
+| `/staff/promotions` | `PromotionManagementConsole` | STAFF | StaffLayout | Discount management (scoped to assigned cafeteria) |
 | `*` | `NotFound` | Public | None | 404 catch-all |
 
 ### How Auth Works
@@ -245,7 +244,7 @@ This ordering ensures that inner contexts can consume outer ones (e.g., `CartCon
 | Menu CRUD | `MenuEditor` | `POST/PUT/DELETE /api/menus/{id}` |
 | Toggle availability | `MenuEditor` switch | `PUT /api/menus/{id}/availability` |
 | AI discount suggestions | `DiscountSuggestion`, `DiscountCard` | `POST /api/ai/discounts/generate/{cafeteriaId}` |
-| Promotion management | `PromotionManagementConsole` | `GET/POST/PUT/DELETE /api/discounts/**` |
+| Promotion management | `PromotionManagementConsole` | `GET/POST/PUT/DELETE /api/discounts/cafeteria/{id}/**` |
 | Real-time order alerts | WebSocket subscription | `/topic/staff` |
 
 ### Admin Interface
@@ -258,7 +257,7 @@ This ordering ensures that inner contexts can consume outer ones (e.g., `CartCon
 | Analytics dashboard | `AnalyticsDashboard` | `GET /api/admin/analytics/dashboard`, `/revenue` |
 | CSV export | `AnalyticsDashboard` | `GET /api/admin/analytics/export` |
 | Audit log | `AuditLogTable` | `GET /api/admin/audit` |
-| Discount overview | `PromotionManagementConsole` (read-only for admin) | `GET /api/discounts/**` |
+| Discount overview | `AdminConsole` | `GET /api/discounts/**` |
 
 ---
 
