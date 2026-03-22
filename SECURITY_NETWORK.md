@@ -133,7 +133,7 @@ The backend sends a **secret API key** in every request to the AI service. The A
 
 ### Passwords & Secrets
 
-All sensitive values (database password, JWT secret, AI API key) are loaded from **environment variables** — they are **not** hardcoded in the code. A `.env.example` file shows what variables need to be set, and `.gitignore` ensures `.env` files are never committed to Git.
+All sensitive values (database password, JWT secret, AI API key) are loaded from **environment variables** — they are **not** hardcoded in the code. Docker Compose provides development defaults so the system works out of the box without a `.env` file. For production, copy `.env.example` to `.env` and set strong, random values. `.gitignore` ensures `.env` files are never committed to Git.
 
 ### Encryption
 
@@ -234,7 +234,7 @@ These security issues were identified during a comprehensive audit and have all 
 ### Critical Fixes
 | What Was Wrong | What We Did |
 |---|---|
-| Passwords and secrets were hardcoded in the source code | Moved all secrets to environment variables. Created `.env.example` template. No defaults in code. |
+| Passwords and secrets were hardcoded in the source code | Moved all secrets to environment variables. Created `.env.example` template. Docker Compose provides development defaults so no `.env` file is needed for local setup; production deployments must override with strong values. |
 | JWT secret could be left as a placeholder | App now refuses to start if the secret is missing, too short, or a known placeholder |
 | No HTTPS — all data travelled unencrypted | Added TLS 1.2+ at Nginx with automatic HTTP → HTTPS redirect |
 | WebSocket had no login check — anyone could listen to order updates | Added JWT validation on WebSocket connection |
@@ -298,7 +298,7 @@ A cafeteria ordering system for Bastion University. Students browse menus, place
 | What | Action Needed |
 |---|---|
 | **SSL certificates** | Place real certificates (e.g., from Let's Encrypt) in the `./ssl/` folder |
-| **Environment variables** | Copy `.env.example` to `.env` and fill in strong, random values for all secrets |
+| **Environment variables** | Copy `.env.example` to `.env` and fill in strong, random values for all secrets (development defaults exist in `docker-compose.yml` but must not be used in production) |
 | **CORS origins** | Update `localhost` URLs to the real production domain in `SecurityConfig.java` and `WebSocketConfig.java` |
 | **Swagger** | Set `SPRINGDOC_API_DOCS_ENABLED=false` to hide API documentation |
 | **Backups** | Verify `./backups/` directory has sufficient disk space; consider off-site replication for disaster recovery |

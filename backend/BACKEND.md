@@ -218,10 +218,10 @@ All configuration lives in `src/main/resources/application.yml`. Most values are
 |---|---|---|
 | `SPRING_DATASOURCE_URL` | `jdbc:mysql://localhost:3306/demeter_db` | JDBC connection URL |
 | `SPRING_DATASOURCE_USERNAME` | `root` | Database username |
-| `SPRING_DATASOURCE_PASSWORD` | *(none)* | Database password |
-| `JWT_SECRET` | *(required)* | JWT signing key, must be 32+ characters |
+| `SPRING_DATASOURCE_PASSWORD` | *(none; Docker Compose default: `demeter_root_pass`)* | Database password |
+| `JWT_SECRET` | *(none; Docker Compose default: `demeter-dev-jwt-secret-key-min-32chars`)* | JWT signing key, must be 32+ characters |
 | `DEMETER_AI_BASE_URL` | `http://localhost:8001` | Python AI service base URL |
-| `DEMETER_AI_API_KEY` | *(required)* | API key for AI service authentication |
+| `DEMETER_AI_API_KEY` | *(none; Docker Compose default: `demeter-dev-api-key`)* | API key for AI service authentication |
 | `SPRINGDOC_API_DOCS_ENABLED` | `true` | Enable/disable Swagger UI (set `false` in production) |
 
 The following are configured directly in `application.yml` (not environment-overridden):
@@ -685,7 +685,7 @@ The dependency-caching step (`mvn dependency:go-offline`) means rebuilds only re
 
 In the project-root `docker-compose.yml`, the backend service:
 - Depends on MySQL (waits for health check) and the AI service
-- Receives environment variables for DB credentials, JWT secret, and AI service connection
+- Receives environment variables for DB credentials, JWT secret, and AI service connection (all have development defaults via `${VAR:-default}` syntax, so no `.env` file is needed for local setup)
 - Exposes port 8080 (HTTP only -- TLS is terminated at the Nginx frontend proxy)
 
 ---

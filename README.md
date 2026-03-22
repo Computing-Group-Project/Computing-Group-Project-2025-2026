@@ -22,19 +22,15 @@ The system is composed of three independently running services and a MySQL datab
 
 The fastest way to run the full application. Requires only [Docker](https://www.docker.com/products/docker-desktop/) installed on your machine.
 
-### 1. Create environment file and SSL certs
+### 1. Generate SSL certs
 
 ```bash
-cp .env.example .env
-# Edit .env with your values (or use defaults below for local testing):
-#   MYSQL_ROOT_PASSWORD=demeter_root_2026
-#   JWT_SECRET=demeter_jwt_secret_key_at_least_32_characters_long
-#   DEMETER_AI_API_KEY=demeter-ai-service-key-2024
-
 # Generate self-signed TLS certificates
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout ssl/key.pem -out ssl/cert.pem -subj "/CN=localhost"
 ```
+
+> **No `.env` file needed for local development.** Docker Compose provides sensible defaults for all environment variables (`MYSQL_ROOT_PASSWORD`, `JWT_SECRET`, `DEMETER_AI_API_KEY`). To override them, copy `.env.example` to `.env` and fill in your own values — any values you set will take precedence over the defaults.
 
 ### 2. Start everything
 
